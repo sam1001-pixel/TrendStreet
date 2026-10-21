@@ -8,6 +8,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { QuickViewModal } from "@/components/QuickViewModal";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { StoreJsonLd } from "@/components/seo/JsonLd";
+import { ScrollReveal } from "@/components/premium/ScrollReveal";
 
 export const metadata: Metadata = {
   title: "Trend Street | The Style Hub — Oversized, Jeans, Boxy Fit & Jackets",
@@ -79,6 +80,7 @@ export default function RootLayout({
           <StoreProvider>
             <Header />
             <main className="flex-1">{children}</main>
+            <ScrollReveal />
             <Footer />
             <CartDrawer />
             <QuickViewModal />

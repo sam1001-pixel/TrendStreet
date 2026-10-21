@@ -14,7 +14,7 @@ export function TrustStrip() {
     <section className="mx-auto max-w-[1600px] px-3 sm:px-6 lg:px-8" aria-label="Our promises">
       <ul className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-stone-200 bg-stone-200 lg:grid-cols-4">
         {PROMISES.map(({ icon: Icon, title, note }) => (
-          <li key={title} className="group flex items-start gap-3 bg-bone p-4 transition-colors duration-200 hover:bg-white sm:p-6">
+          <li key={title} data-reveal className="group flex items-start gap-3 bg-bone p-4 transition-colors duration-200 hover:bg-white sm:p-6">
             <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-burgundy text-gold transition-transform duration-300 group-hover:-rotate-12">
               <Icon className="h-[18px] w-[18px]" />
             </span>

@@ -122,6 +122,7 @@ export const NewArrivalsDropRadar: React.FC = () => {
           return (
             <div
               key={product.id}
+              data-reveal
               className="group relative rounded-xl sm:rounded-2xl bg-white border border-burgundy/15 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
             >
               {/* Media Container */}

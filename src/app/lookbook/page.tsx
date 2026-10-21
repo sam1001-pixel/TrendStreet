@@ -118,6 +118,7 @@ export default function LookbookPage() {
         {LOOKBOOK_DATA.map((look, index) => (
           <div
             key={look.id}
+            data-reveal
             className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-center ${
               index % 2 === 1 ? "lg:flex-row-reverse" : ""
             }`}

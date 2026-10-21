@@ -22,7 +22,7 @@ export default function JacketsLandingPage() {
     <div className="space-y-8 sm:space-y-14 md:space-y-20 pb-16">
       {/* 1. EDITORIAL HERO BANNER */}
       <section className="relative px-3 sm:px-6 lg:px-8 pt-4 sm:pt-10 max-w-7xl mx-auto">
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-[#2B080A] via-espresso to-[#150A0B] text-ivory p-5 sm:p-10 lg:p-16 shadow-xl">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-ink via-burgundy-950 to-burgundy text-ivory p-5 sm:p-10 lg:p-16 shadow-xl">
           <div className="relative z-10 max-w-2xl space-y-4 sm:space-y-6">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gold/20 border border-gold/30 text-gold text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">
               <Flame className="w-3 h-3 text-crimson" />

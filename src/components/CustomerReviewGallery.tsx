@@ -151,6 +151,7 @@ export const CustomerReviewGallery: React.FC = () => {
         {filteredReviews.map((review) => (
           <div
             key={review.id}
+            data-reveal
             className="group rounded-2xl bg-white border border-stone-200 overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
           >
             {/* Real Customer Styling Photo */}
