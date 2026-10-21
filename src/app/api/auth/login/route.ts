@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE, validateAdminCredentials } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { writeAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (isAuthenticatedAdmin) {
+      await writeAudit(req, { action: "ADMIN_LOGIN", entityType: "Session", actorEmail: resolvedEmail });
       const token = await signSessionToken(resolvedEmail);
 
       const response = NextResponse.json(
@@ -102,6 +104,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generic error message to prevent account enumeration
+    await writeAudit(req, { action: "ADMIN_LOGIN_FAILED", entityType: "Session", actorEmail: null, metadata: { attemptedEmail: trimmedEmail.slice(0, 120) } });
     return NextResponse.json(
       { success: false, message: "Invalid administrative credentials." },
       { status: 401 }

@@ -7,7 +7,7 @@
 import crypto from "crypto";
 import { OrderStatus, PaymentProvider, PaymentStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { INITIAL_PRODUCTS } from "@/data/products";
+import { getCatalogForPricing } from "@/lib/catalog";
 import { calculateOrderPricing, PricingItem, PricingSummary } from "@/lib/pricing";
 import { isValidIndianPincode } from "@/lib/pincode";
 
@@ -39,7 +39,7 @@ export interface PlaceOrderInput {
   deliveryMethod: DeliveryMethod;
   payment:
     | { provider: "CASH_ON_DELIVERY" }
-    | { provider: "RAZORPAY"; gatewayOrderId: string; gatewayPaymentId: string; gatewaySignature: string };
+    | { provider: "RAZORPAY"; gatewayOrderId: string; gatewayPaymentId: string; gatewaySignature: string; paidAmountMinor: number };
 }
 
 export class OrderInputError extends Error {}
@@ -79,13 +79,14 @@ export function validateCustomer(c: Partial<OrderCustomerInput> | undefined): Or
   return customer;
 }
 
-/** Recomputes the order price from the server catalog. Never uses client-sent prices. */
-export function priceOrder(items: OrderLineInput[], promoCode: string | null | undefined, deliveryMethod: DeliveryMethod) {
+/** Recomputes the order price from the database catalog. Never uses client-sent prices. */
+export async function priceOrder(items: OrderLineInput[], promoCode: string | null | undefined, deliveryMethod: DeliveryMethod) {
   if (!Array.isArray(items) || items.length === 0) throw new OrderInputError("Your bag is empty.");
 
+  const catalog = await getCatalogForPricing(Array.from(new Set(items.map((i) => String(i?.productId)))));
   const lines: (PricingItem & { productId: string })[] = [];
   for (const it of items) {
-    const product = INITIAL_PRODUCTS.find((p) => p.id === it?.productId);
+    const product = catalog.find((p) => p.id === it?.productId);
     if (!product || !product.inStock) throw new OrderInputError("An item in your bag is no longer available.");
     if (!product.sizes.includes(it.size)) throw new OrderInputError(`Size ${it.size} isn't offered for ${product.name}.`);
     if (!product.colors.some((c) => c.name === it.color)) throw new OrderInputError(`That colour isn't offered for ${product.name}.`);
@@ -110,14 +111,16 @@ export interface PlacedOrder {
   id: string;
   orderNumber: string;
   pricing: PricingSummary;
-  lines: ReturnType<typeof priceOrder>["lines"];
+  lines: Awaited<ReturnType<typeof priceOrder>>["lines"];
   customer: OrderCustomerInput;
   alreadyExisted: boolean;
+  /** True when the amount Razorpay captured differs from the server price — needs manual review. */
+  amountMismatch: boolean;
 }
 
 export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
   const customer = validateCustomer(input.customer);
-  const { lines, pricing } = priceOrder(input.items, input.promoCode, input.deliveryMethod);
+  const { lines, pricing } = await priceOrder(input.items, input.promoCode, input.deliveryMethod);
 
   // Razorpay retries / webhook races: one payment id → one order.
   if (input.payment.provider === "RAZORPAY") {
@@ -126,11 +129,12 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
       include: { order: true },
     });
     if (existing) {
-      return { id: existing.order.id, orderNumber: existing.order.orderNumber, pricing, lines, customer, alreadyExisted: true };
+      return { id: existing.order.id, orderNumber: existing.order.orderNumber, pricing, lines, customer, alreadyExisted: true, amountMismatch: false };
     }
   }
 
   const isCod = input.payment.provider === "CASH_ON_DELIVERY";
+  const amountMismatch = input.payment.provider === "RAZORPAY" && input.payment.paidAmountMinor !== pricing.totalMinor;
 
   const order = await prisma.$transaction(async (tx) => {
     const variants = await Promise.all(
@@ -142,8 +146,18 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
     );
     const missing = lines.filter((_, i) => !variants[i]);
     if (missing.length) {
-      // Catalog and database are out of sync (run `npx prisma db seed`). Fail loudly rather than save an order with no items.
-      throw new Error(`Variant not found in database for: ${missing.map((m) => `${m.productId}/${m.size}/${m.color}`).join(", ")}`);
+      throw new OrderInputError(`${missing[0].name} in ${missing[0].size} / ${missing[0].color} isn't available any more.`);
+    }
+
+    // Reserve stock atomically: the conditional update only succeeds while enough units remain.
+    for (let i = 0; i < lines.length; i++) {
+      const taken = await tx.inventory.updateMany({
+        where: { variantId: variants[i]!.id, quantity: { gte: lines[i].quantity } },
+        data: { quantity: { decrement: lines[i].quantity } },
+      });
+      if (taken.count === 0) {
+        throw new OrderInputError(`Sorry — ${lines[i].name} in ${lines[i].size} / ${lines[i].color} just sold out.`);
+      }
     }
 
     const user = await tx.user.upsert({
@@ -173,7 +187,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
             gatewayOrderId: input.payment.gatewayOrderId,
             gatewayPaymentId: input.payment.gatewayPaymentId,
             gatewaySignature: input.payment.gatewaySignature,
-            amount: pricing.totalMinor,
+            amount: input.payment.paidAmountMinor,
             currency: "INR",
             status: PaymentStatus.CAPTURED,
           }
@@ -185,7 +199,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
         userId: user.id,
         shippingAddressId: address.id,
         // COD is confirmed by the team (call/WhatsApp) before dispatch; paid orders are confirmed immediately.
-        status: isCod ? OrderStatus.PENDING : OrderStatus.CONFIRMED,
+        // Mismatched payments are held as PENDING for a human to check before dispatch.
+        status: isCod || amountMismatch ? OrderStatus.PENDING : OrderStatus.CONFIRMED,
         currency: "INR",
         subtotal: pricing.subtotalMinor,
         discountAmount: pricing.discountMinor,
@@ -207,7 +222,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
     });
   });
 
-  return { id: order.id, orderNumber: order.orderNumber, pricing, lines, customer, alreadyExisted: false };
+  return { id: order.id, orderNumber: order.orderNumber, pricing, lines, customer, alreadyExisted: false, amountMismatch };
 }
 
 /** Fire-and-forget confirmation email; never blocks or fails the order. */

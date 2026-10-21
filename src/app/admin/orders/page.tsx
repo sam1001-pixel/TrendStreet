@@ -14,7 +14,9 @@ import {
   MapPin,
   Calendar,
 } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
+import { useAdminData } from "@/hooks/useAdminData";
+import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
+import { formatPrice } from "@/lib/pricing";
 import { OrderStatus } from "@/types/store";
 
 const STATUS_LIST: OrderStatus[] = [
@@ -28,7 +30,8 @@ const STATUS_LIST: OrderStatus[] = [
 ];
 
 export default function AdminOrdersPage() {
-  const { orders, updateOrderStatus } = useStore();
+  const { orders, updateOrderStatus, updateOrderTracking, loading, error, notice, clearError } = useAdminData({ orders: true });
+  const [trackingDrafts, setTrackingDrafts] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [search, setSearch] = useState<string>("");
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
@@ -49,6 +52,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      <AdminStatusBar loading={loading} error={error} notice={notice} onDismiss={clearError} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-burgundy/15 gap-4">
         <div>
@@ -156,7 +160,7 @@ export default function AdminOrdersPage() {
                   </div>
 
                   <span className="text-sm font-bold text-espresso">
-                    ${ord.total.toLocaleString()}
+                    {formatPrice(ord.total)}
                   </span>
                 </div>
               </div>
@@ -181,9 +185,25 @@ export default function AdminOrdersPage() {
 
                 <div>
                   <span className="font-bold text-espresso block">Logistics & Courier</span>
-                  <span className="font-mono text-[11px] text-burgundy font-semibold block">
-                    {ord.trackingNumber}
-                  </span>
+                  <form
+                    className="mt-1 flex gap-1.5"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      updateOrderTracking(ord.id, trackingDrafts[ord.id] ?? ord.trackingNumber);
+                    }}
+                  >
+                    <label htmlFor={`trk-${ord.id}`} className="sr-only">Courier tracking number</label>
+                    <input
+                      id={`trk-${ord.id}`}
+                      value={trackingDrafts[ord.id] ?? ord.trackingNumber}
+                      onChange={(e) => setTrackingDrafts((d) => ({ ...d, [ord.id]: e.target.value }))}
+                      placeholder="Blue Dart / Delhivery AWB"
+                      className="min-w-0 flex-1 rounded-lg border border-burgundy/20 bg-white px-2 py-1.5 font-mono text-[11px] text-burgundy focus:border-burgundy focus:outline-none"
+                    />
+                    <button type="submit" className="rounded-lg bg-burgundy px-2.5 text-[10px] font-bold uppercase text-white hover:bg-crimson">
+                      Save
+                    </button>
+                  </form>
                   <span className="text-[10px] text-espresso/60 uppercase block">
                     Payment: {ord.paymentMethod.toUpperCase()}
                   </span>

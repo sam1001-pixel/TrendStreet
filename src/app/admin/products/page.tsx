@@ -14,7 +14,8 @@ import {
   ExternalLink,
   RotateCcw,
 } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
+import { useAdminData } from "@/hooks/useAdminData";
+import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { Product, ProductCategory } from "@/types/store";
 
 const CATEGORIES: ProductCategory[] = [
@@ -25,7 +26,7 @@ const CATEGORIES: ProductCategory[] = [
 ];
 
 export default function AdminProductsPage() {
-  const { products, addProduct, updateProduct, deleteProduct } = useStore();
+  const { products, addProduct, updateProduct, deleteProduct, loading, error, notice, clearError } = useAdminData({ products: true });
 
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState("All");
@@ -36,8 +37,8 @@ export default function AdminProductsPage() {
   const [newForm, setNewForm] = useState({
     name: "",
     subtitle: "",
-    price: 320,
-    originalPrice: 380,
+    price: 2499,
+    originalPrice: 2999,
     category: "Oversized" as ProductCategory,
     description: "",
     details: "520gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders\nDouble-needle reinforced seams",
@@ -65,9 +66,9 @@ export default function AdminProductsPage() {
     return true;
   });
 
-  const handleCreateProduct = (e: React.FormEvent) => {
+  const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    addProduct({
+    const created = await addProduct({
       name: newForm.name,
       subtitle: newForm.subtitle,
       price: Number(newForm.price),
@@ -85,13 +86,14 @@ export default function AdminProductsPage() {
       stockCount: Number(newForm.stockCount),
       tags: [newForm.category.toLowerCase(), "atelier"],
     });
+    if (!created) return; // keep the form open so nothing typed is lost
 
     setIsAddModalOpen(false);
     setNewForm({
       name: "",
       subtitle: "",
-      price: 320,
-      originalPrice: 380,
+      price: 2499,
+      originalPrice: 2999,
       category: "Oversized",
       description: "",
       details: "520gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders",
@@ -122,6 +124,7 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      <AdminStatusBar loading={loading} error={error} notice={notice} onDismiss={clearError} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-burgundy/15 gap-4">
         <div>
@@ -224,7 +227,7 @@ export default function AdminProductsPage() {
                     </div>
                   </td>
                   <td className="p-3.5 font-medium text-espresso/80">{p.category}</td>
-                  <td className="p-3.5 font-bold text-burgundy">${p.price.toLocaleString()}</td>
+                  <td className="p-3.5 font-bold text-burgundy">₹{p.price.toLocaleString("en-IN")}</td>
                   <td className="p-3.5">
                     <span className="font-mono text-espresso font-semibold">
                       {p.stockCount} units

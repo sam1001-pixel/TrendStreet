@@ -16,6 +16,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
+import { AuditTrail } from "@/components/admin/AuditTrail";
 import { AdminAccessRecord } from "@/types/store";
 
 export default function AdminAccessRegisterPage() {
@@ -185,6 +186,7 @@ ${accessRegister
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      <AuditTrail />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-burgundy/15 gap-4">
         <div>

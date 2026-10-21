@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyRazorpayPaymentSignature } from "@/lib/razorpay";
+import { getRazorpayClient, verifyRazorpayPaymentSignature } from "@/lib/razorpay";
 import { OrderInputError, placeOrder, sendPlacedOrderEmail, DeliveryMethod } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +33,10 @@ export async function POST(req: NextRequest) {
         ? orderData.deliveryMethod
         : "standard";
 
+      // What was actually charged, straight from Razorpay (not from the browser).
+      const rzpOrder = await getRazorpayClient().orders.fetch(razorpay_order_id);
+      const paidAmountMinor = Number(rzpOrder.amount_paid || rzpOrder.amount);
+
       const order = await placeOrder({
         items: (orderData?.items || []).map((it: any) => ({
           productId: it.productId,
@@ -48,8 +52,13 @@ export async function POST(req: NextRequest) {
           gatewayOrderId: razorpay_order_id,
           gatewayPaymentId: razorpay_payment_id,
           gatewaySignature: razorpay_signature,
+          paidAmountMinor,
         },
       });
+
+      if (order.amountMismatch) {
+        console.error(`[PAYMENT AMOUNT MISMATCH — REVIEW ORDER ${order.orderNumber}] paid ${paidAmountMinor}, expected ${order.pricing.totalMinor}`);
+      }
 
       if (!order.alreadyExisted) {
         void sendPlacedOrderEmail(order, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id);

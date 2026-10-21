@@ -226,8 +226,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>(["ts-001", "ts-003", "ts-008"]);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  // Only this shopper's own receipts — never demo orders.
+  const [orders, setOrders] = useState<Order[]>([]);
   const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
   const [promoCode, setPromoCode] = useState<string | null>(null);
   const [discountRate, setDiscountRate] = useState<number>(0);
@@ -238,18 +239,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Hydrate from localStorage safely on mount
   useEffect(() => {
     try {
-      const storedSettings = localStorage.getItem("ts_site_settings");
-      if (storedSettings) {
-        setSiteSettings(JSON.parse(storedSettings));
-      }
-
-      const storedProducts = localStorage.getItem("ts_products");
-      if (storedProducts) {
-        const parsed = JSON.parse(storedProducts);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setProducts(parsed);
-        }
-      }
+      // Products and settings come from the database (see the fetch below), not browser storage.
+      localStorage.removeItem("ts_site_settings");
+      localStorage.removeItem("ts_products");
 
       const storedCart = localStorage.getItem("ts_cart");
       if (storedCart) {
@@ -263,7 +255,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const storedOrders = localStorage.getItem("ts_orders");
       if (storedOrders) {
-        setOrders(JSON.parse(storedOrders));
+        // Drop the demo orders older builds seeded into every browser.
+        const demoIds = new Set(INITIAL_ORDERS.map((o) => o.id));
+        setOrders((JSON.parse(storedOrders) as Order[]).filter((o) => !demoIds.has(o.id)));
       }
 
       const storedUser = localStorage.getItem("ts_user");
@@ -277,12 +271,45 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  // Live catalog + CMS settings from the database (edited in /admin).
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/storefront")
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data: { products: Product[]; settings: Partial<SiteSettings> }) => {
+        if (cancelled) return;
+        if (Array.isArray(data.products) && data.products.length) {
+          setProducts(data.products);
+          // Re-price bag items against the latest catalog.
+          setCart((prev) =>
+            prev
+              .map((item) => {
+                const fresh = data.products.find((p) => p.id === item.product.id);
+                return fresh ? { ...item, product: fresh } : null;
+              })
+              .filter((x): x is CartItem => x !== null)
+          );
+        }
+        if (data.settings) {
+          setSiteSettings((prev) => ({
+            ...prev,
+            ...data.settings,
+            topAnnouncement: { ...prev.topAnnouncement, ...(data.settings.topAnnouncement || {}) },
+            hero: { ...prev.hero, ...(data.settings.hero || {}) },
+            contactInfo: { ...prev.contactInfo, ...(data.settings.contactInfo || {}) },
+          }));
+        }
+      })
+      .catch((e) => console.warn("Live catalog unavailable, showing bundled catalog:", e));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Save changes to localStorage
   useEffect(() => {
     if (!isHydrated) return;
     try {
-      localStorage.setItem("ts_site_settings", JSON.stringify(siteSettings));
-      localStorage.setItem("ts_products", JSON.stringify(products));
       localStorage.setItem("ts_cart", JSON.stringify(cart));
       localStorage.setItem("ts_wishlist", JSON.stringify(wishlist));
       localStorage.setItem("ts_orders", JSON.stringify(orders));
@@ -290,7 +317,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (e) {
       console.error("Failed to persist state:", e);
     }
-  }, [siteSettings, products, cart, wishlist, orders, user, isHydrated]);
+  }, [cart, wishlist, orders, user, isHydrated]);
 
   const addToCart = (product: Product, size: string, color: string, quantity = 1) => {
     setCart((prevCart) => {

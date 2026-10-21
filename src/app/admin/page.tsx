@@ -15,20 +15,25 @@ import {
   ExternalLink,
   Sliders,
 } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
+import { useAdminData } from "@/hooks/useAdminData";
+import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
+import { formatPrice } from "@/lib/pricing";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 
 export default function AdminDashboardPage() {
-  const { products, orders } = useStore();
+  const { products, orders, loading, error, notice, clearError } = useAdminData({ orders: true, products: true });
   const { adminName, accessRegister } = useAdminAuth();
 
   // Metrics calculation
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
-  const averageOrderValue = orders.length > 0 ? Math.round(totalRevenue / orders.length) : 0;
+  // Cancelled orders are not revenue.
+  const liveOrders = orders.filter((o) => o.status !== "Cancelled");
+  const totalRevenue = liveOrders.reduce((sum, o) => sum + o.total, 0);
+  const averageOrderValue = liveOrders.length > 0 ? Math.round(totalRevenue / liveOrders.length) : 0;
   const inStockCount = products.filter((p) => p.inStock).length;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      <AdminStatusBar loading={loading} error={error} notice={notice} onDismiss={clearError} />
       {/* Top Welcome Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-burgundy/15 gap-4">
         <div>
@@ -80,7 +85,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <span className="text-3xl font-serif font-bold text-burgundy block">
-            ${totalRevenue.toLocaleString()}
+            {formatPrice(totalRevenue)}
           </span>
           <p className="text-[11px] text-green-700 font-semibold flex items-center gap-1">
             <TrendingUp className="w-3 h-3" /> +18.4% vs previous luxury cycle
@@ -110,7 +115,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <span className="text-3xl font-serif font-bold text-espresso block">
-            ${averageOrderValue.toLocaleString()}
+            {formatPrice(averageOrderValue)}
           </span>
           <p className="text-[11px] text-espresso/60">
             Luxury jackets & oversized streetwear outerwear
@@ -175,7 +180,7 @@ export default function AdminDashboardPage() {
                     <span className="text-[10px] text-espresso/50">{ord.customer.city}, {ord.customer.country}</span>
                   </td>
                   <td className="p-3">{ord.items.length} items</td>
-                  <td className="p-3 font-bold text-espresso">${ord.total.toLocaleString()}</td>
+                  <td className="p-3 font-bold text-espresso">{formatPrice(ord.total)}</td>
                   <td className="p-3 font-mono text-[11px] text-espresso/70">{ord.trackingNumber}</td>
                   <td className="p-3">
                     <span

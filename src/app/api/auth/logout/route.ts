@@ -1,9 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { writeAudit } from "@/lib/audit";
 import { SESSION_COOKIE_NAME } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  await writeAudit(req, { action: "ADMIN_LOGOUT", entityType: "Session" });
   const response = NextResponse.json(
     { success: true, message: "Logged out successfully." },
     { status: 200 }

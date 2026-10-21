@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Sliders,
@@ -18,12 +18,15 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
+import { useAdminData } from "@/hooks/useAdminData";
+import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { SiteSettings } from "@/types/store";
 
 export default function AdminSettingsPage() {
-  const { siteSettings, updateSiteSettings, resetSiteSettings } = useStore();
+  const { siteSettings, updateSiteSettings, resetSiteSettings, error, notice, clearError } = useAdminData();
   const [formData, setFormData] = useState<SiteSettings>(siteSettings);
+  // Pick up the live database values once they load (and after each save).
+  useEffect(() => setFormData(siteSettings), [siteSettings]);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved">("idle");
   const [activeTab, setActiveTab] = useState<
     "hero" | "announcement" | "categories" | "marquee" | "promos" | "contact"
@@ -35,9 +38,9 @@ export default function AdminSettingsPage() {
   });
   const [newMarqueeText, setNewMarqueeText] = useState("");
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateSiteSettings(formData);
+    if (!(await updateSiteSettings(formData))) return;
     setSaveStatus("saved");
     setTimeout(() => {
       setSaveStatus("idle");
@@ -50,8 +53,7 @@ export default function AdminSettingsPage() {
         "Are you sure you want to restore the default settings for Trend Street? All custom hero headlines, announcement bar, and promotional codes will be reset."
       )
     ) {
-      resetSiteSettings();
-      window.location.reload();
+      void resetSiteSettings();
     }
   };
 
@@ -185,6 +187,7 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Main Settings Form Body */}
+      <AdminStatusBar error={error} notice={notice} onDismiss={clearError} />
       <form onSubmit={handleSave} className="space-y-6">
         {/* Tab 1: Hero & Headlines */}
         {activeTab === "hero" && (
@@ -551,6 +554,9 @@ export default function AdminSettingsPage() {
         {/* Tab 3: Category Taglines */}
         {activeTab === "categories" && (
           <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
+            <p role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+              Category taglines are not stored in the database yet, so changes here only affect this browser.
+            </p>
             <div className="border-b border-burgundy/10 pb-3">
               <h2 className="font-serif text-lg font-bold text-espresso">
                 4 Core Silhouette Category Taglines
@@ -703,6 +709,9 @@ export default function AdminSettingsPage() {
         {/* Tab 5: Promo Codes */}
         {activeTab === "promos" && (
           <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
+            <p role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+              Checkout only honours the codes defined in <code>src/lib/pricing.ts</code> (TREND10, STREET20, BUNDLE15, VIP15, FREESHIP). Codes added here are not applied at checkout yet.
+            </p>
             <div className="border-b border-burgundy/10 pb-3">
               <h2 className="font-serif text-lg font-bold text-espresso">
                 Active Promo Codes & Discounts

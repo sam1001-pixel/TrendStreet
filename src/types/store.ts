@@ -81,7 +81,7 @@ export interface Order {
     country: string;
   };
   deliveryMethod: "standard" | "express" | "vip_courier";
-  paymentMethod: "card" | "upi" | "netbanking" | "cod";
+  paymentMethod: "card" | "upi" | "netbanking" | "cod" | "razorpay";
   trackingNumber: string;
   estimatedDelivery: string;
 }
