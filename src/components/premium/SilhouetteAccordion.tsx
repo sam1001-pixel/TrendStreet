@@ -23,7 +23,7 @@ const PANELS = [
     name: "Boxy Fit",
     href: "/boxy-fit",
     no: "03",
-    image: "https://images.unsplash.com/photo-1620012253295-c15c429fccf8?q=80&w=1400&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1400&auto=format&fit=crop",
     copy: "Cropped, wide-body knits and structured flannel layers.",
   },
   {

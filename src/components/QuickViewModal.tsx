@@ -84,11 +84,15 @@ export const QuickViewModal: React.FC = () => {
                   <span className="uppercase tracking-widest font-bold text-burgundy">
                     {product.category}
                   </span>
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-3.5 h-3.5 fill-gold text-gold" />
-                    <span className="font-bold text-espresso">{product.rating}</span>
-                    <span>({product.reviewsCount} reviews)</span>
-                  </div>
+                  {product.reviewsCount > 0 ? (
+                    <div className="flex items-center space-x-1">
+                      <Star className="w-3.5 h-3.5 fill-gold text-gold" />
+                      <span className="font-bold text-espresso">{product.rating}</span>
+                      <span>({product.reviewsCount} reviews)</span>
+                    </div>
+                  ) : (
+                    <span className="font-bold uppercase tracking-wider text-gold-dark">New drop</span>
+                  )}
                 </div>
 
                 <h2 className="font-serif text-2xl font-bold text-espresso">{product.name}</h2>

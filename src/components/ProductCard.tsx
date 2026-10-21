@@ -160,10 +160,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="uppercase tracking-wider font-semibold text-burgundy/90">
               {product.category}
             </span>
-            <div className="flex items-center space-x-1">
-              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-gold text-gold" />
-              <span className="font-semibold text-espresso">{product.rating}</span>
-            </div>
+            {product.reviewsCount > 0 ? (
+              <div className="flex items-center space-x-1">
+                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-gold text-gold" />
+                <span className="font-semibold text-espresso">{product.rating}</span>
+              </div>
+            ) : (
+              <span className="font-semibold uppercase tracking-wider text-gold-dark">New drop</span>
+            )}
           </div>
 
           {/* Name & Subtitle */}

@@ -21,7 +21,7 @@ const LOOKS = [
   {
     key: "Boxy Fit",
     href: "/boxy-fit",
-    image: "https://images.unsplash.com/photo-1620012253295-c15c429fccf8?q=80&w=2000&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=2000&auto=format&fit=crop",
     line: "Cropped hem, wide body, 3cm collar.",
   },
   {

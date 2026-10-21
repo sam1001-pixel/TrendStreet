@@ -249,11 +249,15 @@ export default function ProductDetailPage() {
               >
                 {product.category}
               </Link>
-              <div className="flex items-center space-x-1.5 bg-ivory px-2.5 py-1 rounded-full border border-burgundy/15">
-                <Star className="w-3.5 h-3.5 fill-gold text-gold" />
-                <span className="font-bold text-espresso text-xs">{product.rating}</span>
-                <span className="text-espresso/50 text-[11px]">({product.reviewsCount} verified reviews)</span>
-              </div>
+              {product.reviewsCount > 0 ? (
+                <div className="flex items-center space-x-1.5 bg-ivory px-2.5 py-1 rounded-full border border-burgundy/15">
+                  <Star className="w-3.5 h-3.5 fill-gold text-gold" />
+                  <span className="font-bold text-espresso text-xs">{product.rating}</span>
+                  <span className="text-espresso/50 text-[11px]">({product.reviewsCount} reviews)</span>
+                </div>
+              ) : (
+                <span className="rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-gold-dark">New drop</span>
+              )}
             </div>
 
             <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-espresso leading-tight">
@@ -652,8 +656,9 @@ export default function ProductDetailPage() {
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <span className="block font-serif text-2xl font-bold text-espresso">{product.rating} / 5.0</span>
-              <span className="text-[11px] text-green-700 font-semibold">94% report true architectural fit</span>
+              <span className="block font-serif text-2xl font-bold text-espresso">
+                {product.reviewsCount > 0 ? `${product.rating} / 5.0` : "No reviews yet"}
+              </span>
             </div>
             <div className="p-3 bg-burgundy/10 text-burgundy rounded-xl">
               <CheckCircle2 className="w-6 h-6" />

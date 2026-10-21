@@ -53,7 +53,7 @@ export default function BoxyFitLandingPage() {
           </div>
 
           <img
-            src="https://images.unsplash.com/photo-1620012253295-c15c429fccf8?q=80&w=1200&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1200&auto=format&fit=crop"
             alt="Boxy Fit Streetwear"
             className="absolute inset-0 w-full h-full object-cover object-right opacity-30 mix-blend-overlay pointer-events-none"
           />

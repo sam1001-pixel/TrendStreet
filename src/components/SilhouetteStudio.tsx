@@ -88,7 +88,7 @@ const SILHOUETTES: SilhouetteData[] = [
     description:
       "Calculated geometry engineered to rebalance contemporary streetwear proportions. Wide horizontal shoulder lines paired with a sharp waist crop maximize leg length when styled over baggy carpenter jeans.",
     heroImage:
-      "https://images.unsplash.com/photo-1620012253295-c15c429fccf8?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1200&auto=format&fit=crop",
     featuredProductIds: ["ts-007", "ts-008"],
   },
   {

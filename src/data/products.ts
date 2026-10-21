@@ -155,7 +155,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     images: [
       "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1200&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1511196726482-132d039121a9?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=1200&auto=format&fit=crop",
     ],
     sizes: ["30", "32", "34", "36", "38"],
     colors: [
@@ -284,7 +284,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     fabric: "220gsm Mercerized Structured Poplin",
     careInstructions: ["Machine wash cold", "Warm steam iron", "Dry on flat surface"],
     images: [
-      "https://images.unsplash.com/photo-1620012253295-c15c429fccf8?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1200&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1603252109303-2751441dd157?q=80&w=1200&auto=format&fit=crop",
     ],
     sizes: ["S", "M", "L", "XL"],
@@ -495,5 +495,634 @@ export const INITIAL_PRODUCTS: Product[] = [
     reviews: [],
     tags: ["jackets", "leather", "moto", "full-grain", "boxy fit"],
   },
-];
 
+  // --- JODHPUR EDIT (placeholder copy & imagery — replace with your real range) ---
+  {
+    id: "ts-013",
+    featured: true,
+    isNew: true,
+    isBestSeller: true,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Blue City Indigo Oversized Tee",
+    subtitle: "260gsm Cotton, Indigo-Dipped in Small Batches",
+    price: 1999,
+    originalPrice: 2499,
+    category: "Oversized",
+    description: "Named for Jodhpur's indigo-washed old city. Each tee is dipped by hand, so the blue settles a little differently on every piece. Dropped shoulders, wide body, built for 40° afternoons.",
+    details: [
+      "260gsm breathable combed cotton",
+      "Hand-dipped indigo — no two identical",
+      "Dropped shoulder, relaxed body",
+      "Pre-washed to limit shrinkage"
+    ],
+    fabric: "260gsm Indigo-Dyed Combed Cotton",
+    careInstructions: [
+      "Wash separately in cold water for the first 3 washes",
+      "Dry in shade",
+      "Do not bleach"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1622445275463-afa2ab738c34?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    colors: [
+      {
+        name: "Blue City Indigo",
+        hex: "#1F3A6B"
+      },
+      {
+        name: "Neel Wash",
+        hex: "#4A6A9B"
+      }
+    ],
+    stockCount: 34,
+    tags: [
+      "oversized",
+      "indigo",
+      "jodhpur",
+      "summer"
+    ]
+  },
+  {
+    id: "ts-014",
+    featured: false,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Bandhani Dot Oversized Tee",
+    subtitle: "Tie-Dye Dot Pattern on 240gsm Cotton",
+    price: 2199,
+    originalPrice: 2699,
+    category: "Oversized",
+    description: "Marwar's bandhani tie-and-dye, scaled up for streetwear. Tiny resist dots scatter across a roomy cut that stays cool in desert heat.",
+    details: [
+      "240gsm cotton jersey",
+      "Bandhani-style resist-dye dots",
+      "Oversized drop-shoulder fit",
+      "Ribbed crew neck"
+    ],
+    fabric: "240gsm Tie-Dyed Cotton Jersey",
+    careInstructions: [
+      "Hand wash cold",
+      "Dry inside out in shade"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1626497764746-6dc36546b388?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    colors: [
+      {
+        name: "Marigold",
+        hex: "#E39B2D"
+      },
+      {
+        name: "Rani Pink",
+        hex: "#C2185B"
+      }
+    ],
+    stockCount: 8,
+    tags: [
+      "oversized",
+      "bandhani",
+      "tie-dye",
+      "festive"
+    ]
+  },
+  {
+    id: "ts-015",
+    featured: false,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Mehrangarh Skyline Graphic Tee",
+    subtitle: "Puff-Print Fort Silhouette, 280gsm",
+    price: 1899,
+    category: "Oversized",
+    description: "The fort's ridge-line, printed across the back in raised puff ink. A heavyweight everyday tee with a story you can wear.",
+    details: [
+      "280gsm heavyweight cotton",
+      "Raised puff-print back graphic",
+      "Oversized fit",
+      "Twin-needle hems"
+    ],
+    fabric: "280gsm Heavyweight Cotton",
+    careInstructions: [
+      "Wash inside out",
+      "Do not iron on print"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    colors: [
+      {
+        name: "Sandstone",
+        hex: "#D8C3A0"
+      },
+      {
+        name: "Washed Black",
+        hex: "#1A1A1A"
+      }
+    ],
+    stockCount: 41,
+    tags: [
+      "oversized",
+      "graphic",
+      "jodhpur"
+    ]
+  },
+  {
+    id: "ts-016",
+    featured: true,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Thar Sand Heavyweight Hoodie",
+    subtitle: "400gsm Brushed Fleece for Desert Nights",
+    price: 3999,
+    originalPrice: 4699,
+    category: "Oversized",
+    description: "Thar evenings drop fast. A dense brushed-fleece hoodie in desert sand, with a double-layer hood and kangaroo pocket.",
+    details: [
+      "400gsm brushed-back fleece",
+      "Double-layer hood",
+      "Kangaroo pocket",
+      "Ribbed cuffs and hem"
+    ],
+    fabric: "400gsm Brushed Cotton Fleece",
+    careInstructions: [
+      "Machine wash cold",
+      "Tumble dry low"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1488161628813-04466f872be2?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    colors: [
+      {
+        name: "Thar Sand",
+        hex: "#C9A97A"
+      },
+      {
+        name: "Dune Grey",
+        hex: "#8C8478"
+      }
+    ],
+    stockCount: 22,
+    tags: [
+      "oversized",
+      "hoodie",
+      "winter"
+    ]
+  },
+  {
+    id: "ts-017",
+    featured: false,
+    isNew: true,
+    isBestSeller: true,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Ghanta Ghar Straight Selvedge",
+    subtitle: "13.5oz Selvedge Denim, Straight Leg",
+    price: 4499,
+    originalPrice: 5299,
+    category: "Jeans",
+    description: "A clean straight leg in mid-weight selvedge, named after the clock tower at the heart of Sardar Market. Fades in with every wear.",
+    details: [
+      "13.5oz selvedge denim",
+      "Straight leg, mid rise",
+      "Copper rivets",
+      "Selvedge cuff detail"
+    ],
+    fabric: "13.5oz Raw Selvedge Denim",
+    careInstructions: [
+      "Wash rarely, inside out, cold",
+      "Line dry"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1582552938357-32b906df40cb?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1604176354204-9268737828e4?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "28",
+      "30",
+      "32",
+      "34",
+      "36"
+    ],
+    colors: [
+      {
+        name: "Raw Indigo",
+        hex: "#1B2A4A"
+      }
+    ],
+    stockCount: 19,
+    tags: [
+      "jeans",
+      "selvedge",
+      "straight"
+    ]
+  },
+  {
+    id: "ts-018",
+    featured: false,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Dabu Print Wide-Leg Denim",
+    subtitle: "Mud-Resist Print Panels on Light Denim",
+    price: 4999,
+    category: "Jeans",
+    description: "Rajasthan's dabu mud-resist printing meets a relaxed wide leg. Printed side panels make it a statement without trying too hard.",
+    details: [
+      "11oz light denim",
+      "Dabu-style printed side panels",
+      "Relaxed wide leg",
+      "Button fly"
+    ],
+    fabric: "11oz Cotton Denim",
+    careInstructions: [
+      "Hand wash cold",
+      "Dry in shade to protect the print"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1516826957135-700dedea698c?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "28",
+      "30",
+      "32",
+      "34"
+    ],
+    colors: [
+      {
+        name: "Stone Wash",
+        hex: "#7C93B5"
+      }
+    ],
+    stockCount: 6,
+    tags: [
+      "jeans",
+      "dabu",
+      "block print",
+      "wide leg"
+    ]
+  },
+  {
+    id: "ts-019",
+    featured: false,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Sardar Market Carpenter Jeans",
+    subtitle: "Utility Pockets, Relaxed Taper",
+    price: 3799,
+    originalPrice: 4299,
+    category: "Jeans",
+    description: "Built for walking the bazaar all day: a hammer loop, tool pocket and a relaxed taper that stacks over sneakers.",
+    details: [
+      "12oz cotton denim",
+      "Hammer loop and tool pocket",
+      "Relaxed tapered leg",
+      "Bar-tacked stress points"
+    ],
+    fabric: "12oz Cotton Denim",
+    careInstructions: [
+      "Machine wash cold inside out",
+      "Line dry"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1475178626620-a4d074967452?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "30",
+      "32",
+      "34",
+      "36"
+    ],
+    colors: [
+      {
+        name: "Mid Blue",
+        hex: "#3F5F8F"
+      },
+      {
+        name: "Jet Black",
+        hex: "#111111"
+      }
+    ],
+    stockCount: 27,
+    tags: [
+      "jeans",
+      "carpenter",
+      "utility"
+    ]
+  },
+  {
+    id: "ts-020",
+    featured: true,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Bagru Block-Print Boxy Shirt",
+    subtitle: "Hand Block-Printed Cotton, Cropped Boxy Cut",
+    price: 2899,
+    originalPrice: 3399,
+    category: "Boxy Fit",
+    description: "Printed with carved wooden blocks in the Bagru tradition, then cut short and wide. Camp collar, breathable cotton, made for summer weddings and city nights alike.",
+    details: [
+      "Hand block-printed cotton poplin",
+      "Camp collar",
+      "Cropped boxy hem",
+      "Coconut-shell buttons"
+    ],
+    fabric: "Block-Printed Cotton Poplin",
+    careInstructions: [
+      "Hand wash cold separately",
+      "Dry in shade"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    colors: [
+      {
+        name: "Indigo Block",
+        hex: "#26407A"
+      },
+      {
+        name: "Terracotta Block",
+        hex: "#B5523B"
+      }
+    ],
+    stockCount: 9,
+    tags: [
+      "boxy fit",
+      "block print",
+      "bagru",
+      "festive"
+    ]
+  },
+  {
+    id: "ts-021",
+    featured: false,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Leheriya Stripe Boxy Tee",
+    subtitle: "Diagonal Wave-Dye, 220gsm Cotton",
+    price: 1999,
+    category: "Boxy Fit",
+    description: "Leheriya's diagonal 'wave' stripes, the dye pattern of Rajasthani monsoons, on a cropped boxy tee.",
+    details: [
+      "220gsm cotton",
+      "Leheriya-style diagonal dye",
+      "Cropped boxy fit",
+      "Wide 2.5cm collar"
+    ],
+    fabric: "220gsm Wave-Dyed Cotton",
+    careInstructions: [
+      "Wash cold separately",
+      "Dry in shade"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1564584217132-2271feaeb3c5?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    colors: [
+      {
+        name: "Saffron Wave",
+        hex: "#E07A1F"
+      },
+      {
+        name: "Peacock Wave",
+        hex: "#0F6E74"
+      }
+    ],
+    stockCount: 30,
+    tags: [
+      "boxy fit",
+      "leheriya",
+      "monsoon"
+    ]
+  },
+  {
+    id: "ts-022",
+    featured: true,
+    isNew: true,
+    isBestSeller: true,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Jodhpuri Bandhgala Bomber",
+    subtitle: "Band-Collar Bomber in Wool Blend",
+    price: 6999,
+    originalPrice: 7999,
+    category: "Jackets",
+    description: "The Jodhpuri bandhgala's stand collar, reworked as a streetwear bomber. Sharp enough for a sangeet, easy enough for every day.",
+    details: [
+      "Wool-blend shell",
+      "Bandhgala stand collar",
+      "Antique brass zip",
+      "Quilted satin lining"
+    ],
+    fabric: "Wool-Blend Twill",
+    careInstructions: [
+      "Dry clean only"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    colors: [
+      {
+        name: "Royal Indigo",
+        hex: "#1F2E5A"
+      },
+      {
+        name: "Mehrangarh Red",
+        hex: "#8E2F25"
+      }
+    ],
+    stockCount: 7,
+    tags: [
+      "jackets",
+      "bandhgala",
+      "jodhpuri",
+      "wedding"
+    ]
+  },
+  {
+    id: "ts-023",
+    featured: false,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Indigo Chore Jacket",
+    subtitle: "Garment-Dyed Cotton Drill, Three Patch Pockets",
+    price: 5499,
+    category: "Jackets",
+    description: "A workwear chore coat dyed deep indigo. Three patch pockets, a soft drill hand, and it only gets better with wear.",
+    details: [
+      "Garment-dyed cotton drill",
+      "Three patch pockets",
+      "Corozo buttons",
+      "Unlined for warm days"
+    ],
+    fabric: "Garment-Dyed Cotton Drill",
+    careInstructions: [
+      "Wash cold separately",
+      "Line dry"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1578681994506-b8f463449011?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1611312449408-fcece27cdbb7?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    colors: [
+      {
+        name: "Deep Indigo",
+        hex: "#1C2D52"
+      }
+    ],
+    stockCount: 16,
+    tags: [
+      "jackets",
+      "chore",
+      "indigo"
+    ]
+  },
+  {
+    id: "ts-024",
+    featured: false,
+    isNew: true,
+    isBestSeller: false,
+    inStock: true,
+    rating: 0,
+    reviewsCount: 0,
+    reviews: [],
+    name: "Desert Utility Field Jacket",
+    subtitle: "Water-Resistant Cotton Canvas",
+    price: 5999,
+    originalPrice: 6799,
+    category: "Jackets",
+    description: "Four bellow pockets, a stowaway hood and a sand-toned canvas that shrugs off dust storms and drizzle.",
+    details: [
+      "Water-resistant cotton canvas",
+      "Four bellow pockets",
+      "Stowaway hood",
+      "Drawcord waist"
+    ],
+    fabric: "Waxed-Finish Cotton Canvas",
+    careInstructions: [
+      "Spot clean",
+      "Do not tumble dry"
+    ],
+    images: [
+      "https://images.unsplash.com/photo-1548883354-94bcfe321cbb?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?q=80&w=1200&auto=format&fit=crop"
+    ],
+    sizes: [
+      "M",
+      "L",
+      "XL"
+    ],
+    colors: [
+      {
+        name: "Dune Olive",
+        hex: "#6B6A45"
+      },
+      {
+        name: "Thar Sand",
+        hex: "#C9A97A"
+      }
+    ],
+    stockCount: 12,
+    tags: [
+      "jackets",
+      "utility",
+      "field"
+    ]
+  },
+];

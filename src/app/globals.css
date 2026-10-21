@@ -11,13 +11,13 @@
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Trend Street Brand Design System Tokens */
-  --color-burgundy: #4A1216;
-  --color-crimson: #6B1D24;
-  --color-espresso: #2B080A;
-  --color-ivory: #F9F6F4;
-  --color-gold: #D2B07A;
-  --color-bone: #F4EFE7;
-  --color-ink: #0F0D0C;
+  --color-burgundy: #1F3A6B;
+  --color-crimson: #A8432F;
+  --color-espresso: #1A1712;
+  --color-ivory: #F6EFE3;
+  --color-gold: #E3A33B;
+  --color-bone: #F6EFE3;
+  --color-ink: #0E1626;
 }
 
 body {
@@ -29,8 +29,8 @@ body {
 
 /* Custom Text Selection in Deep Burgundy */
 ::selection {
-  background-color: #4A1216;
-  color: #F9F6F4;
+  background-color: #1F3A6B;
+  color: #F6EFE3;
 }
 
 /* Luxury Smooth Scrollbar */
@@ -40,16 +40,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #F0EAE5;
+  background: #EDE2CF;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4A1216;
+  background: #1F3A6B;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6B1D24;
+  background: #A8432F;
 }
 
 /* ---- Premium motion layer ---- */

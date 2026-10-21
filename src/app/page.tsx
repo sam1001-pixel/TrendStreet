@@ -10,6 +10,8 @@ import { SilhouetteAccordion } from "@/components/premium/SilhouetteAccordion";
 import { ScrollProductReel } from "@/components/premium/ScrollProductReel";
 import { VelocityMarquee } from "@/components/premium/VelocityMarquee";
 import { TrustStrip } from "@/components/premium/TrustStrip";
+import { HangingRail } from "@/components/premium/HangingRail";
+import { JodhpurEdit } from "@/components/premium/JodhpurEdit";
 import { ManifestoReveal } from "@/components/premium/ManifestoReveal";
 import { ScrollProgress } from "@/components/premium/ScrollProgress";
 import { NewArrivalsDropRadar } from "@/components/NewArrivalsDropRadar";
@@ -40,7 +42,11 @@ export default function HomePage() {
 
       <SilhouetteAccordion />
 
+      <HangingRail />
+
       <ManifestoReveal />
+
+      <JodhpurEdit />
 
       {/* 4. NEW ARRIVALS DROP RADAR (Interactive Grid with 1-Tap Sizing) */}
       <NewArrivalsDropRadar />
