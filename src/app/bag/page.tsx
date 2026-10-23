@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
+import { BagSuggestions } from "@/components/BagSuggestions";
 import { formatPrice } from "@/lib/pricing";
 
 export default function BagPage() {
@@ -35,7 +36,6 @@ export default function BagPage() {
 
   const [inputCode, setInputCode] = useState("");
   const [promoMessage, setPromoMessage] = useState<{ success: boolean; text: string } | null>(null);
-  const [giftWrap, setGiftWrap] = useState(false);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,18 +76,21 @@ export default function BagPage() {
             <ShoppingBag className="w-10 h-10" />
           </div>
           <h2 className="font-serif text-2xl font-bold text-espresso">
-            Your Sartorial Bag is Empty
+            Your bag is empty
           </h2>
           <p className="text-xs text-espresso/70 max-w-md mx-auto leading-relaxed">
-            Explore our architectural silhouettes: heavyweight oversized hoodies, 14.5oz Okayama selvedge bootcut denim, structured boxy tees, and artisanal flight jackets.
+            Oversized tees, selvedge denim, boxy shirts and jackets. Free delivery on bags over ₹1,999.
           </p>
           <Link
             href="/shop"
             className="inline-flex items-center gap-2 py-3.5 px-8 bg-burgundy hover:bg-crimson text-ivory text-xs font-bold uppercase tracking-[0.2em] rounded-lg transition-colors shadow-lg"
           >
-            <span>Explore The Collection</span>
+            <span>Shop the collection</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
+          <div className="mx-auto max-w-md pt-4">
+            <BagSuggestions />
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -100,7 +103,7 @@ export default function BagPage() {
                 <span>
                   {remainingForFreeShipping > 0
                     ? `Add ${formatPrice(remainingForFreeShipping)} more for complimentary express courier dispatch.`
-                    : "You have qualified for complimentary express VIP courier delivery."}
+                    : "You have unlocked free delivery across India."}
                 </span>
               </div>
               <span className="font-bold text-burgundy">
@@ -197,24 +200,6 @@ export default function BagPage() {
               ))}
             </div>
 
-            {/* Complimentary Gift Packaging */}
-            <div className="p-4 bg-white rounded-xl border border-burgundy/15 flex items-center justify-between text-xs">
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={giftWrap}
-                  onChange={(e) => setGiftWrap(e.target.checked)}
-                  className="w-4 h-4 text-burgundy rounded border-burgundy/30 focus:ring-burgundy"
-                />
-                <div className="flex items-center space-x-2">
-                  <Gift className="w-4 h-4 text-gold" />
-                  <span className="font-semibold text-espresso">
-                    Add Complimentary Bespoke Wooden Box & Cedar Garment Bag
-                  </span>
-                </div>
-              </label>
-              <span className="text-green-800 font-bold uppercase text-[10px]">Included</span>
-            </div>
           </div>
 
           {/* Order Summary Breakdown */}
@@ -280,7 +265,7 @@ export default function BagPage() {
                 )}
 
                 <div className="flex justify-between">
-                  <span>VIP Courier Dispatch</span>
+                  <span>Delivery</span>
                   <span>{cartShipping === 0 ? "Complimentary" : formatPrice(cartShipping)}</span>
                 </div>
 
@@ -290,7 +275,7 @@ export default function BagPage() {
                 </div>
 
                 <div className="pt-3 border-t border-burgundy/15 flex justify-between text-lg font-bold text-burgundy">
-                  <span>Total Investment</span>
+                  <span>Total</span>
                   <span>{formatPrice(cartTotal)}</span>
                 </div>
               </div>

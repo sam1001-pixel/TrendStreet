@@ -32,7 +32,11 @@ function ShopContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedSize, setSelectedSize] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [maxPrice, setMaxPrice] = useState<number>(3000);
+  const PRICE_CEILING = Math.max(1000, Math.ceil(Math.max(0, ...products.map((p) => p.price)) / 500) * 500);
+  const [maxPrice, setMaxPrice] = useState<number>(Number.MAX_SAFE_INTEGER);
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [tag, setTag] = useState<string>("");
+  const effectiveMax = Math.min(maxPrice, PRICE_CEILING);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
@@ -44,6 +48,14 @@ function ShopContent() {
 
     const q = searchParams.get("search");
     if (q) setSearchQuery(q);
+
+    // Links from the homepage price and occasion tiles
+    const max = Number(searchParams.get("max"));
+    if (max > 0) setMaxPrice(max);
+    const min = Number(searchParams.get("min"));
+    if (min > 0) setMinPrice(min);
+    const t = searchParams.get("tag");
+    setTag(t ? t.toLowerCase().slice(0, 40) : "");
   }, [searchParams]);
 
   // Filtered and Sorted Products
@@ -60,7 +72,12 @@ function ShopContent() {
       }
 
       // Price filter
-      if (prod.price > maxPrice) {
+      if (prod.price > maxPrice || prod.price < minPrice) {
+        return false;
+      }
+
+      // Occasion / tag filter
+      if (tag && !prod.tags.some((t) => t.toLowerCase() === tag)) {
         return false;
       }
 
@@ -91,13 +108,15 @@ function ShopContent() {
       if (sortBy === "newest") return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
       return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
     });
-  }, [products, selectedCategory, selectedSize, maxPrice, inStockOnly, searchQuery, sortBy]);
+  }, [products, selectedCategory, selectedSize, maxPrice, minPrice, tag, inStockOnly, searchQuery, sortBy]);
 
   const resetFilters = () => {
     setSelectedCategory("All");
     setSelectedSize("All");
     setSearchQuery("");
-    setMaxPrice(3000);
+    setMaxPrice(Number.MAX_SAFE_INTEGER);
+    setMinPrice(0);
+    setTag("");
     setInStockOnly(false);
     setSortBy("featured");
   };
@@ -106,7 +125,9 @@ function ShopContent() {
     selectedCategory !== "All" ||
     selectedSize !== "All" ||
     searchQuery !== "" ||
-    maxPrice < 3000 ||
+    effectiveMax < PRICE_CEILING ||
+    minPrice > 0 ||
+    tag !== "" ||
     inStockOnly;
 
   return (
@@ -229,21 +250,22 @@ function ShopContent() {
           <div className="space-y-2.5 pt-4 border-t border-burgundy/10">
             <div className="flex justify-between items-center text-xs font-semibold text-espresso">
               <span>Max Price</span>
-              <span className="text-burgundy font-bold">${maxPrice.toLocaleString()}</span>
+              <span className="text-burgundy font-bold">₹{effectiveMax.toLocaleString("en-IN")}</span>
             </div>
             <input
               type="range"
-              min="100"
-              max="3000"
-              step="50"
-              value={maxPrice}
+              min="500"
+              max={PRICE_CEILING}
+              step="250"
+              value={effectiveMax}
+              aria-label="Maximum price"
               onChange={(e) => setMaxPrice(Number(e.target.value))}
               className="w-full accent-burgundy cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-espresso/50">
-              <span>$100</span>
-              <span>$1,500</span>
-              <span>$3,000+</span>
+              <span>₹500</span>
+              <span>₹{Math.round(PRICE_CEILING / 2).toLocaleString("en-IN")}</span>
+              <span>₹{PRICE_CEILING.toLocaleString("en-IN")}</span>
             </div>
           </div>
 
@@ -368,14 +390,15 @@ function ShopContent() {
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-bold text-burgundy">
                   <span>Max Price:</span>
-                  <span>${maxPrice}</span>
+                  <span>₹{effectiveMax.toLocaleString("en-IN")}</span>
                 </div>
                 <input
                   type="range"
-                  min="100"
-                  max="3000"
-                  step="50"
-                  value={maxPrice}
+                  min="500"
+                  max={PRICE_CEILING}
+                  step="250"
+                  value={effectiveMax}
+                  aria-label="Maximum price"
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   className="w-full accent-burgundy"
                 />

@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
+import { BagSuggestions } from "@/components/BagSuggestions";
 import { formatPrice } from "@/lib/pricing";
 
 export const CartDrawer: React.FC = () => {
@@ -36,9 +37,11 @@ export const CartDrawer: React.FC = () => {
 
   if (!isCartOpen) return null;
 
+  // Same rule as the server: free delivery once the bag (after discount) reaches ₹1,999.
   const freeShippingThreshold = 1999;
-  const progressToFreeShipping = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
-  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
+  const qualifyingTotal = Math.max(0, cartSubtotal - cartDiscount);
+  const progressToFreeShipping = Math.min(100, (qualifyingTotal / freeShippingThreshold) * 100);
+  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - qualifyingTotal);
 
   // Recommended coordinating cross-sell item not yet in cart (OFFCULT / Off Duty style)
   const crossSellProduct =
@@ -72,24 +75,25 @@ export const CartDrawer: React.FC = () => {
             </button>
           </div>
 
-          {/* Free Shipping Progress Meter with Blue Dart Express Air Branding */}
+          {/* Free shipping progress (hidden while the bag is empty) */}
+          {cart.length > 0 && (
           <div className="p-4 bg-ivory-dark border-b border-burgundy/10 text-xs">
             {remainingForFreeShipping > 0 ? (
               <p className="text-espresso/80 font-medium mb-1.5 flex items-center gap-1.5 flex-wrap">
                 <Truck className="w-3.5 h-3.5 text-burgundy" />
                 <span>
-                  Add <span className="font-bold text-burgundy">{formatPrice(remainingForFreeShipping)}</span> more to unlock Complimentary Blue Dart Apex Air.
+                  Add <span className="font-bold text-burgundy">{formatPrice(remainingForFreeShipping)}</span> more for free delivery.
                 </span>
               </p>
             ) : (
               <p className="text-green-800 font-bold flex items-center gap-1.5 mb-1.5">
                 <Sparkles className="w-4 h-4 text-gold" />
-                <span>Unlocked! Complimentary Blue Dart Apex Air Priority Across India.</span>
+                <span>You&apos;ve unlocked free delivery across India.</span>
               </p>
             )}
             <div
               role="progressbar"
-              aria-valuenow={cartSubtotal}
+              aria-valuenow={qualifyingTotal}
               aria-valuemin={0}
               aria-valuemax={freeShippingThreshold}
               aria-label="Free shipping progress"
@@ -101,27 +105,31 @@ export const CartDrawer: React.FC = () => {
               />
             </div>
           </div>
+          )}
 
           {/* Cart Items List */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
             {cart.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 text-espresso/60">
+              <div className="flex flex-col items-center text-center px-2 py-8 text-espresso/60">
                 <div className="w-16 h-16 rounded-full bg-ivory-dark flex items-center justify-center text-burgundy/40 mb-4">
                   <ShoppingBag className="w-8 h-8" />
                 </div>
                 <h3 className="font-serif text-lg font-bold text-espresso mb-1">
-                  Your Sartorial Bag is Empty
+                  Your bag is empty
                 </h3>
                 <p className="text-xs text-espresso/60 max-w-xs mb-6">
-                  Discover our architectural oversized hoodies, bootcut selvedge denim, boxy knitwear, and flight jackets.
+                  Oversized tees, selvedge denim, boxy shirts and jackets — free delivery over ₹1,999.
                 </p>
                 <Link
                   href="/shop"
                   onClick={() => setIsCartOpen(false)}
                   className="px-6 py-3 bg-burgundy hover:bg-crimson text-ivory text-xs font-semibold uppercase tracking-wider rounded transition-colors"
                 >
-                  Explore Collection
+                  Shop the collection
                 </Link>
+                <div className="mt-8 w-full">
+                  <BagSuggestions onNavigate={() => setIsCartOpen(false)} />
+                </div>
               </div>
             ) : (
               <>

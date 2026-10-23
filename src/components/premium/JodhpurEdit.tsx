@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Link from "next/link";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Sun, Sparkles, Moon, ArrowUpRight } from "lucide-react";
 
 const CRAFTS = [
@@ -38,49 +38,21 @@ const SEASONS = [
   { icon: Moon, when: "Desert winter nights", wear: "400gsm hoodies, chore & field jackets", href: "/jackets" },
 ];
 
-/** Illustrated Blue City skyline: blue cube houses below the Mehrangarh ridge. */
-function Skyline({ reduce }: { reduce: boolean | null }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const fortY = useTransform(scrollYProgress, [0, 1], ["18%", "-6%"]);
-  const housesY = useTransform(scrollYProgress, [0, 1], ["34%", "0%"]);
-  const sunY = useTransform(scrollYProgress, [0, 1], ["40%", "-10%"]);
-
-  // Deterministic "random" house blocks so server and client render identically.
-  const houses = Array.from({ length: 34 }, (_, i) => {
-    const w = 46 + ((i * 37) % 40);
-    const h = 40 + ((i * 53) % 70);
-    const x = i * 36 - 20;
-    const shade = ["#2A4B85", "#3A5F9F", "#5B7FBC", "#22406F", "#87A3D1"][i % 5];
-    return { x, w, h, shade, win: i % 3 !== 0 };
-  });
-
+/** Typographic banner over a jaali lattice — the Blue City in colour, not illustration. */
+function Banner() {
   return (
-    <div ref={ref} className="relative h-[46vh] min-h-[320px] overflow-hidden rounded-3xl bg-gradient-to-b from-[#F7D9A8] via-[#F2B880] to-[#E3A33B]">
-      <motion.div style={{ y: reduce ? 0 : sunY }} className="absolute left-[12%] top-[8%] h-28 w-28 rounded-full bg-[#FFF1D0] opacity-90 blur-[1px] sm:h-40 sm:w-40" aria-hidden />
-
-      {/* Mehrangarh on its ridge */}
-      <motion.svg style={{ y: reduce ? 0 : fortY }} viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" className="absolute inset-x-0 bottom-0 h-[78%] w-full" aria-hidden>
-        <path d="M0 300V210l120-30 160 10 120-40 140 6 70-30h40l20-50h20v-20h16v20h20l18 50h40l20-18h30l16 18h50l30 40 140-10 120 30 150-10 70 20v84Z" fill="#A8432F" />
-        <path d="M612 82h24v40h-24zM660 92h18v30h-18zM700 100h30v26h-30z" fill="#8E3626" />
-        <path d="M0 300v-40l200-14 260 8 300-20 240 10 200-6v62Z" fill="#8E3626" opacity=".55" />
-      </motion.svg>
-
-      {/* Blue City houses */}
-      <motion.svg style={{ y: reduce ? 0 : housesY }} viewBox="0 0 1200 200" preserveAspectRatio="xMidYMax slice" className="absolute inset-x-0 bottom-0 h-[52%] w-full" aria-hidden>
-        {houses.map((b, i) => (
-          <g key={i}>
-            <rect x={b.x} y={200 - b.h} width={b.w} height={b.h} fill={b.shade} />
-            {b.win && <rect x={b.x + b.w / 2 - 5} y={200 - b.h + 14} width="10" height="14" rx="5" fill="#0E1626" opacity=".55" />}
-          </g>
-        ))}
-      </motion.svg>
-
-      <div className="relative z-10 p-6 sm:p-10">
-        <p className="font-serif text-lg italic text-espresso/80">Padharo mhare des —</p>
-        <h2 className="mt-1 max-w-xl font-display text-5xl font-black uppercase leading-[0.85] text-espresso sm:text-7xl">
-          The Blue City Edit
-        </h2>
+    <div className="relative overflow-hidden rounded-3xl bg-burgundy px-6 py-12 text-ivory sm:px-12 sm:py-16">
+      <span aria-hidden className="jaali absolute inset-0 text-ivory opacity-[0.12]" />
+      <span aria-hidden className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gold/25 blur-3xl" />
+      <div className="relative max-w-2xl">
+        <p className="font-serif text-lg italic text-gold">Padharo mhare des</p>
+        <h2 className="mt-2 font-display text-5xl font-black uppercase leading-[0.85] sm:text-7xl lg:text-8xl">The Blue City Edit</h2>
+        <p className="mt-4 max-w-lg text-sm leading-relaxed text-ivory/80">
+          Indigo dips, bandhani dots, hand-carved block prints and the Jodhpuri stand collar — Rajasthani craft, cut as streetwear.
+        </p>
+        <Link href="/shop?tag=jodhpur" className="mt-6 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-gold px-6 text-xs font-bold uppercase tracking-[0.2em] text-espresso transition-colors hover:bg-gold-light">
+          Shop the edit <ArrowUpRight className="h-4 w-4" />
+        </Link>
       </div>
     </div>
   );
@@ -91,7 +63,7 @@ export function JodhpurEdit() {
 
   return (
     <section className="mx-auto max-w-[1600px] space-y-8 px-3 sm:px-6 lg:px-8" aria-label="The Blue City Edit">
-      <Skyline reduce={reduce} />
+      <Banner />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {CRAFTS.map((c, i) => (

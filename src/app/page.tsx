@@ -13,10 +13,9 @@ import { TrustStrip } from "@/components/premium/TrustStrip";
 import { HangingRail } from "@/components/premium/HangingRail";
 import { JodhpurEdit } from "@/components/premium/JodhpurEdit";
 import { ManifestoReveal } from "@/components/premium/ManifestoReveal";
+import { ShopByPriceOccasion } from "@/components/premium/ShopByPriceOccasion";
 import { ScrollProgress } from "@/components/premium/ScrollProgress";
 import { NewArrivalsDropRadar } from "@/components/NewArrivalsDropRadar";
-import { StreetwearLookbookMatrix } from "@/components/StreetwearLookbookMatrix";
-import { LimitedEditionVault } from "@/components/LimitedEditionVault";
 import { ShopTheFitSection } from "@/components/ShopTheFitSection";
 import { CustomerReviewGallery } from "@/components/CustomerReviewGallery";
 import { OffcultAssistDrawer } from "@/components/OffcultAssistDrawer";
@@ -58,11 +57,7 @@ export default function HomePage() {
         <ShopTheFitSection />
       </div>
 
-      {/* 6. LIMITED EDITION VAULT CAPSULE (The Obsidian Numbered Drop) */}
-      <LimitedEditionVault />
-
-      {/* 7. SARTORIAL STREETWEAR LOOKBOOK: TOKYO TO BANDRA (Editorial Fits with Garment Hotspots) */}
-      <StreetwearLookbookMatrix />
+      <ShopByPriceOccasion />
 
       {/* 8. SEASONAL HIGHLIGHTS WITH QUICK SIZE PILL SELECTION */}
       <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">

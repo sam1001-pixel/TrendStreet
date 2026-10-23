@@ -47,39 +47,21 @@ interface StoreContextType {
   cartItemsCount: number;
 }
 
+// A new visitor starts with an empty profile — never a sample person.
 const DEFAULT_USER: UserProfile = {
-  name: "Aarav Sharma",
-  email: "aarav.sharma@trendstreet.in",
-  phone: "+91 98200 12345",
-  vipTier: "Burgundy Connoisseur (VIP Tier 1)",
-  rewardPoints: 2450,
-  savedAddresses: [
-    {
-      id: "addr-1",
-      label: "Mumbai Residence",
-      fullName: "Aarav Sharma",
-      address: "Flat 402, Sea Green Apartments, Bandra West",
-      city: "Mumbai",
-      postalCode: "400050",
-      isDefault: true,
-    },
-    {
-      id: "addr-2",
-      label: "Bengaluru Loft",
-      fullName: "Aarav Sharma",
-      address: "Villa 12, 12th Main, Indiranagar",
-      city: "Bengaluru",
-      postalCode: "560038",
-      isDefault: false,
-    },
-  ],
+  name: "",
+  email: "",
+  phone: "",
+  vipTier: "",
+  rewardPoints: 0,
+  savedAddresses: [],
   measurements: {
-    oversizedFit: "L (Relaxed Architectural)",
-    boxyFit: "M (Structured Box Crop)",
-    jacketSize: "L (Layered Flight Cut)",
-    denimWaist: "32W",
-    denimLength: "32L",
-    chest: "42 in / 106.7 cm",
+    oversizedFit: "",
+    boxyFit: "",
+    jacketSize: "",
+    denimWaist: "",
+    denimLength: "",
+    chest: "",
   },
 };
 
@@ -262,7 +244,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const storedUser = localStorage.getItem("ts_user");
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser) as UserProfile;
+        // Older builds stored a sample profile ("Aarav Sharma") in every browser; discard it.
+        const isSample = parsed?.email === "aarav.sharma@trendstreet.in";
+        if (!isSample) setUser({ ...DEFAULT_USER, ...parsed, measurements: { ...DEFAULT_USER.measurements, ...(parsed.measurements || {}) } });
       }
     } catch (e) {
       console.error("Failed to load local storage state:", e);

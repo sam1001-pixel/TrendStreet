@@ -80,3 +80,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .reveal-pending { opacity: 1; transform: none; transition: none; }
 }
+
+/* Rajasthani jaali (carved lattice) pattern — inherits currentColor */
+.jaali {
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6'%3E%3Cpath d='M22 2 42 22 22 42 2 22Z'/%3E%3Ccircle cx='22' cy='22' r='7'/%3E%3Cpath d='M22 15v14M15 22h14'/%3E%3C/g%3E%3C/svg%3E") 0 0/44px 44px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6'%3E%3Cpath d='M22 2 42 22 22 42 2 22Z'/%3E%3Ccircle cx='22' cy='22' r='7'/%3E%3Cpath d='M22 15v14M15 22h14'/%3E%3C/g%3E%3C/svg%3E") 0 0/44px 44px;
+}

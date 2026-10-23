@@ -49,7 +49,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         verified: true,
       },
     ],
-    tags: ["oversized", "heavyweight", "t-shirt", "streetwear", "essentials"],
+    tags: ["oversized", "heavyweight", "t-shirt", "streetwear", "essentials", "everyday"],
   },
   {
     id: "ts-002",
@@ -551,7 +551,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "indigo",
       "jodhpur",
       "summer"
-    ]
+    , "everyday"]
   },
   {
     id: "ts-014",
@@ -605,7 +605,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "bandhani",
       "tie-dye",
       "festive"
-    ]
+    , "jodhpur"]
   },
   {
     id: "ts-015",
@@ -658,7 +658,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "oversized",
       "graphic",
       "jodhpur"
-    ]
+    , "summer"]
   },
   {
     id: "ts-016",
@@ -711,7 +711,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "oversized",
       "hoodie",
       "winter"
-    ]
+    , "jodhpur"]
   },
   {
     id: "ts-017",
@@ -761,7 +761,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "jeans",
       "selvedge",
       "straight"
-    ]
+    , "everyday", "jodhpur"]
   },
   {
     id: "ts-018",
@@ -810,7 +810,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "dabu",
       "block print",
       "wide leg"
-    ]
+    , "jodhpur"]
   },
   {
     id: "ts-019",
@@ -863,7 +863,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "jeans",
       "carpenter",
       "utility"
-    ]
+    , "jodhpur"]
   },
   {
     id: "ts-020",
@@ -917,7 +917,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "block print",
       "bagru",
       "festive"
-    ]
+    , "jodhpur"]
   },
   {
     id: "ts-021",
@@ -969,7 +969,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "boxy fit",
       "leheriya",
       "monsoon"
-    ]
+    , "summer", "jodhpur"]
   },
   {
     id: "ts-022",
@@ -1022,7 +1022,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "bandhgala",
       "jodhpuri",
       "wedding"
-    ]
+    , "festive", "jodhpur"]
   },
   {
     id: "ts-023",
@@ -1071,7 +1071,7 @@ export const INITIAL_PRODUCTS: Product[] = [
       "jackets",
       "chore",
       "indigo"
-    ]
+    , "winter", "jodhpur"]
   },
   {
     id: "ts-024",
@@ -1123,6 +1123,6 @@ export const INITIAL_PRODUCTS: Product[] = [
       "jackets",
       "utility",
       "field"
-    ]
+    , "winter", "jodhpur"]
   },
 ];

@@ -81,6 +81,7 @@ export default function CheckoutPage() {
     promoCode,
     createOrder,
     user,
+    updateUserProfile,
   } = useStore();
 
   const [step, setStep] = useState<number>(1);
@@ -285,6 +286,8 @@ export default function CheckoutPage() {
         });
 
         setIsProcessing(false);
+        // Remember contact details on this device so the next checkout fills itself in.
+        updateUserProfile({ name: formData.fullName, email: formData.email, phone: formData.phone });
         router.push(`/order-confirmation/${newOrder.id}`);
       } catch (err) {
         console.error("COD Order completion error:", err);
@@ -421,6 +424,8 @@ export default function CheckoutPage() {
             });
 
             setIsProcessing(false);
+            // Remember contact details on this device so the next checkout fills itself in.
+            updateUserProfile({ name: formData.fullName, email: formData.email, phone: formData.phone });
             router.push(`/order-confirmation/${newOrder.id}`);
           } catch (verifyErr) {
             console.error("Signature verification error:", verifyErr);
