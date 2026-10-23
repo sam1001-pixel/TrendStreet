@@ -4,7 +4,7 @@
 - 3D Engine: Three.js with capped DPR (max 2), dynamic next/dynamic code splitting, and explicit geometry/material disposal on unmount.
 - Next.js App Router: `useSearchParams` wrapped in React `<Suspense>` boundary; dynamic route fallbacks securely reject missing IDs to prevent PII disclosure.
 - Persistence: StoreContext and AdminAuthContext use localStorage with SSR-safe hydration guards (`isHydrated`).
-- Security: Admin routes guarded; credentials validated against `sujal@.com` / `radhasolanki`; SQL DDL generator escapes user inputs.
+- Security: Admin routes guarded; credentials validated against `sujal@.com` / `[REDACTED-rotate-this-password]`; SQL DDL generator escapes user inputs.
 - Privileged Access Register: Conforms to `/admin-access-register` with CSV, JSON, and sanitized SQL DDL exports.
 - GEO & AI Crawlers: `llms.txt` and `robots.txt` optimized for GPTBot, ClaudeBot, PerplexityBot with 134-167 word passage-level citability.
 

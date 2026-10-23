@@ -44,7 +44,7 @@ The transformation of Trend Street from an ephemeral frontend prototype into a b
 * [x] Produce `PROJECT_AUDIT.md`, `SECURITY_AUDIT.md`, `THREAT_MODEL.md`, `ARCHITECTURE.md`, `DATABASE_SCHEMA.md`, `EXTERNAL_SERVICES.md`, and `ENVIRONMENT_SETUP.md`.
 
 ### Phase 1: Security Audit & Server Authentication Remediation
-* [ ] Purge hardcoded plaintext credentials (`sujal@.com` / `radhasolanki`) from `AdminAuthContext.tsx` and all client code.
+* [ ] Purge hardcoded plaintext credentials (`sujal@.com` / `[REDACTED-rotate-this-password]`) from `AdminAuthContext.tsx` and all client code.
 * [ ] Implement Next.js Edge Middleware (`src/middleware.ts`) intercepting `/admin/*` routes.
 * [ ] Establish server-side session authentication using HTTP-only, `Secure`, `SameSite=Lax` cookies.
 * [ ] Secure administrative login route with generic error responses and brute-force rate limiting.

@@ -119,7 +119,7 @@ Acts as the central single source of truth for the browser session:
    - Live updates apply immediately across the entire storefront via `updateSiteSettings()` with `localStorage` key `ts_site_settings`.
 
 ### 3.2 AdminAuthContext (`src/context/AdminAuthContext.tsx`)
-1. **Administrative Authentication**: Handles login state using ID `sujal@.com` and configured password `radhasolanki`.
+1. **Administrative Authentication**: Handles login state using ID `sujal@.com` and configured password `[REDACTED-rotate-this-password]`.
 2. **Session Storage**: Saves auth state in `localStorage` under `ts_admin_auth`.
 3. **Route Guard**: Automatically routes unauthenticated visitors attempting to view `/admin/*` to `/admin/login`.
 4. **Access Governance**: Maintains the administrative access register for compliance review (CISO/audit logs).
@@ -314,7 +314,7 @@ The frontend, UI/UX, responsive mobile design, dynamic state management, and adm
   - Integrate **Cloudflare R2** or **AWS S3** with **Uploadthing** in the Admin Products CRUD panel to allow the store owner to drag-and-drop new garment photography directly from their device.
 
 ### 7.5 Production User & Admin Authentication
-* **Current State**: Admin authentication uses a client-side session guard with credentials `sujal@.com` / `radhasolanki`.
+* **Current State**: Admin authentication uses a client-side session guard with credentials `sujal@.com` / `[REDACTED-rotate-this-password]`.
 * **Recommended Next Step**:
   - Implement **NextAuth.js (Auth.js)**, **Clerk**, or **Supabase Auth** with HTTP-only session cookies and role-based access control (RBAC).
 
@@ -349,7 +349,7 @@ npm run typecheck
    `http://localhost:3000/admin`
 2. When prompted for credentials:
    - **Admin ID**: `sujal@.com`
-   - **Password**: `radhasolanki`
+   - **Password**: `[REDACTED-rotate-this-password]`
 3. Access the **Site Customizer (Live)** at `http://localhost:3000/admin/settings` to edit banner text, hero headlines, promo codes, and contact details with instant live storefront synchronization.
 
 ### 8.3 Production Build & Deployment

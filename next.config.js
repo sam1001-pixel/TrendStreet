@@ -44,7 +44,7 @@ const nextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), payment=(self 'https://checkout.razorpay.com' 'https://js.stripe.com')",
+            value: "camera=(), microphone=(), geolocation=(), payment=(self \"https://checkout.razorpay.com\")",
           },
           {
             key: "X-Content-Type-Options",

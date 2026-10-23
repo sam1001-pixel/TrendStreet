@@ -141,48 +141,17 @@ export function validateAdminCredentials(
     return { isValid: false, email: "" };
   }
 
-  const trimmedId = id.trim().toLowerCase();
-  const trimmedPass = pass.trim();
-
-  const configuredAdminEmail = (
-    process.env.ADMIN_EMAIL ||
-    process.env.ADMIN_INITIAL_EMAIL ||
-    (process.env.NODE_ENV === "production" ? "" : "sujal@trendstreet.com")
-  ).toLowerCase().trim();
-
-  const configuredAdminPass = (
-    process.env.ADMIN_PASSWORD ||
-    process.env.ADMIN_INITIAL_PASSWORD ||
-    (process.env.NODE_ENV === "production" ? "" : "radhasolanki")
-  ).trim();
-
+  // Credentials come only from the environment — never from source code.
+  const configuredAdminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
+  const configuredAdminPass = (process.env.ADMIN_PASSWORD || "").trim();
   if (!configuredAdminEmail || !configuredAdminPass) {
     return { isValid: false, email: "" };
   }
 
-  // Exact allowed identifiers only - NO wildcard email prefixes
-  const allowedIds = new Set([
-    "sujal",
-    "admin",
-    "sujalsolanki",
-    "sujal.solanki",
-    "sujal@trendstreet.com",
-    "sujal@trendstreet.in",
-    "sujal@.com",
-    configuredAdminEmail,
-  ]);
+  // Exactly the configured email: no aliases such as "admin" that an attacker could guess.
+  const isIdValid = timingSafeEqualStr(id.trim().toLowerCase(), configuredAdminEmail);
+  // Constant-time, case-sensitive password comparison.
+  const isPassValid = timingSafeEqualStr(pass.trim(), configuredAdminPass);
 
-  const isIdValid = allowedIds.has(trimmedId);
-
-  // Constant-time case-sensitive password comparison
-  const isPassValid = timingSafeEqualStr(trimmedPass, configuredAdminPass);
-
-  const resolvedEmail = trimmedId.includes("@")
-    ? trimmedId
-    : configuredAdminEmail;
-
-  return {
-    isValid: isIdValid && isPassValid,
-    email: resolvedEmail,
-  };
+  return { isValid: isIdValid && isPassValid, email: configuredAdminEmail };
 }

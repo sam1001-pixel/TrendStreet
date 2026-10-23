@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const clientIp = getClientIp(req.headers);
     const rateLimit = checkRateLimit(`login:${clientIp}`, {
       windowMs: 15 * 60 * 1000,
-      maxRequests: 25,
+      maxRequests: 5,
     });
 
     if (!rateLimit.allowed) {
@@ -45,37 +45,8 @@ export async function POST(req: NextRequest) {
 
     // Centralized server-side credential validation
     const { isValid, email: validatedEmail } = validateAdminCredentials(email, password);
-    let isAuthenticatedAdmin = isValid;
-    let resolvedEmail = validatedEmail;
-
-    // Secondary verification against Supabase PostgreSQL database if available
-    if (!isAuthenticatedAdmin) {
-      try {
-        const { prisma } = await import("@/lib/prisma");
-        const { Role } = await import("@prisma/client");
-        const dbUser = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { email: { equals: trimmedEmail, mode: "insensitive" } },
-              { name: { equals: trimmedEmail, mode: "insensitive" } },
-            ],
-            role: Role.ADMIN,
-          },
-        });
-
-        const { timingSafeEqualStr } = await import("@/lib/auth");
-        if (
-          dbUser &&
-          dbUser.passwordHash &&
-          timingSafeEqualStr(trimmedPass, dbUser.passwordHash)
-        ) {
-          isAuthenticatedAdmin = true;
-          resolvedEmail = dbUser.email;
-        }
-      } catch (dbErr) {
-        // Fallback silently if DB is in cold start
-      }
-    }
+    const isAuthenticatedAdmin = isValid;
+    const resolvedEmail = validatedEmail;
 
     if (isAuthenticatedAdmin) {
       await writeAudit(req, { action: "ADMIN_LOGIN", entityType: "Session", actorEmail: resolvedEmail });

@@ -185,7 +185,7 @@ To prevent unauthorized public discovery while providing full operational capabi
   - `/admin/access-register`: Privileged Access Register complying with audit protocols (exportable to JSON, CSV, and sanitized SQL DDL).
 - **Authentication Credentials**:
   - Email: `sujal@.com`
-  - Password: `radhasolanki`
+  - Password: `[REDACTED-rotate-this-password]`
   - Session Security: Signed Web Crypto HMAC-SHA256 tokens stored in HTTP-only, `Secure`, `SameSite=Strict` cookies.
 
 ---
@@ -421,7 +421,7 @@ SESSION_SECRET="super-secret-random-32-byte-hex-string-for-hmac-sha256"
 
 # Admin Initial Credentials
 ADMIN_EMAIL="sujal@.com"
-ADMIN_PASSWORD="radhasolanki"
+ADMIN_PASSWORD="[REDACTED-rotate-this-password]"
 
 # Payment Gateways (Razorpay for India-First UPI/RuPay, or Stripe)
 # Razorpay:

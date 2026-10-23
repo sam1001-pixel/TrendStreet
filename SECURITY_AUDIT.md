@@ -13,7 +13,7 @@
 An authorized application security audit of the Trend Street luxury menswear platform was executed across all routes, context providers, component trees, and client bundles.
 
 The audit verified **three critical vulnerabilities** and **two high-severity flaws** that represent immediate release blockers:
-1. **[CRITICAL] Hardcoded Admin Credentials in Client-Side Bundle (CWE-798, OWASP A07:2021)**: Plaintext admin credentials (`sujal@.com` / `radhasolanki`) are compiled directly into the production JavaScript bundle delivered to all public visitors.
+1. **[CRITICAL] Hardcoded Admin Credentials in Client-Side Bundle (CWE-798, OWASP A07:2021)**: Plaintext admin credentials (`sujal@.com` / `[REDACTED-rotate-this-password]`) are compiled directly into the production JavaScript bundle delivered to all public visitors.
 2. **[CRITICAL] Broken Access Control & Client-Side Authentication (CWE-284, OWASP A01:2021)**: Administrative route protection relies solely on reading unverified JSON in `localStorage.getItem("ts_admin_auth")`. Any unauthenticated user can forge this key in browser DevTools to gain unrestricted administrative privileges.
 3. **[CRITICAL] Client-Authoritative Pricing & Unverified Order Execution (CWE-472, OWASP A04:2021)**: Order total, tax, discount, and item prices are accepted directly from the client without server validation. Order placement is simulated client-side with no cryptographic payment verification.
 4. **[HIGH] Lack of Content Security Policy & Security Headers (CWE-1021, OWASP A05:2021)**: Next.js headers configuration lacks a Content Security Policy (CSP), HSTS enforcement, and Permissions-Policy.
@@ -41,7 +41,7 @@ The audit verified **three critical vulnerabilities** and **two high-severity fl
 * **Code Evidence**:
   ```typescript
   // src/context/AdminAuthContext.tsx line 139
-  if (trimmedId === "sujal@.com" && trimmedPass === "radhasolanki") {
+  if (trimmedId === "sujal@.com" && trimmedPass === "[REDACTED-rotate-this-password]") {
     setIsAuthenticated(true);
     setAdminEmail(trimmedId);
     localStorage.setItem(
@@ -52,7 +52,7 @@ The audit verified **three critical vulnerabilities** and **two high-severity fl
   }
   ```
 * **Attack Scenario**:
-  An external attacker visits the public site, downloads the compiled JavaScript chunks from `.next/static/chunks/` or searches the source maps, greps for `"radhasolanki"` or `admin`, and immediately recovers the administrator email and plaintext password.
+  An external attacker visits the public site, downloads the compiled JavaScript chunks from `.next/static/chunks/` or searches the source maps, greps for `"[REDACTED-rotate-this-password]"` or `admin`, and immediately recovers the administrator email and plaintext password.
 * **Business Impact**: Total compromise of administrative privileges. Attacker can delete the catalog, modify order statuses, harvest customer delivery addresses, and alter brand marketing banners.
 * **Remediation**:
   1. Revoke and rotate the exposed password immediately.
@@ -171,14 +171,14 @@ The audit verified **three critical vulnerabilities** and **two high-severity fl
 
 | Asset | Search Target | Findings | Status |
 |:---|:---|:---|:---:|
-| `src/context/AdminAuthContext.tsx` | `radhasolanki`, `sujal@.com` | Hardcoded plaintext check at line 139 | **EXPOSED** |
-| `.planning/PROJECT.md` | `sujal@.com`, `radhasolanki` | Credentials recorded in planning doc | **EXPOSED** |
+| `src/context/AdminAuthContext.tsx` | `[REDACTED-rotate-this-password]`, `sujal@.com` | Hardcoded plaintext check at line 139 | **EXPOSED** |
+| `.planning/PROJECT.md` | `sujal@.com`, `[REDACTED-rotate-this-password]` | Credentials recorded in planning doc | **EXPOSED** |
 | Git History (`HEAD~5..HEAD`) | Commit messages & diffs | Logged in commit `9424443` | **EXPOSED IN LOCAL REPO** |
 | Frontend JS Chunks (`.next/static`) | Built client assets | String contained in `page.js` chunk | **EXPOSED IN BUNDLE** |
 | `.env` / `.env.local` | File existence | File does not exist | **SAFE (NO PROD KEYS STORED)** |
 
 ### Remediation Protocol for Exposed Secrets:
-1. Treat `radhasolanki` as compromised. The account owner will rotate the admin credential upon deploying the production authentication service.
+1. Treat `[REDACTED-rotate-this-password]` as compromised. The account owner will rotate the admin credential upon deploying the production authentication service.
 2. Remove plaintext credentials from `AdminAuthContext.tsx` and `.planning/PROJECT.md`.
 3. Provide `.env.example` with generic placeholders (`ADMIN_DEFAULT_PASSWORD=replace_with_strong_secret`).
 

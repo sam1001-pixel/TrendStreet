@@ -13,5 +13,5 @@ Trend Street ("The Style Hub") is a high-fashion menswear e-commerce experience 
 
 ## Administrator Credentials
 - ID: `sujal@.com`
-- Password: `radhasolanki`
+- Password: `[REDACTED-rotate-this-password]`
 - Portal: `/admin/login` -> `/admin`

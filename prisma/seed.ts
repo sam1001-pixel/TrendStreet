@@ -45,9 +45,8 @@ async function main() {
     },
     create: {
       email: "sujal@.com",
-      passwordHash: "radhasolanki",
+      // No password stored: admin sign-in uses ADMIN_EMAIL / ADMIN_PASSWORD from the environment.
       name: "Sujal Solanki",
-      phone: "+91 98200 12345",
       role: Role.ADMIN,
     },
   });

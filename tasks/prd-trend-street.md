@@ -9,7 +9,7 @@ Trend Street ("The Style Hub") is a high-fashion menswear e-commerce platform an
 - Showcase the provided **Trend Street** logo prominently at the header center.
 - Provide full functional e-commerce capabilities: Catalog filtering, Product details, Cart/Bag, Checkout with multiple payment simulations, Wishlist/Saved, and User Profile.
 - Deliver an interactive 3D WebGL fabric & garment showroom with smooth 60fps performance.
-- Provide a secure Admin Panel with login credentials (`sujal@.com` / `radhasolanki`) for products, orders, inquiries, and access register.
+- Provide a secure Admin Panel with login credentials (`sujal@.com` / `[REDACTED-rotate-this-password]`) for products, orders, inquiries, and access register.
 - Ensure first-class digital marketing and SEO/GEO readiness (`robots.txt`, `llms.txt`, OpenGraph, JSON-LD Schema).
 
 ## 3. User Stories
@@ -71,7 +71,7 @@ Trend Street ("The Style Hub") is a high-fashion menswear e-commerce platform an
 ### US-008: Admin Panel & Privileged Access Register
 **Description:** As the administrator (Sujal), I want a secure dashboard to manage products, track orders, view customer messages, and inspect the access register.
 **Acceptance Criteria:**
-- Route-guarded login validating `sujal@.com` / `radhasolanki`.
+- Route-guarded login validating `sujal@.com` / `[REDACTED-rotate-this-password]`.
 - Dashboard with revenue KPIs and recent activity.
 - Products CRUD (add, edit, delete, in-line stock toggle).
 - Orders status updater.

@@ -104,7 +104,7 @@
       "title": "Admin Panel & Privileged Access Register",
       "description": "As admin Sujal, I want to manage products, orders, and review the access register.",
       "acceptanceCriteria": [
-        "Route-guarded login validating sujal@.com / radhasolanki",
+        "Route-guarded login validating sujal@.com / [REDACTED-rotate-this-password]",
         "Admin dashboard with revenue KPIs",
         "Products CRUD (add, edit, delete, in-line stock)",
         "Orders status management",

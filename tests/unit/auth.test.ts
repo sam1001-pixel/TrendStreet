@@ -41,50 +41,29 @@ test("auth - rejects null or empty tokens gracefully without throwing", async ()
   assert.equal(garbageResult, null);
 });
 
-test("auth - validateAdminCredentials accepts standard admin aliases", () => {
-  const validPass = process.env.ADMIN_PASSWORD || "radhasolanki";
-  const aliases = [
-    "sujal",
-    "Sujal",
-    "SUJAL",
-    "admin",
-    "ADMIN",
-    "sujal@trendstreet.com",
-    "sujal@.com",
-    "sujalsolanki",
-  ];
+const TEST_EMAIL = "owner@example.test";
+const TEST_PASS = "Test-Only-Passw0rd!";
+process.env.ADMIN_EMAIL = TEST_EMAIL;
+process.env.ADMIN_PASSWORD = TEST_PASS;
 
-  for (const alias of aliases) {
-    const res = validateAdminCredentials(alias, validPass);
-    assert.equal(res.isValid, true, `Expected valid login for alias: ${alias}`);
-    assert.equal(typeof res.email, "string");
-    assert.equal(res.email.length > 0, true);
+test("auth - validateAdminCredentials accepts only the configured admin email", () => {
+  assert.equal(validateAdminCredentials(TEST_EMAIL, TEST_PASS).isValid, true);
+  assert.equal(validateAdminCredentials("  Owner@Example.TEST ", TEST_PASS).isValid, true, "email match is case-insensitive");
+  for (const guess of ["admin", "sujal", "sujal@.com", "owner", "administrator"]) {
+    assert.equal(validateAdminCredentials(guess, TEST_PASS).isValid, false, `alias "${guess}" must be rejected`);
   }
 });
 
 test("auth - validateAdminCredentials enforces strict case-sensitivity on passwords", () => {
-  const validPass = process.env.ADMIN_PASSWORD || "radhasolanki";
-  const res = validateAdminCredentials("sujal", validPass);
-  assert.equal(res.isValid, true);
-
-  // Altered password case must be strictly rejected
-  const alteredCasePass = validPass.toUpperCase();
-  const alteredRes = validateAdminCredentials("sujal", alteredCasePass);
-  assert.equal(alteredRes.isValid, false, "Altered case password must be rejected");
+  assert.equal(validateAdminCredentials(TEST_EMAIL, TEST_PASS.toLowerCase()).isValid, false);
+  assert.equal(validateAdminCredentials(TEST_EMAIL, TEST_PASS + "x").isValid, false);
 });
 
-test("auth - validateAdminCredentials rejects wildcard email spoofing and invalid credentials", () => {
-  const validPass = process.env.ADMIN_PASSWORD || "radhasolanki";
-
-  // Wildcard email spoofing attempts must fail
-  assert.equal(validateAdminCredentials("admin@attacker.com", validPass).isValid, false);
-  assert.equal(validateAdminCredentials("sujal@evil.org", validPass).isValid, false);
-  assert.equal(validateAdminCredentials("sujal@randomdomain.net", validPass).isValid, false);
-
-  // Invalid user / password
-  assert.equal(validateAdminCredentials("unknown_user", validPass).isValid, false);
-  assert.equal(validateAdminCredentials("sujal", "wrong_password_123").isValid, false);
-  assert.equal(validateAdminCredentials("", "").isValid, false);
-  assert.equal(validateAdminCredentials(null, undefined).isValid, false);
+test("auth - validateAdminCredentials rejects everything when credentials are not configured", () => {
+  const saved = process.env.ADMIN_PASSWORD;
+  delete process.env.ADMIN_PASSWORD;
+  assert.equal(validateAdminCredentials(TEST_EMAIL, TEST_PASS).isValid, false);
+  process.env.ADMIN_PASSWORD = saved;
+  assert.equal(validateAdminCredentials("admin@attacker.com", TEST_PASS).isValid, false);
+  assert.equal(validateAdminCredentials(TEST_EMAIL, "").isValid, false);
 });
-
