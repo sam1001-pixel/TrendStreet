@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   motion,
   useAnimationControls,
@@ -70,19 +71,21 @@ function Garment({
             className="group relative -mt-[6%] block rounded-t-[38%_14%] rounded-b-2xl bg-ivory-light p-1.5 shadow-[0_18px_40px_-18px_rgba(14,22,38,0.55)] ring-1 ring-burgundy/10"
           >
             <div className="relative aspect-[3/4] overflow-hidden rounded-t-[36%_12%] rounded-b-xl bg-ivory-dark">
-              <img
+              <Image
                 src={p.images[0]}
                 alt={p.name}
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                fill
+                sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 19vw"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
               {p.images[1] && (
-                <img
+                <Image
                   src={p.images[1]}
                   alt=""
                   aria-hidden
-                  loading="lazy"
-                  className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                  fill
+                  sizes="(max-width: 1024px) 30vw, 19vw"
+                  className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                 />
               )}
               {low && (
@@ -132,7 +135,7 @@ export function HangingRail({ title = "Fresh off the rail", filter }: { title?: 
   return (
     <section ref={ref} className="relative overflow-hidden py-4" aria-labelledby="rail-heading">
       <div className="mx-auto mb-8 flex max-w-[1600px] items-end justify-between gap-4 px-4 sm:px-8 lg:px-12">
-        <h2 id="rail-heading" className="font-display text-5xl font-black uppercase leading-[0.85] text-espresso sm:text-7xl">
+        <h2 id="rail-heading" className="font-display text-4xl font-black uppercase leading-[0.85] text-espresso sm:text-7xl">
           {title}
         </h2>
         <Link href="/shop" className="min-h-[44px] content-center text-xs font-bold uppercase tracking-[0.2em] text-burgundy hover:text-crimson">

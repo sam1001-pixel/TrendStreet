@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product, CartItem, Order, UserProfile, OrderStatus, SiteSettings } from "@/types/store";
 import { INITIAL_PRODUCTS } from "@/data/products";
 import { calculateOrderPricing, VALID_PROMO_CODES } from "@/lib/pricing";
+import { DEMO_ORDERS, DEMO_USER } from "@/data/demo";
 
 interface StoreContextType {
   products: Product[];
@@ -45,6 +46,10 @@ interface StoreContextType {
   cartTax: number;
   cartTotal: number;
   cartItemsCount: number;
+  /** True while the visitor is previewing the sample account from /profile. */
+  isDemo: boolean;
+  enterDemo: () => void;
+  exitDemo: () => void;
 }
 
 // A new visitor starts with an empty profile — never a sample person.
@@ -217,6 +222,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
+  const [isDemo, setIsDemo] = useState<boolean>(false);
 
   // Hydrate from localStorage safely on mount
   useEffect(() => {
@@ -224,6 +230,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Products and settings come from the database (see the fetch below), not browser storage.
       localStorage.removeItem("ts_site_settings");
       localStorage.removeItem("ts_products");
+
+      setIsDemo(localStorage.getItem("ts_demo") === "1");
 
       const storedCart = localStorage.getItem("ts_cart");
       if (storedCart) {
@@ -462,8 +470,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateUserProfile = (profile: Partial<UserProfile>) => {
+    // Edits never touch the sample account — it is read-only.
+    if (isDemo) return;
     setUser((prev) => ({ ...prev, ...profile }));
   };
+
+  const enterDemo = () => {
+    setIsDemo(true);
+    try { localStorage.setItem("ts_demo", "1"); } catch {}
+  };
+  const exitDemo = () => {
+    setIsDemo(false);
+    try { localStorage.removeItem("ts_demo"); } catch {}
+  };
+
+  // The sample account is layered on top of (never written into) the shopper's own data.
+  const visibleUser = isDemo ? DEMO_USER : user;
+  const visibleOrders = isDemo ? [...orders, ...DEMO_ORDERS] : orders;
 
   // Calculations
   // Same engine the server uses (src/lib/pricing.ts), so the bag total always matches what checkout charges.
@@ -494,8 +517,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         resetSiteSettings,
         cart,
         wishlist,
-        orders,
-        user,
+        orders: visibleOrders,
+        user: visibleUser,
         promoCode,
         discountRate,
         isCartOpen,
@@ -522,6 +545,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         cartTax,
         cartTotal,
         cartItemsCount,
+        isDemo,
+        enterDemo,
+        exitDemo,
       }}
     >
       {children}

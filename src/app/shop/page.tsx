@@ -54,9 +54,23 @@ function ShopContent() {
     if (max > 0) setMaxPrice(max);
     const min = Number(searchParams.get("min"));
     if (min > 0) setMinPrice(min);
+    const s = searchParams.get("sort");
+    if (s && ["featured", "price-low", "price-high", "rating", "newest"].includes(s)) setSortBy(s);
     const t = searchParams.get("tag");
     setTag(t ? t.toLowerCase().slice(0, 40) : "");
   }, [searchParams]);
+
+  // Mobile filter drawer: lock page scroll and close on Escape
+  useEffect(() => {
+    if (!isMobileFilterOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsMobileFilterOpen(false);
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isMobileFilterOpen]);
 
   // Filtered and Sorted Products
   const filteredProducts = useMemo(() => {
@@ -333,9 +347,9 @@ function ShopContent() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-6">
-              {filteredProducts.map((prod) => (
-                <ProductCard key={prod.id} product={prod} />
+            <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-8">
+              {filteredProducts.map((prod, idx) => (
+                <ProductCard key={prod.id} product={prod} priority={idx < 4} />
               ))}
             </div>
           )}

@@ -5,6 +5,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trendstreet.com";
 
   const staticRoutes: MetadataRoute.Sitemap = [
+    ...["/oversized", "/jeans", "/boxy-fit", "/jackets", "/complete-the-fit", "/shop-your-way", "/why-trend-street", "/track"].map(
+      (path) => ({ url: `${baseUrl}${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.8 })
+    ),
     {
       url: `${baseUrl}`,
       lastModified: new Date(),

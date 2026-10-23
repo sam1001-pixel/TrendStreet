@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { User, Package, MapPin, Ruler, Search, Check, Trash2, Plus, Truck } from "lucide-react";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { User, Package, MapPin, Ruler, Check, Trash2, Plus, Truck, Heart, ShoppingBag, Sparkles, LogOut, ChevronRight, Award } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
 import type { UserProfile } from "@/types/store";
@@ -10,116 +12,28 @@ import type { UserProfile } from "@/types/store";
 type Tab = "orders" | "details" | "addresses" | "fit";
 type Address = UserProfile["savedAddresses"][number];
 
-interface LookedUpOrder {
-  orderNumber: string;
-  createdAt: string;
-  status: string;
-  items: { productName: string; selectedSize: string; selectedColor: string; quantity: number; price: number; image: string }[];
-  total: number;
-  trackingNumber: string;
-  courier: string | null;
-  paymentMethod: string;
-  city: string;
-}
-
 const input =
-  "w-full rounded-lg border border-burgundy/20 bg-white px-3 py-2.5 text-sm text-espresso placeholder:text-espresso/40 focus:border-burgundy focus:outline-none";
+  "h-12 w-full rounded-xl border border-burgundy/20 bg-white px-3 text-sm text-espresso placeholder:text-espresso/40 focus:border-burgundy focus:outline-none disabled:bg-ivory disabled:text-espresso/60";
 const label = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-espresso/60";
 
 const STATUS_STYLE: Record<string, string> = {
   Delivered: "bg-green-100 text-green-800",
   Shipped: "bg-burgundy/10 text-burgundy",
-  "In Transit": "bg-burgundy/10 text-burgundy",
+  "In Transit": "bg-gold/25 text-gold-dark",
   Cancelled: "bg-red-100 text-red-700",
 };
 
-/** "Find my order": server lookup by order number + checkout email. */
-function OrderLookup({ defaultEmail }: { defaultEmail: string }) {
-  const [orderNumber, setOrderNumber] = useState("");
-  const [email, setEmail] = useState(defaultEmail);
-  const [result, setResult] = useState<LookedUpOrder | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+const TIERS = [
+  { name: "Street", min: 0 },
+  { name: "Indigo Circle", min: 2000 },
+  { name: "Mehrangarh", min: 5000 },
+];
 
-  useEffect(() => setEmail((e) => e || defaultEmail), [defaultEmail]);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    setError(null);
-    setResult(null);
-    try {
-      const res = await fetch("/api/orders/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderNumber, email }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Lookup failed.");
-      setResult(data.order);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="rounded-2xl border border-burgundy/15 bg-white p-5 sm:p-6">
-      <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-espresso">
-        <Search className="h-4 w-4 text-crimson" /> Find my order
-      </h2>
-      <p className="mt-1 text-xs text-espresso/60">Ordered on another phone or browser? Enter your order number and the email you used at checkout.</p>
-      <form onSubmit={submit} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-        <div>
-          <label htmlFor="lk-order" className={label}>Order number</label>
-          <input id="lk-order" required value={orderNumber} onChange={(e) => setOrderNumber(e.target.value)} placeholder="TS-261022-XXXXX" className={`${input} font-mono uppercase`} />
-        </div>
-        <div>
-          <label htmlFor="lk-email" className={label}>Email</label>
-          <input id="lk-email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={input} />
-        </div>
-        <button disabled={busy} className="self-end rounded-lg bg-burgundy px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson disabled:opacity-50">
-          {busy ? "Searching…" : "Find order"}
-        </button>
-      </form>
-
-      <div aria-live="polite">
-        {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-800">{error}</p>}
-        {result && (
-          <div className="mt-4 space-y-3 rounded-xl bg-ivory p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-sm font-bold text-burgundy">{result.orderNumber}</span>
-              <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${STATUS_STYLE[result.status] ?? "bg-gold/20 text-gold-dark"}`}>{result.status}</span>
-            </div>
-            <ul className="space-y-2">
-              {result.items.map((it, i) => (
-                <li key={i} className="flex items-center gap-3 text-xs">
-                  {it.image && <img src={it.image} alt="" className="h-12 w-10 rounded object-cover" />}
-                  <span className="flex-1">
-                    <span className="block font-semibold text-espresso">{it.productName}</span>
-                    <span className="text-espresso/60">{it.selectedSize} · {it.selectedColor} · Qty {it.quantity}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="flex flex-wrap justify-between gap-2 border-t border-burgundy/10 pt-3 text-xs">
-              <span className="flex items-center gap-1.5 text-espresso/70">
-                <Truck className="h-3.5 w-3.5" />
-                {result.trackingNumber ? `${result.courier ?? "Courier"}: ${result.trackingNumber}` : "Tracking number is added when your order ships"}
-              </span>
-              <span className="font-bold text-espresso">{formatPrice(result.total)}</span>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default function ProfilePage() {
-  const { user, orders, updateUserProfile } = useStore();
-  const [tab, setTab] = useState<Tab>("orders");
+function ProfileContent() {
+  const { user, orders, wishlist, cartItemsCount, setIsCartOpen, updateUserProfile, isDemo, enterDemo, exitDemo } = useStore();
+  const params = useSearchParams();
+  const initialTab = (params.get("tab") as Tab) || "orders";
+  const [tab, setTab] = useState<Tab>(["orders", "details", "addresses", "fit"].includes(initialTab) ? initialTab : "orders");
   const [details, setDetails] = useState({ name: user.name, email: user.email, phone: user.phone });
   const [fit, setFit] = useState(user.measurements);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
@@ -159,44 +73,117 @@ export default function ProfilePage() {
     updateUserProfile({ savedAddresses: rest });
   };
 
+  const points = user.rewardPoints || 0;
+  const tierIdx = TIERS.reduce((acc, t, i) => (points >= t.min ? i : acc), 0);
+  const nextTier = TIERS[tierIdx + 1];
+  const tierPct = nextTier ? Math.min(100, Math.round(((points - TIERS[tierIdx].min) / (nextTier.min - TIERS[tierIdx].min)) * 100)) : 100;
+  const spent = orders.filter((o) => o.status !== "Cancelled").reduce((s, o) => s + o.total, 0);
+
   const tabs: { id: Tab; label: string; icon: typeof User }[] = [
     { id: "orders", label: `Orders (${orders.length})`, icon: Package },
-    { id: "details", label: "My details", icon: User },
+    { id: "details", label: "Details", icon: User },
     { id: "addresses", label: `Addresses (${user.savedAddresses.length})`, icon: MapPin },
     { id: "fit", label: "My sizes", icon: Ruler },
   ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 sm:py-14 lg:px-8">
-      <header className="flex flex-col gap-5 rounded-3xl border border-burgundy/15 bg-white p-6 sm:flex-row sm:items-center sm:p-8">
-        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-burgundy font-serif text-2xl font-bold text-gold">
-          {user.name ? user.name.charAt(0).toUpperCase() : <User className="h-7 w-7" />}
-        </div>
-        <div className="flex-1">
-          <h1 className="font-serif text-2xl font-bold text-espresso">{user.name ? `Hi, ${user.name.split(" ")[0]}` : "My account"}</h1>
-          <p className="mt-0.5 text-xs text-espresso/60">
-            {user.email || "Add your details once and checkout fills itself in."} Your details stay on this device.
-          </p>
-        </div>
-        {!user.name && (
-          <button onClick={() => setTab("details")} className="rounded-lg bg-burgundy px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson">
-            Add my details
+    <div className="mx-auto max-w-5xl space-y-6 px-4 pb-16 pt-6 sm:space-y-8 sm:px-6 sm:pt-12 lg:px-8">
+      {isDemo && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-gold/20 p-3 text-xs text-espresso ring-1 ring-gold/40">
+          <span className="flex items-center gap-2 font-semibold">
+            <Sparkles className="h-4 w-4 text-gold-dark" /> You&apos;re previewing a sample account. Nothing here is real or editable.
+          </span>
+          <button onClick={exitDemo} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-espresso px-4 text-[11px] font-bold text-ivory">
+            <LogOut className="h-3.5 w-3.5" /> Exit preview
           </button>
-        )}
+        </div>
+      )}
+
+      {/* Member card */}
+      <header className="relative overflow-hidden rounded-3xl bg-burgundy p-5 text-ivory sm:p-8">
+        <span aria-hidden className="jaali absolute inset-0 text-ivory opacity-[0.07]" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gold font-serif text-2xl font-bold text-espresso">
+            {user.name ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() : <User className="h-7 w-7" />}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-serif text-2xl font-bold sm:text-3xl">{user.name ? `Hi, ${user.name.split(" ")[0]}` : "Your account"}</h1>
+            <p className="mt-0.5 truncate text-xs text-ivory/70">{user.email || "Add your details once and checkout fills itself in."}</p>
+          </div>
+          {!user.name && !isDemo && (
+            <div className="flex flex-col gap-2 sm:items-end">
+              <button onClick={() => setTab("details")} className="min-h-[44px] rounded-full bg-gold px-5 text-xs font-bold uppercase tracking-wider text-espresso hover:bg-gold-light">
+                Add my details
+              </button>
+              <button onClick={enterDemo} className="inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-ivory/70 hover:text-gold">
+                <Sparkles className="h-3.5 w-3.5" /> Preview a demo account
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="relative mt-6 grid grid-cols-3 gap-2 border-t border-white/10 pt-5">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-ivory/60">Tier</p>
+            <p className="flex items-center gap-1 truncate text-sm font-bold text-gold"><Award className="h-3.5 w-3.5 flex-shrink-0" /> {user.vipTier || TIERS[tierIdx].name}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-ivory/60">Points</p>
+            <p className="text-sm font-bold">{points.toLocaleString("en-IN")}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-ivory/60">Spent</p>
+            <p className="truncate text-sm font-bold">{formatPrice(spent)}</p>
+          </div>
+          {nextTier && (
+            <div className="col-span-3 mt-2">
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+                <div className="h-full rounded-full bg-gold transition-all duration-700" style={{ width: `${tierPct}%` }} />
+              </div>
+              <p className="mt-1 text-[11px] text-ivory/60">{(nextTier.min - points).toLocaleString("en-IN")} points to {nextTier.name}</p>
+            </div>
+          )}
+        </div>
       </header>
 
-      <div role="tablist" className="no-scrollbar flex gap-6 overflow-x-auto border-b border-burgundy/15 text-xs font-bold uppercase tracking-wider">
+      {/* Quick actions */}
+      <nav aria-label="Account shortcuts" className="grid grid-cols-4 gap-2">
+        {[
+          { label: "Track", href: "/track", icon: Truck, n: 0 },
+          { label: "Saved", href: "/saved", icon: Heart, n: wishlist.length },
+          { label: "Bag", action: () => setIsCartOpen(true), icon: ShoppingBag, n: cartItemsCount },
+          { label: "Sizes", action: () => setTab("fit"), icon: Ruler, n: 0 },
+        ].map(({ label: l, href, action, icon: Icon, n }) => {
+          const inner = (
+            <>
+              <span className="relative">
+                <Icon className="h-5 w-5 text-burgundy" />
+                {n > 0 && <span className="absolute -right-2.5 -top-2 rounded-full bg-crimson px-1.5 text-[9px] font-bold text-white">{n}</span>}
+              </span>
+              <span className="text-[11px] font-semibold text-espresso">{l}</span>
+            </>
+          );
+          const cls = "flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl bg-white ring-1 ring-burgundy/10 transition-colors hover:ring-burgundy/40";
+          return href ? (
+            <Link key={l} href={href} className={cls}>{inner}</Link>
+          ) : (
+            <button key={l} onClick={action} className={cls}>{inner}</button>
+          );
+        })}
+      </nav>
+
+      <div role="tablist" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         {tabs.map(({ id, label: l, icon: Icon }) => (
           <button
             key={id}
             role="tab"
             aria-selected={tab === id}
             onClick={() => setTab(id)}
-            className={`flex min-h-[44px] items-center gap-2 whitespace-nowrap border-b-2 pb-2 transition-colors ${
-              tab === id ? "border-burgundy text-burgundy" : "border-transparent text-espresso/60 hover:text-burgundy"
+            className={`flex min-h-[40px] flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-bold transition-colors ${
+              tab === id ? "bg-espresso text-ivory" : "bg-white text-espresso/70 ring-1 ring-burgundy/15 hover:text-espresso"
             }`}
           >
-            <Icon className="h-4 w-4" /> {l}
+            <Icon className="h-3.5 w-3.5" /> {l}
           </button>
         ))}
       </div>
@@ -209,48 +196,50 @@ export default function ProfilePage() {
       )}
 
       {tab === "orders" && (
-        <div className="space-y-6">
+        <div className="space-y-3">
           {orders.length === 0 ? (
-            <div className="rounded-2xl border border-burgundy/15 bg-white p-8 text-center">
-              <p className="font-serif text-lg font-bold text-espresso">No orders on this device yet</p>
-              <p className="mt-1 text-xs text-espresso/60">Orders you place here show up automatically. For others, use “Find my order” below.</p>
-              <Link href="/shop" className="mt-4 inline-block rounded-lg bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson">
-                Start shopping
-              </Link>
+            <div className="rounded-3xl bg-white p-8 text-center ring-1 ring-burgundy/10">
+              <Package className="mx-auto h-10 w-10 text-burgundy/30" />
+              <p className="mt-3 font-serif text-lg font-bold text-espresso">No orders on this device yet</p>
+              <p className="mt-1 text-sm text-espresso/60">Ordered on another phone? Find it with your order number.</p>
+              <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+                <Link href="/shop" className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-burgundy px-6 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson">Start shopping</Link>
+                <Link href="/track" className="inline-flex min-h-[48px] items-center justify-center rounded-full px-6 text-xs font-bold uppercase tracking-wider text-burgundy ring-1 ring-burgundy/30">Find an order</Link>
+              </div>
             </div>
           ) : (
             orders.map((o) => (
-              <article key={o.id} className="space-y-4 rounded-2xl border border-burgundy/15 bg-white p-5 sm:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ivory-dark pb-3">
+              <article key={o.id} className="overflow-hidden rounded-2xl bg-white ring-1 ring-burgundy/10">
+                <div className="flex items-start justify-between gap-3 p-4 sm:p-5">
                   <div>
-                    <span className="block font-mono text-sm font-bold text-burgundy">{o.orderNumber}</span>
-                    <span className="text-[11px] text-espresso/60">
-                      {new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
-                    </span>
+                    <p className="font-mono text-xs font-bold text-burgundy">{o.orderNumber}</p>
+                    <p className="text-[11px] text-espresso/60">
+                      {new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · {o.items.reduce((s, i) => s + i.quantity, 0)} items
+                    </p>
                   </div>
-                  <span className="font-bold text-espresso">{formatPrice(o.total)}</span>
+                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${STATUS_STYLE[o.status] ?? "bg-ivory-dark text-espresso/70"}`}>{o.status}</span>
                 </div>
-                <ul className="space-y-2">
+                <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 sm:px-5">
                   {o.items.map((it, i) => (
-                    <li key={i} className="flex items-center gap-3 text-xs">
-                      {it.image && <img src={it.image} alt="" className="h-14 w-11 rounded object-cover" />}
-                      <span>
-                        <span className="block font-semibold text-espresso">{it.productName}</span>
-                        <span className="text-espresso/60">{it.selectedSize} · {it.selectedColor} · Qty {it.quantity}</span>
-                      </span>
-                    </li>
+                    <span key={i} className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-ivory-dark" title={it.productName}>
+                      {it.image && <Image src={it.image} alt={it.productName} fill sizes="64px" className="object-cover" />}
+                    </span>
                   ))}
-                </ul>
-                <p className="text-[11px] text-espresso/60">For live status, look this order up below with your email.</p>
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-burgundy/10 px-4 py-3 sm:px-5">
+                  <span className="text-sm font-bold text-espresso">{formatPrice(o.total)}</span>
+                  <Link href={`/track?order=${encodeURIComponent(o.orderNumber)}`} className="inline-flex min-h-[40px] items-center gap-1 rounded-full bg-ivory px-4 text-xs font-bold text-burgundy hover:bg-ivory-dark">
+                    Track <ChevronRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </article>
             ))
           )}
-          <OrderLookup defaultEmail={user.email} />
         </div>
       )}
 
       {tab === "details" && (
-        <form onSubmit={saveDetails} className="grid gap-4 rounded-2xl border border-burgundy/15 bg-white p-5 sm:grid-cols-2 sm:p-6">
+        <form onSubmit={saveDetails} className="rounded-2xl border border-burgundy/15 bg-white p-5 sm:p-6"><fieldset disabled={isDemo} className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label htmlFor="d-name" className={label}>Full name</label>
             <input id="d-name" autoComplete="name" value={details.name} onChange={(e) => setDetails({ ...details, name: e.target.value })} className={input} />
@@ -267,7 +256,7 @@ export default function ProfilePage() {
           <button className="rounded-lg bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson sm:col-span-2 sm:justify-self-start">
             Save details
           </button>
-        </form>
+        </fieldset></form>
       )}
 
       {tab === "addresses" && (
@@ -282,7 +271,7 @@ export default function ProfilePage() {
                   {a.fullName}, {a.address}, {a.city}{a.state ? `, ${a.state}` : ""} – {a.postalCode}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className={`flex gap-2 ${isDemo ? "hidden" : ""}`}>
                 <button onClick={() => setDraft(a)} className="rounded-lg border border-burgundy/20 px-3 py-2 text-xs font-semibold text-burgundy hover:border-burgundy">Edit</button>
                 <button onClick={() => removeAddress(a.id)} aria-label={`Delete ${a.label || "address"}`} className="rounded-lg border border-burgundy/20 p-2 text-espresso/60 hover:border-crimson hover:text-crimson">
                   <Trash2 className="h-4 w-4" />
@@ -325,7 +314,7 @@ export default function ProfilePage() {
                 <button type="button" onClick={() => setDraft(null)} className="rounded-lg px-4 py-3 text-xs font-semibold text-espresso/70 hover:text-espresso">Cancel</button>
               </div>
             </form>
-          ) : (
+          ) : !isDemo && (
             <button
               onClick={() => setDraft({ id: `addr-${Date.now()}`, label: "", fullName: user.name, address: "", city: "", state: "", postalCode: "", isDefault: user.savedAddresses.length === 0 })}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-burgundy/25 p-5 text-xs font-bold uppercase tracking-wider text-burgundy hover:border-burgundy"
@@ -343,8 +332,8 @@ export default function ProfilePage() {
             updateUserProfile({ measurements: fit });
             flash("Sizes saved.");
           }}
-          className="grid gap-4 rounded-2xl border border-burgundy/15 bg-white p-5 sm:grid-cols-2 sm:p-6"
-        >
+          className="rounded-2xl border border-burgundy/15 bg-white p-5 sm:p-6"
+        ><fieldset disabled={isDemo} className="grid gap-4 sm:grid-cols-2">
           {([
             ["oversizedFit", "Oversized tee size", "e.g. L"],
             ["boxyFit", "Boxy fit size", "e.g. M"],
@@ -361,8 +350,16 @@ export default function ProfilePage() {
           <button className="rounded-lg bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson sm:col-span-2 sm:justify-self-start">
             Save sizes
           </button>
-        </form>
+        </fieldset></form>
       )}
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={null}>
+      <ProfileContent />
+    </Suspense>
   );
 }

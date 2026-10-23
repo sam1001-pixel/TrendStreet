@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Star,
   CheckCircle,
@@ -147,20 +148,21 @@ export const CustomerReviewGallery: React.FC = () => {
       </div>
 
       {/* Review Cards Grid with Authentic Photos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-3 pb-2 sm:gap-6 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-4">
         {filteredReviews.map((review) => (
           <div
             key={review.id}
             data-reveal
-            className="group rounded-2xl bg-white border border-stone-200 overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
+            className="group w-[80%] flex-shrink-0 snap-start rounded-2xl bg-white border border-stone-200 overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between md:w-auto"
           >
             {/* Real Customer Styling Photo */}
             <div className="relative aspect-[4/5] bg-stone-100 overflow-hidden">
-              <img
+              <Image
                 src={review.photoUrl}
                 alt={`${review.author} wearing ${review.productName}`}
-                className="w-full h-full object-cover object-center group-hover:scale-103 transition-transform duration-500"
-                loading="lazy"
+                fill
+                sizes="(max-width: 768px) 80vw, (max-width: 1024px) 50vw, 25vw"
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
               />
 
               {/* Scrim Overlay */}

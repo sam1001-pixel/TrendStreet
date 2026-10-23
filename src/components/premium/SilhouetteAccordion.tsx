@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 
 const PANELS = [
@@ -42,7 +43,7 @@ export function SilhouetteAccordion() {
   return (
     <section className="mx-auto max-w-[1600px] px-3 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-end justify-between gap-4 sm:mb-10">
-        <h2 className="font-display text-5xl font-black uppercase leading-[0.85] text-stone-950 sm:text-7xl lg:text-8xl">
+        <h2 className="font-display text-4xl font-black uppercase leading-[0.85] text-stone-950 sm:text-7xl lg:text-8xl">
           Four cuts.
           <br />
           <span className="text-outline text-burgundy">Nothing else.</span>
@@ -52,7 +53,7 @@ export function SilhouetteAccordion() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 lg:h-[620px] lg:flex-row">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:flex lg:h-[620px] lg:flex-row">
         {PANELS.map((p, i) => {
           const isOpen = open === i;
           return (
@@ -61,35 +62,36 @@ export function SilhouetteAccordion() {
               href={p.href}
               onMouseEnter={() => setOpen(i)}
               onFocus={() => setOpen(i)}
-              className={`group relative h-44 overflow-hidden rounded-2xl bg-stone-900 sm:h-56 lg:h-auto lg:transition-[flex-grow] lg:duration-700 lg:ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`group relative aspect-[4/5] overflow-hidden rounded-2xl bg-stone-900 sm:aspect-[4/3] lg:aspect-auto lg:h-auto lg:transition-[flex-grow] lg:duration-700 lg:ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isOpen ? "lg:flex-[4]" : "lg:flex-[1]"
               }`}
             >
-              <img
+              <Image
                 src={p.image}
                 alt={`${p.name} collection`}
-                loading="lazy"
-                className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${
+                fill
+                sizes="(max-width: 1024px) 50vw, 60vw"
+                className={`object-cover transition-all duration-700 ${
                   isOpen ? "scale-100 grayscale-0" : "scale-110 lg:grayscale"
                 }`}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 text-white sm:p-7">
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3 text-white sm:gap-4 sm:p-7">
                 <div className="min-w-0">
                   <span className="font-mono text-xs text-gold">{p.no}</span>
-                  <h3 className="font-display text-4xl font-black uppercase leading-none sm:text-5xl lg:whitespace-nowrap">
+                  <h3 className="font-display text-2xl font-black uppercase leading-none sm:text-5xl lg:whitespace-nowrap">
                     {p.name}
                   </h3>
                   <p
-                    className={`mt-2 max-w-sm text-sm text-white/80 transition-opacity duration-300 ${
+                    className={`mt-2 hidden max-w-sm text-sm text-white/80 transition-opacity sm:block duration-300 ${
                       isOpen ? "lg:opacity-100 lg:delay-300" : "lg:opacity-0"
                     }`}
                   >
                     {p.copy}
                   </p>
                 </div>
-                <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white text-stone-950 transition-transform duration-200 group-hover:rotate-45">
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white text-stone-950 transition-transform duration-200 group-hover:rotate-45 sm:h-12 sm:w-12">
                   <ArrowUpRight className="h-5 w-5" />
                 </span>
               </div>

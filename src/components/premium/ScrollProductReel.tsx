@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion, useMotionValue, useSpring } from "framer-motion";
 import { Plus, Check } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
@@ -25,22 +26,24 @@ function RunwayCard({ p, i, total }: { p: Product; i: number; total: number }) {
   };
 
   return (
-    <div className="group relative w-[72vw] flex-shrink-0 sm:w-[42vw] lg:w-[28vw]" data-cursor="view">
+    <div className="group relative w-[60vw] flex-shrink-0 sm:w-[42vw] lg:w-[28vw]" data-cursor="view">
       <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-stone-800">
         <Link href={`/product/${p.id}`} aria-label={p.name} className="absolute inset-0">
-          <img
+          <Image
             src={p.images[0]}
             alt={p.name}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+            fill
+            sizes="(max-width: 640px) 60vw, (max-width: 1024px) 42vw, 28vw"
+            className="object-cover transition-opacity duration-500 group-hover:opacity-0"
           />
           {p.images[1] && (
-            <img
+            <Image
               src={p.images[1]}
               alt=""
               aria-hidden
-              loading="lazy"
-              className="absolute inset-0 h-full w-full scale-105 object-cover opacity-0 transition-all duration-700 group-hover:scale-100 group-hover:opacity-100"
+              fill
+              sizes="(max-width: 1024px) 42vw, 28vw"
+              className="scale-105 object-cover opacity-0 transition-all duration-700 group-hover:scale-100 group-hover:opacity-100"
             />
           )}
         </Link>
@@ -190,7 +193,7 @@ export function ScrollProductReel() {
     <div className="mb-8 flex items-end justify-between gap-4 px-4 sm:px-8 lg:px-12">
       <div>
         <p className="mb-2 text-sm text-white/60">Most-bagged this week</p>
-        <h2 className="font-display text-5xl font-black uppercase leading-[0.85] text-white sm:text-7xl">
+        <h2 className="font-display text-4xl font-black uppercase leading-[0.85] text-white sm:text-7xl">
           The <span className="text-gold">Runway</span>
         </h2>
       </div>
@@ -217,7 +220,7 @@ export function ScrollProductReel() {
   }
 
   return (
-    <section ref={ref} className="relative h-[300vh] bg-ink" aria-label="The runway">
+    <section ref={ref} className="relative h-[240vh] bg-ink sm:h-[300vh]" aria-label="The runway">
       <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden">
         {header}
         <motion.div ref={trackRef} style={{ x }} className="flex w-max gap-5 pl-4 sm:gap-8 sm:pl-8 lg:pl-12">

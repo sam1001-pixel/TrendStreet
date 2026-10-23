@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Scissors,
   Award,
@@ -53,10 +54,12 @@ export default function AboutPage() {
 
           <div className="lg:col-span-6">
             <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-burgundy/15">
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=1200&auto=format&fit=crop"
                 alt="Trend Street Atelier Workshop"
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width:1024px) 100vw, 50vw"
+                className="object-cover"
               />
             </div>
           </div>

@@ -3,6 +3,7 @@
 import React from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   CheckCircle,
   Truck,
@@ -120,11 +121,13 @@ export default function OrderConfirmationPage() {
           {order.items.map((item, idx) => (
             <div key={idx} className="pt-4 first:pt-0 flex items-center justify-between space-x-4">
               <div className="flex items-center space-x-4">
-                <img
+                <Image
                   src={item.image}
                   alt={item.productName}
-                  className="w-16 h-20 object-cover rounded bg-ivory-dark"
-                />
+                  width={64}
+                    height={80}
+                    className="w-16 h-20 object-cover rounded bg-ivory-dark"
+                  />
                 <div className="text-xs space-y-1">
                   <h4 className="font-serif font-bold text-espresso">{item.productName}</h4>
                   <p className="text-espresso/60">

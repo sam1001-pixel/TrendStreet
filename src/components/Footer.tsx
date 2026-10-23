@@ -2,282 +2,185 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import {
-  ShieldCheck,
-  Truck,
-  RotateCcw,
-  Scissors,
-  Mail,
-  Instagram,
-  Twitter,
-  Facebook,
-  Award,
-  MapPin,
-  Phone,
-  FileText,
-} from "lucide-react";
+import { ShieldCheck, Truck, RotateCcw, Wallet, Mail, Instagram, Twitter, Facebook, MapPin, Phone, ChevronDown, ArrowRight, Check } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useStore } from "@/context/StoreContext";
 
+const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
+  {
+    title: "Shop",
+    links: [
+      { label: "All drops", href: "/shop" },
+      { label: "Oversized", href: "/oversized" },
+      { label: "Jeans", href: "/jeans" },
+      { label: "Boxy Fit", href: "/boxy-fit" },
+      { label: "Jackets", href: "/jackets" },
+      { label: "Complete the Fit", href: "/complete-the-fit" },
+      { label: "Shop Your Way", href: "/shop-your-way" },
+    ],
+  },
+  {
+    title: "Trend Street",
+    links: [
+      { label: "Why Trend Street", href: "/why-trend-street" },
+      { label: "Our story", href: "/about" },
+      { label: "Lookbook", href: "/lookbook" },
+      { label: "Contact us", href: "/contact" },
+    ],
+  },
+  {
+    title: "Help",
+    links: [
+      { label: "Track my order", href: "/track" },
+      { label: "Shipping", href: "/shipping-policy" },
+      { label: "Returns & exchanges", href: "/returns" },
+      { label: "My account", href: "/profile" },
+      { label: "Grievance officer", href: "/contact" },
+    ],
+  },
+];
+
+const PROMISES = [
+  { icon: Truck, title: "Free delivery", note: "Over ₹1,999" },
+  { icon: RotateCcw, title: "30-day exchange", note: "Doorstep pickup" },
+  { icon: Wallet, title: "Cash on delivery", note: "Most PIN codes" },
+  { icon: ShieldCheck, title: "Secure checkout", note: "UPI · Cards · Razorpay" },
+];
+
+const SOCIAL = [
+  { href: "https://instagram.com", label: "Instagram", icon: Instagram },
+  { href: "https://twitter.com", label: "X / Twitter", icon: Twitter },
+  { href: "https://facebook.com", label: "Facebook", icon: Facebook },
+];
+
 export const Footer: React.FC = () => {
   const { siteSettings } = useStore();
-  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newsletterEmail.trim()) {
-      setSubscribed(true);
-    }
-  };
+  const phone = siteSettings.contactInfo?.phone || "+91 98200 12345";
+  const mail = siteSettings.contactInfo?.email || "concierge@trendstreet.in";
 
   return (
-    <footer className="bg-espresso text-ivory pt-10 sm:pt-16 pb-24 md:pb-12 border-t border-burgundy/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Trust & Craftsmanship Pillars */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 pb-8 sm:pb-14 border-b border-burgundy/30">
-          <div className="flex items-start space-x-4">
-            <div className="p-3 bg-burgundy/40 rounded-full text-gold flex-shrink-0">
-              <Truck className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
+    <footer className="border-t border-burgundy/40 bg-espresso pb-24 text-ivory md:pb-10">
+      {/* Promise strip */}
+      <div className="border-b border-white/10">
+        <ul className="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-white/10 lg:grid-cols-4">
+          {PROMISES.map(({ icon: Icon, title, note }) => (
+            <li key={title} className="flex items-center gap-3 bg-espresso px-4 py-4 sm:px-6 sm:py-6">
+              <Icon className="h-5 w-5 flex-shrink-0 text-gold" />
+              <span className="min-w-0">
+                <span className="block text-xs font-bold sm:text-sm">{title}</span>
+                <span className="block truncate text-[11px] text-ivory/60">{note}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-10 py-10 sm:py-14 lg:grid-cols-12">
+          {/* Newsletter + brand */}
+          <div className="space-y-5 lg:col-span-5">
+            <Logo variant="ivory" size="md" href="/" />
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-ivory">
-                Express India Delivery
-              </h4>
-              <p className="text-xs text-ivory/70 mt-1">
-                Complimentary Blue Dart Apex & Delhivery Air courier on all orders over ₹1,999.
-              </p>
+              <h2 className="font-display text-3xl font-black uppercase leading-none sm:text-4xl">Get the next drop first</h2>
+              <p className="mt-2 max-w-sm text-xs leading-relaxed text-ivory/70">Early access to limited runs and 10% off your first order over ₹1,999.</p>
             </div>
-          </div>
-
-          <div className="flex items-start space-x-4">
-            <div className="p-3 bg-burgundy/40 rounded-full text-gold flex-shrink-0">
-              <Scissors className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-ivory">
-                Lifetime Seam Care
-              </h4>
-              <p className="text-xs text-ivory/70 mt-1">
-                Complimentary selvedge denim chain-stitch hemming and seam reinforcement.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-4">
-            <div className="p-3 bg-burgundy/40 rounded-full text-gold flex-shrink-0">
-              <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-ivory">
-                30-Day Doorstep Returns
-              </h4>
-              <p className="text-xs text-ivory/70 mt-1">
-                Doorstep reverse pickup across 19,000+ Indian PIN codes with zero return fees.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start space-x-4">
-            <div className="p-3 bg-burgundy/40 rounded-full text-gold flex-shrink-0">
-              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-widest text-ivory">
-                Certified Provenance
-              </h4>
-              <p className="text-xs text-ivory/70 mt-1">
-                100% authentic Okayama selvedge denim, 520gsm loopback terry, and Tuscan suede.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Footer Links & Newsletter */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 py-14 border-b border-burgundy/30">
-          {/* Brand Column */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="flex items-start">
-              <Logo variant="ivory" size="lg" href="/" />
-            </div>
-            <p className="text-xs text-ivory/75 leading-relaxed max-w-sm">
-              Trend Street is India&rsquo;s definitive digital style hub for luxury architectural menswear streetwear. Engineered from
-              dense custom-milled textiles, Okayama selvedge denim, and finished with immaculate structural precision.
-            </p>
-            <div className="pt-1 text-[11px] text-ivory/60 space-y-1">
-              <p className="font-semibold text-gold flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Flagship Atelier: Pali Hill, Bandra West, Mumbai 400050</span>
-              </p>
-              <p className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-gold/80" />
-                <span>+91 98200 12345 • concierge@trendstreet.in</span>
-              </p>
-            </div>
-            <div className="flex items-center space-x-4 pt-2">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-burgundy/50 hover:bg-crimson flex items-center justify-center text-ivory transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-burgundy/50 hover:bg-crimson flex items-center justify-center text-ivory transition-colors"
-                aria-label="Twitter / X"
-              >
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-burgundy/50 hover:bg-crimson flex items-center justify-center text-ivory transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-            </div>
-          </div>
-
-          {/* Quick Links: Collections */}
-          <div className="lg:col-span-2 space-y-3">
-            <h5 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
-              Collections
-            </h5>
-            <ul className="space-y-2 text-xs text-ivory/80">
-              <li>
-                <Link href="/shop?category=Oversized" className="hover:text-gold transition-colors">
-                  Oversized Silhouettes
-                </Link>
-              </li>
-              <li>
-                <Link href="/shop?category=Jeans" className="hover:text-gold transition-colors">
-                  Selvedge & Baggy Jeans
-                </Link>
-              </li>
-              <li>
-                <Link href="/shop?category=Boxy+Fit" className="hover:text-gold transition-colors">
-                  Boxy Fit Essentials
-                </Link>
-              </li>
-              <li>
-                <Link href="/shop?category=Jackets" className="hover:text-gold transition-colors">
-                  Structural Jackets
-                </Link>
-              </li>
-              <li>
-                <Link href="/lookbook" className="hover:text-gold transition-colors">
-                  Editorial Lookbook
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Concierge & Legal Policies */}
-          <div className="lg:col-span-3 space-y-3">
-            <h5 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
-              Concierge & Policies
-            </h5>
-            <ul className="space-y-2 text-xs text-ivory/80">
-              <li>
-                <Link href="/shipping-policy" className="hover:text-gold transition-colors">
-                  Shipping & Express Courier
-                </Link>
-              </li>
-              <li>
-                <Link href="/returns" className="hover:text-gold transition-colors">
-                  30-Day Returns & Exchanges
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy-policy" className="hover:text-gold transition-colors">
-                  Privacy Policy (DPDP Act)
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-gold transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-gold transition-colors">
-                  Contact & Grievance Redressal
-                </Link>
-              </li>
-              <li>
-                <Link href="/profile" className="hover:text-gold transition-colors">
-                  Client Fit Profile & Orders
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* VIP Sartorial Club Newsletter */}
-          <div className="lg:col-span-3 space-y-4">
-            <h5 className="text-xs font-bold uppercase tracking-[0.2em] text-gold flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-gold" /> The Trend Street Club
-            </h5>
-            <p className="text-xs text-ivory/75 leading-relaxed">
-              Subscribe for private access to seasonal drops, trunk show previews, and
-              receive an exclusive 10% welcome voucher code for orders over ₹1,999.
-            </p>
-
             {subscribed ? (
-              <div className="p-3 bg-burgundy/60 border border-gold/30 rounded-lg text-xs text-gold">
-                ✨ Thank you for subscribing. Use code <span className="font-bold text-ivory">TREND10</span> at checkout for 10% off your inaugural order!
-              </div>
+              <p className="flex max-w-sm items-center gap-2 rounded-xl bg-white/10 p-3 text-xs text-gold">
+                <Check className="h-4 w-4" /> You&apos;re in. Use <span className="font-bold text-ivory">TREND10</span> at checkout.
+              </p>
             ) : (
-              <form onSubmit={handleSubscribe} className="space-y-2">
-                <div className="relative flex items-center">
-                  <Mail className="absolute left-3.5 w-4 h-4 text-ivory/50" />
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (email.trim()) setSubscribed(true);
+                }}
+                className="flex max-w-sm gap-2"
+              >
+                <label htmlFor="footer-email" className="sr-only">Email address</label>
+                <div className="relative flex-1">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ivory/40" />
                   <input
+                    id="footer-email"
                     type="email"
                     required
-                    placeholder="Enter your email..."
-                    value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    className="w-full bg-burgundy/30 border border-burgundy/60 rounded pl-10 pr-24 py-2.5 text-xs text-ivory placeholder-ivory/40 focus:outline-none focus:border-gold"
+                    autoComplete="email"
+                    placeholder="you@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 w-full rounded-xl border border-white/15 bg-white/5 pl-10 pr-3 text-sm text-ivory placeholder:text-ivory/40 focus:border-gold focus:outline-none"
                   />
-                  <button
-                    type="submit"
-                    className="absolute right-1 px-3.5 py-1.5 bg-burgundy hover:bg-crimson text-ivory text-xs font-semibold uppercase tracking-wider rounded transition-colors"
-                  >
-                    Join
-                  </button>
                 </div>
-                <p className="text-[10px] text-ivory/50">
-                  By joining, you agree to our Privacy Policy. Opt out anytime.
-                </p>
+                <button type="submit" aria-label="Subscribe" className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gold text-espresso hover:bg-gold-light">
+                  <ArrowRight className="h-5 w-5" />
+                </button>
               </form>
             )}
+            <div className="space-y-1.5 text-xs text-ivory/70">
+              <p className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gold" /> Pali Hill, Bandra West, Mumbai 400050
+              </p>
+              <a href={`tel:${phone.replace(/\s/g, "")}`} className="flex items-center gap-2 hover:text-gold">
+                <Phone className="h-3.5 w-3.5 text-gold" /> {phone}
+              </a>
+              <a href={`mailto:${mail}`} className="flex items-center gap-2 hover:text-gold">
+                <Mail className="h-3.5 w-3.5 text-gold" /> {mail}
+              </a>
+            </div>
+          </div>
+
+          {/* Link groups: accordions on mobile, columns on desktop */}
+          <div className="divide-y divide-white/10 border-y border-white/10 sm:grid sm:grid-cols-3 sm:gap-8 sm:divide-y-0 sm:border-0 lg:col-span-7">
+            {GROUPS.map((g) => (
+              <details key={g.title} className="group sm:hidden">
+                <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-[0.2em] text-gold [&::-webkit-details-marker]:hidden">
+                  {g.title}
+                  <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                </summary>
+                <ul className="space-y-1 pb-4">
+                  {g.links.map((l) => (
+                    <li key={l.label}>
+                      <Link href={l.href} className="block py-1.5 text-sm text-ivory/80 hover:text-gold">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+            {GROUPS.map((g) => (
+              <div key={`d-${g.title}`} className="hidden sm:block">
+                <h3 className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-gold">{g.title}</h3>
+                <ul className="space-y-2.5">
+                  {g.links.map((l) => (
+                    <li key={l.label}>
+                      <Link href={l.href} className="text-sm text-ivory/75 transition-colors hover:text-gold">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Bottom Credits & Legal Links */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-ivory/60 gap-4">
-          <p>© 2026 Trend Street Luxury Apparels Private Limited. All rights reserved.</p>
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[11px]">
-            <Link href="/privacy-policy" className="hover:text-gold transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-gold transition-colors">
-              Terms of Service
-            </Link>
-            <Link href="/shipping-policy" className="hover:text-gold transition-colors">
-              Shipping Policy
-            </Link>
-            <Link href="/returns" className="hover:text-gold transition-colors">
-              30-Day Returns
-            </Link>
-            <Link href="/contact" className="hover:text-gold transition-colors">
-              Grievance Officer
-            </Link>
+        {/* Bottom bar */}
+        <div className="flex flex-col-reverse items-center gap-5 border-t border-white/10 pt-6 text-[11px] text-ivory/55 md:flex-row md:justify-between">
+          <p className="text-center">© {new Date().getFullYear()} Trend Street Luxury Apparels Private Limited</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <Link href="/privacy-policy" className="hover:text-gold">Privacy</Link>
+            <Link href="/terms" className="hover:text-gold">Terms</Link>
+            <Link href="/shipping-policy" className="hover:text-gold">Shipping</Link>
+            <Link href="/returns" className="hover:text-gold">Returns</Link>
+          </div>
+          <div className="flex items-center gap-3">
+            {SOCIAL.map(({ href, label, icon: Icon }) => (
+              <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-ivory transition-colors hover:bg-gold hover:text-espresso">
+                <Icon className="h-4 w-4" />
+              </a>
+            ))}
           </div>
         </div>
       </div>

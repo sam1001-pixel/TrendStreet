@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShieldCheck,
   CreditCard,
@@ -1113,9 +1114,11 @@ export default function CheckoutPage() {
                   key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`}
                   className="pt-3 first:pt-0 flex items-center space-x-3"
                 >
-                  <img
+                  <Image
                     src={item.product.images[0]}
                     alt={item.product.name}
+                    width={56}
+                    height={64}
                     className="w-14 h-16 object-cover rounded bg-ivory-dark flex-shrink-0"
                   />
                   <div className="flex-1 text-xs">

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -171,11 +172,13 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
                       }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <img
+                        <Image
                           src={prod.images[0]}
                           alt={prod.name}
-                          className="w-12 h-14 object-cover rounded bg-ivory-dark flex-shrink-0 border border-burgundy/10"
-                        />
+                          width={48}
+                    height={56}
+                    className="w-12 h-14 object-cover rounded bg-ivory-dark flex-shrink-0 border border-burgundy/10"
+                  />
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-serif text-sm font-bold text-espresso group-hover:text-crimson transition-colors">

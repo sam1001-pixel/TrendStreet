@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Sparkles, ShoppingBag, Eye, ArrowRight, X, Star } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { Product } from "@/types/store";
@@ -126,11 +127,13 @@ export default function LookbookPage() {
             {/* Image Column with Hotspots */}
             <div className={`lg:col-span-7 relative ${index % 2 === 1 ? "lg:order-2" : ""}`}>
               <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-ivory-dark shadow-2xl border border-burgundy/15 group">
-                <img
+                <Image
                   src={look.image}
                   alt={look.title}
-                  className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-700"
-                />
+                  fill
+                sizes="(max-width:1024px) 100vw, 58vw"
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
+              />
 
                 {/* Hotspot Pins */}
                 {look.hotspots.map((spot, sIdx) => (
@@ -183,11 +186,13 @@ export default function LookbookPage() {
                       className="p-3 bg-white rounded-xl border border-burgundy/10 flex items-center justify-between hover:border-burgundy/30 transition-colors"
                     >
                       <div className="flex items-center space-x-3">
-                        <img
+                        <Image
                           src={p.images[0]}
                           alt={p.name}
-                          className="w-10 h-12 object-cover rounded bg-ivory-dark"
-                        />
+                          width={40}
+                    height={48}
+                    className="w-10 h-12 object-cover rounded bg-ivory-dark"
+                  />
                         <div className="text-xs">
                           <h4 className="font-serif font-bold text-espresso">{p.name}</h4>
                           <span className="text-burgundy font-bold">{formatPrice(p.price)}</span>
@@ -237,11 +242,13 @@ export default function LookbookPage() {
               </button>
             </div>
 
-            <img
+            <Image
               src={activeProduct.images[0]}
               alt={activeProduct.name}
-              className="w-full aspect-[4/3] object-cover rounded-xl bg-ivory-dark"
-            />
+              width={800}
+                    height={600}
+                    className="w-full aspect-[4/3] object-cover rounded-xl bg-ivory-dark"
+                  />
 
             <p className="text-xs text-espresso/70 leading-relaxed">
               {activeProduct.description}
