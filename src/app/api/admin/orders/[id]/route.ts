@@ -7,7 +7,8 @@ import type { OrderStatus } from "@/types/store";
 export const dynamic = "force-dynamic";
 
 /** Update an order's status and/or courier tracking number. */
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
     const body = await req.json();
     const nextStatus = body?.status as OrderStatus | undefined;
@@ -17,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: "Unknown order status." }, { status: 400 });
     }
 
-    const before = await prisma.order.findUnique({ where: { id: params.id }, include: { items: true } });
+    const before = await prisma.order.findUnique({ where: { id }, include: { items: true } });
     if (!before) return NextResponse.json({ error: "Order not found." }, { status: 404 });
 
     const dbStatus = nextStatus ? STATUS_TO_DB[nextStatus] : undefined;
@@ -35,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         }
       }
       return tx.order.update({
-        where: { id: params.id },
+        where: { id },
         data: { ...(dbStatus ? { status: dbStatus } : {}), ...(tracking !== undefined ? { trackingNumber: tracking || null } : {}) },
         include: adminOrderInclude,
       });

@@ -122,7 +122,7 @@ function RunwayCard({ p, i, total }: { p: Product; i: number; total: number }) {
 }
 
 /** A floating "View" disc that trails the cursor over product imagery (desktop pointers only). */
-function ViewCursor({ scope }: { scope: React.RefObject<HTMLElement> }) {
+function ViewCursor({ scope }: { scope: React.RefObject<HTMLElement | null> }) {
   const x = useSpring(useMotionValue(-100), { stiffness: 400, damping: 35 });
   const y = useSpring(useMotionValue(-100), { stiffness: 400, damping: 35 });
   const [show, setShow] = useState(false);
