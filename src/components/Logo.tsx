@@ -36,11 +36,13 @@ export const Logo: React.FC<LogoProps> = ({
   const content = (
     <div className={`inline-flex items-center justify-center select-none group transition-transform duration-300 hover:scale-[1.02] ${className}`}>
       {/* Genuine Trend Street - The Style Hub Logo */}
-      <img
+      <Image
         src={src}
         alt="Trend Street - The Style Hub"
+        width={dim.width}
+        height={dim.height}
         className={`${dim.imgClass} object-contain transition-opacity duration-200`}
-        loading="eager"
+        priority
       />
     </div>
   );

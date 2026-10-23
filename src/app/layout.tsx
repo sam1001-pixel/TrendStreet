@@ -29,17 +29,17 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Trend Street Studio" }],
   creator: "Trend Street",
-  publisher: "Trend Street Ltd",
+  publisher: "Trend Street Luxury Apparels Private Limited",
   metadataBase: new URL("https://trendstreet.com"),
   other: {
-    "geo.region": "GB-LND",
-    "geo.placename": "London, Shoreditch",
-    "geo.position": "51.5238;-0.0768",
-    "ICBM": "51.5238, -0.0768",
+    "geo.region": "IN-MH",
+    "geo.placename": "Mumbai, Bandra West",
+    "geo.position": "19.0544;72.8346",
+    "ICBM": "19.0544, 72.8346",
   },
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "en_IN",
     url: "https://trendstreet.com",
     title: "Trend Street | The Style Hub — Oversized, Jeans, Boxy Fit & Jackets",
     description:

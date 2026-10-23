@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Heart, Eye, Star } from "lucide-react";
 import { Product } from "@/types/store";
 import { useStore } from "@/context/StoreContext";
@@ -12,7 +13,7 @@ interface ProductCardProps {
   priority?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = false }) => {
   const { addToCart, toggleWishlist, isInWishlist, setQuickViewProduct } = useStore();
   const [selectedColor] = useState<string>(product.colors[0]?.name || "Default");
   const [isHovered, setIsHovered] = useState(false);
@@ -110,11 +111,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           className="block w-full h-full cursor-pointer"
           tabIndex={0}
         >
-          <img
+          <Image
             src={isHovered ? secondaryImage : primaryImage}
             alt={product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="h-full w-full object-cover object-center transition-all duration-500 group-hover:scale-105"
-            loading="lazy"
+            priority={priority}
           />
         </Link>
 

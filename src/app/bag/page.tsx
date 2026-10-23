@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ShoppingBag,
   Trash2,
@@ -118,9 +119,11 @@ export default function BagPage() {
                   key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`}
                   className="p-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 items-start justify-between"
                 >
-                  <img
+                  <Image
                     src={item.product.images[0]}
                     alt={item.product.name}
+                    width={96}
+                    height={128}
                     className="w-24 h-32 object-cover object-center rounded-lg bg-ivory-dark flex-shrink-0"
                   />
 

@@ -315,7 +315,7 @@ export const Header: React.FC = () => {
                   Trend Street Studio
                 </p>
                 <p>Oversized • Jeans • Boxy Fit • Jackets</p>
-                <p>concierge@trendstreet.com</p>
+                <p>concierge@trendstreet.in</p>
               </div>
             </div>
           </div>

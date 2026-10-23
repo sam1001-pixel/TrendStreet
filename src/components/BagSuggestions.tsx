@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
 
@@ -22,8 +23,8 @@ export function BagSuggestions({ onNavigate, limit = 4, title = "Start with a be
         {picks.map((p) => (
           <li key={p.id}>
             <Link href={`/product/${p.id}`} onClick={onNavigate} className="group block">
-              <span className="block aspect-[3/4] overflow-hidden rounded-lg bg-ivory-dark">
-                <img src={p.images[0]} alt={p.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" />
+              <span className="block aspect-[3/4] overflow-hidden rounded-lg bg-ivory-dark relative">
+                <Image src={p.images[0]} alt={p.name} fill sizes="(max-width: 640px) 45vw, 25vw" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" />
               </span>
               <span className="mt-1.5 block truncate text-xs font-semibold text-espresso">{p.name}</span>
               <span className="block font-mono text-xs text-burgundy">{formatPrice(p.price)}</span>

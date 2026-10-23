@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Heart,
   ShoppingBag,
@@ -163,10 +164,13 @@ export default function ProductDetailPage() {
                 </div>
               </div>
             ) : (
-              <img
+              <Image
                 src={product.images[activeImageIndex] || product.images[0]}
                 alt={product.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 58vw"
                 className="w-full h-full object-cover object-center transition-all duration-300"
+                priority
               />
             )}
 
@@ -213,14 +217,14 @@ export default function ProductDetailPage() {
                 <button
                   key={img}
                   onClick={() => setActiveImageIndex(idx)}
-                  className={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all ${
+                  className={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all relative ${
                     activeImageIndex === idx
                       ? "border-burgundy ring-2 ring-burgundy/30 shadow-sm scale-[1.02]"
                       : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                   aria-label={`View garment image ${idx + 1}`}
                 >
-                  <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full object-cover" />
+                  <Image src={img} alt={`${product.name} view ${idx + 1}`} fill sizes="25vw" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -502,7 +506,7 @@ export default function ProductDetailPage() {
             ) : (
               <p className="text-[11px] text-espresso/60 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-gold" />
-                <span>Orders dispatched within 24 hours from London Shoreditch Atelier.</span>
+                <span>Orders dispatched within 24 hours from Mumbai Bandra West Atelier.</span>
               </p>
             )}
           </div>
@@ -593,9 +597,11 @@ export default function ProductDetailPage() {
       {/* 3. MOBILE STICKY BOTTOM ACTION BAR (Appears on small screens for 1-tap add to bag) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-burgundy/20 px-4 py-3 flex items-center justify-between gap-3 shadow-2xl">
         <div className="flex items-center gap-2.5 overflow-hidden">
-          <img
+          <Image
             src={product.images[0]}
             alt={product.name}
+            width={40}
+            height={48}
             className="w-10 h-12 object-cover rounded-md flex-shrink-0 border border-burgundy/15"
           />
           <div className="truncate">

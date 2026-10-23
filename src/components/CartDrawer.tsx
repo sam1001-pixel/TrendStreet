@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { BagSuggestions } from "@/components/BagSuggestions";
@@ -22,7 +23,7 @@ export const CartDrawer: React.FC = () => {
     cartDiscount,
   } = useStore();
 
-  // Escape key listener for cart dismissal
+  // Escape key listener for cart dismissal & body scroll lock
   useEffect(() => {
     if (!isCartOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,8 +32,12 @@ export const CartDrawer: React.FC = () => {
         setIsCartOpen(false);
       }
     };
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isCartOpen, setIsCartOpen]);
 
   if (!isCartOpen) return null;
@@ -138,9 +143,11 @@ export const CartDrawer: React.FC = () => {
                     key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`}
                     className="flex space-x-3.5 p-3 bg-white rounded-lg border border-burgundy/10 shadow-sm"
                   >
-                    <img
+                    <Image
                       src={item.product.images[0]}
                       alt={item.product.name}
+                      width={72}
+                      height={88}
                       className="w-18 h-22 object-cover object-center rounded bg-ivory-dark flex-shrink-0 border border-burgundy/10"
                     />
                     <div className="flex-1 flex flex-col justify-between">
@@ -222,9 +229,11 @@ export const CartDrawer: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between gap-2.5">
                       <div className="flex items-center space-x-2.5">
-                        <img
+                        <Image
                           src={crossSellProduct.images[0]}
                           alt={crossSellProduct.name}
+                          width={48}
+                          height={56}
                           className="w-12 h-14 object-cover rounded bg-ivory-dark border border-burgundy/10 flex-shrink-0"
                         />
                         <div>

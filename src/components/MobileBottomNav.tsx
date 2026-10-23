@@ -10,8 +10,9 @@ export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
   const { wishlist, cartItemsCount, setIsCartOpen } = useStore();
 
-  // If inside admin portal or checkout pages, do not render bottom nav to avoid CTA obstruction
-  if (pathname.startsWith("/admin") || pathname.startsWith("/checkout")) {
+  // If inside admin portal, checkout, or product detail pages, do not render bottom nav
+  // Product pages have their own sticky bottom CTA bar which would overlap
+  if (pathname.startsWith("/admin") || pathname.startsWith("/checkout") || pathname.startsWith("/product/")) {
     return null;
   }
 

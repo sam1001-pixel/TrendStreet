@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { X, Heart, Star, ShoppingBag, ArrowRight, Check, Shield, Sparkles } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
@@ -15,6 +16,33 @@ export const QuickViewModal: React.FC = () => {
   const [selectedColor, setSelectedColor] = useState<string>(product?.colors[0]?.name || "");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
+
+  // Reset state when product changes to prevent stale size/color/image from previous product
+  useEffect(() => {
+    if (product) {
+      setSelectedSize(product.sizes[0] || "");
+      setSelectedColor(product.colors[0]?.name || "");
+      setActiveImageIndex(0);
+      setAdded(false);
+    }
+  }, [product]);
+
+  // ESC key to close modal & body scroll lock
+  useEffect(() => {
+    if (!product) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setQuickViewProduct(null);
+      }
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [product, setQuickViewProduct]);
 
   if (!product) return null;
 
@@ -52,9 +80,11 @@ export const QuickViewModal: React.FC = () => {
             {/* Gallery Column */}
             <div className="p-6 bg-white flex flex-col justify-between border-r border-burgundy/10">
               <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-ivory-dark">
-                <img
+                <Image
                   src={product.images[activeImageIndex] || product.images[0]}
                   alt={product.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="w-full h-full object-cover object-center"
                 />
               </div>
@@ -70,7 +100,7 @@ export const QuickViewModal: React.FC = () => {
                         activeImageIndex === idx ? "border-burgundy scale-105" : "border-transparent opacity-70"
                       }`}
                     >
-                      <img src={img} alt="thumbnail" className="w-full h-full object-cover" />
+                      <Image src={img} alt="thumbnail" width={64} height={80} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
