@@ -83,15 +83,30 @@ export async function POST(req: NextRequest) {
     const payload = JSON.parse(rawBody);
     const eventId = payload.id || payload?.payload?.payment?.entity?.id || null;
 
-    // Idempotency check: prevent duplicate order credit
-    if (eventId && processedEventIds.has(eventId)) {
-      console.info(`[Webhook] Duplicate event received and acknowledged idempotently: ${eventId}`);
-      return NextResponse.json({ success: true, duplicate: true }, { status: 200 });
-    }
+    const { prisma } = await import("@/lib/prisma");
 
+    // Idempotency check: in-memory fast-check + database audit log deduplication
     if (eventId) {
+      if (processedEventIds.has(eventId)) {
+        console.info(`[Webhook] Duplicate event in memory cache, acknowledged idempotently: ${eventId}`);
+        return NextResponse.json({ success: true, duplicate: true }, { status: 200 });
+      }
+
+      try {
+        const existingAudit = await prisma.auditLog.findFirst({
+          where: { action: "PAYMENT_WEBHOOK_PROCESSED", entityId: eventId },
+          select: { id: true },
+        });
+        if (existingAudit) {
+          processedEventIds.add(eventId);
+          console.info(`[Webhook] Duplicate event in database audit log, acknowledged idempotently: ${eventId}`);
+          return NextResponse.json({ success: true, duplicate: true }, { status: 200 });
+        }
+      } catch (dbCheckErr) {
+        console.warn("[Webhook Audit Check Warning]:", dbCheckErr);
+      }
+
       processedEventIds.add(eventId);
-      // Bound the set size to 10,000 entries
       if (processedEventIds.size > 10000) {
         const firstKey = processedEventIds.values().next().value;
         if (firstKey) processedEventIds.delete(firstKey);
@@ -100,12 +115,11 @@ export async function POST(req: NextRequest) {
 
     console.info(`[Webhook] Verified event: ${payload.event || payload.type || "unknown"}`);
 
-    // If payment captured/paid, update database status
+    // If payment captured/paid, update database status atomically
     const eventType = payload.event || payload.type || "";
     if (eventType === "payment.captured" || eventType === "order.paid" || eventType === "payment_intent.succeeded") {
       try {
-        const { PrismaClient, OrderStatus, PaymentStatus } = await import("@prisma/client");
-        const prisma = new PrismaClient();
+        const { OrderStatus, PaymentStatus } = await import("@prisma/client");
         const paymentEntity = payload?.payload?.payment?.entity || payload?.data?.object || {};
         const razorpayOrderId = paymentEntity.order_id || null;
         const razorpayPaymentId = paymentEntity.id || null;
@@ -118,34 +132,80 @@ export async function POST(req: NextRequest) {
                 razorpayPaymentId ? { gatewayPaymentId: razorpayPaymentId } : {},
               ],
             },
+            include: { order: true },
           });
 
           if (paymentRecord) {
-            await prisma.payment.update({
-              where: { id: paymentRecord.id },
-              data: { status: PaymentStatus.CAPTURED },
-            });
-            const updatedOrder = await prisma.order.update({
-              where: { id: paymentRecord.orderId },
-              data: { status: OrderStatus.CONFIRMED },
-              include: {
-                user: true,
-                shippingAddress: true,
-                items: {
-                  include: {
-                    variant: {
-                      include: {
-                        product: true,
+            // If already captured, skip duplicate processing
+            if (paymentRecord.status === PaymentStatus.CAPTURED && paymentRecord.order.status === OrderStatus.CONFIRMED) {
+              console.info(`[Webhook] Payment ${paymentRecord.id} already captured and order confirmed. Acknowledged.`);
+              return NextResponse.json({ success: true, duplicate: true, alreadyCaptured: true }, { status: 200 });
+            }
+
+            // Verify amount from webhook matches expected database amount (in minor units)
+            const webhookAmount = Number(paymentEntity.amount || paymentEntity.amount_captured || 0);
+            const isAmountMatching = webhookAmount === 0 || webhookAmount === paymentRecord.amount;
+
+            if (!isAmountMatching) {
+              console.error(
+                `[Webhook Amount Mismatch Warning] Expected ${paymentRecord.amount}, received ${webhookAmount} for order ${paymentRecord.orderId}`
+              );
+            }
+
+            // Atomic transaction: update payment, order, and log audit event
+            const updatedOrder = await prisma.$transaction(async (tx) => {
+              await tx.payment.update({
+                where: { id: paymentRecord.id },
+                data: {
+                  status: PaymentStatus.CAPTURED,
+                  gatewayPaymentId: razorpayPaymentId || paymentRecord.gatewayPaymentId,
+                },
+              });
+
+              const ord = await tx.order.update({
+                where: { id: paymentRecord.orderId },
+                data: {
+                  // Only confirm if amount matches, otherwise hold as PENDING for manual audit
+                  status: isAmountMatching ? OrderStatus.CONFIRMED : OrderStatus.PENDING,
+                },
+                include: {
+                  user: true,
+                  shippingAddress: true,
+                  items: {
+                    include: {
+                      variant: {
+                        include: {
+                          product: true,
+                        },
                       },
                     },
                   },
                 },
-              },
-            });
-            console.info(`[Webhook] Successfully confirmed order ${paymentRecord.orderId} in database.`);
+              });
 
-            // Trigger transactional order confirmation email if customer email exists
-            if (updatedOrder?.user?.email) {
+              if (eventId) {
+                await tx.auditLog.create({
+                  data: {
+                    action: "PAYMENT_WEBHOOK_PROCESSED",
+                    entityType: "Payment",
+                    entityId: eventId,
+                    metadata: {
+                      eventType,
+                      orderId: paymentRecord.orderId,
+                      paymentId: paymentRecord.id,
+                      amountMismatch: !isAmountMatching,
+                    },
+                  },
+                });
+              }
+
+              return ord;
+            });
+
+            console.info(`[Webhook] Successfully processed order ${paymentRecord.orderId} in database.`);
+
+            // Trigger transactional order confirmation email only if matching & confirmed
+            if (isAmountMatching && updatedOrder?.user?.email) {
               const { sendOrderConfirmationEmail } = await import("@/lib/email");
               sendOrderConfirmationEmail({
                 orderNumber: updatedOrder.orderNumber,
@@ -182,7 +242,6 @@ export async function POST(req: NextRequest) {
             }
           }
         }
-        await prisma.$disconnect();
       } catch (dbErr) {
         console.warn("[Webhook Database Update Warning]:", dbErr);
       }

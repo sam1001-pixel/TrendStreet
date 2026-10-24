@@ -4,8 +4,9 @@ import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { User, Package, MapPin, Ruler, Check, Trash2, Plus, Truck, Heart, ShoppingBag, Sparkles, LogOut, ChevronRight, Award } from "lucide-react";
+import { User, Package, MapPin, Ruler, Check, Trash2, Plus, Truck, Heart, ShoppingBag, Sparkles, LogOut, ChevronRight, Award, LogIn } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
+import { useUserAuth } from "@/context/UserAuthContext";
 import { formatPrice } from "@/lib/pricing";
 import type { UserProfile } from "@/types/store";
 
@@ -31,6 +32,7 @@ const TIERS = [
 
 function ProfileContent() {
   const { user, orders, wishlist, cartItemsCount, setIsCartOpen, updateUserProfile, isDemo, enterDemo, exitDemo } = useStore();
+  const { user: authUser, isAuthenticated, logout } = useUserAuth();
   const params = useSearchParams();
   const initialTab = (params.get("tab") as Tab) || "orders";
   const [tab, setTab] = useState<Tab>(["orders", "details", "addresses", "fit"].includes(initialTab) ? initialTab : "orders");
@@ -99,6 +101,26 @@ function ProfileContent() {
         </div>
       )}
 
+      {/* If guest and not in demo mode, show atelier sign-in invitation banner */}
+      {!isAuthenticated && !isDemo && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-3xl bg-burgundy/10 border border-burgundy/20 p-5 text-espresso shadow-sm">
+          <div className="space-y-1 text-center sm:text-left">
+            <p className="text-xs font-bold uppercase tracking-wider text-burgundy flex items-center justify-center sm:justify-start gap-1.5">
+              <Sparkles className="h-4 w-4 text-gold-dark" /> Trend Street Atelier Privileges
+            </p>
+            <p className="text-xs text-espresso/80">
+              Sign in or create an account to save measurements, unlock express delivery, and sync orders across devices.
+            </p>
+          </div>
+          <Link
+            href="/login?callbackUrl=/profile"
+            className="inline-flex min-h-[42px] items-center gap-2 rounded-full bg-burgundy hover:bg-crimson px-6 text-xs font-bold uppercase tracking-wider text-gold shadow-md transition-all flex-shrink-0"
+          >
+            <LogIn className="h-4 w-4" /> Sign In / Register
+          </Link>
+        </div>
+      )}
+
       {/* Member card */}
       <header className="relative overflow-hidden rounded-3xl bg-burgundy p-5 text-ivory sm:p-8">
         <span aria-hidden className="jaali absolute inset-0 text-ivory opacity-[0.07]" />
@@ -110,16 +132,37 @@ function ProfileContent() {
             <h1 className="font-serif text-2xl font-bold sm:text-3xl">{user.name ? `Hi, ${user.name.split(" ")[0]}` : "Your account"}</h1>
             <p className="mt-0.5 truncate text-xs text-ivory/70">{user.email || "Add your details once and checkout fills itself in."}</p>
           </div>
-          {!user.name && !isDemo && (
+          {isAuthenticated ? (
             <div className="flex flex-col gap-2 sm:items-end">
-              <button onClick={() => setTab("details")} className="min-h-[44px] rounded-full bg-gold px-5 text-xs font-bold uppercase tracking-wider text-espresso hover:bg-gold-light">
-                Add my details
+              <span className="text-[10px] uppercase font-bold tracking-widest text-gold bg-gold/15 px-3 py-1 rounded-full border border-gold/30">
+                Atelier Member
+              </span>
+              <button
+                onClick={async () => {
+                  await logout();
+                  flash("Signed out successfully.");
+                }}
+                className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 px-4 text-xs font-bold text-ivory ring-1 ring-white/25 transition-all"
+              >
+                <LogOut className="h-3.5 w-3.5 text-gold" /> Sign Out
               </button>
-              <button onClick={enterDemo} className="inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-ivory/70 hover:text-gold">
+            </div>
+          ) : !isDemo ? (
+            <div className="flex flex-col gap-2 sm:items-end">
+              <Link
+                href="/login?callbackUrl=/profile"
+                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-full bg-gold px-5 text-xs font-bold uppercase tracking-wider text-espresso hover:bg-gold-light transition-all shadow-md"
+              >
+                <LogIn className="h-3.5 w-3.5" /> Sign In / Register
+              </Link>
+              <button
+                onClick={enterDemo}
+                className="inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-ivory/70 hover:text-gold"
+              >
                 <Sparkles className="h-3.5 w-3.5" /> Preview a demo account
               </button>
             </div>
-          )}
+          ) : null}
         </div>
 
         <div className="relative mt-6 grid grid-cols-3 gap-2 border-t border-white/10 pt-5">

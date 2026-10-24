@@ -1,0 +1,56 @@
+name: Trend Street CI Pipeline
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-and-security:
+    name: Code Quality & Security Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      NODE_ENV: test
+      ADMIN_EMAIL: admin@trendstreet.in
+      ADMIN_PASSWORD_HASH: "$2b$10$ep5wR.7fPz8f8oQh1z6wOeQc1r9f4Y4O2H6H3N1J7m7l9p4"
+      SESSION_SECRET: "ci_pipeline_dummy_session_secret_min_32_chars_long_entropy"
+      RAZORPAY_KEY_ID: "rzp_test_ci_mock_id"
+      RAZORPAY_KEY_SECRET: "ci_mock_razorpay_secret_key"
+      RAZORPAY_WEBHOOK_SECRET: "ci_mock_webhook_secret_key"
+      ALLOW_LIVE_PAYMENTS: "false"
+      NEXT_PUBLIC_BASE_URL: "http://localhost:3000"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install Pinned Dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Lint Codebase
+        run: npm run lint
+
+      - name: TypeScript Typecheck
+        run: npm run typecheck
+
+      - name: Execute Automated Unit & Security Test Suite
+        run: npm test
+
+      - name: Verify Production Next.js Build
+        run: npm run build

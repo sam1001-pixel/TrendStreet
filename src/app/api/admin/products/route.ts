@@ -3,10 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { getCatalog } from "@/lib/catalog";
 import { writeAudit } from "@/lib/audit";
 import { ProductInputError, saveProduct, validateProduct } from "@/lib/admin-products";
+import { requireAdminSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireAdminSession(req);
+  if (!auth.authorized) return auth.response;
+
   const { products, source } = await getCatalog();
   if (source !== "database") {
     return NextResponse.json({ error: "Database unavailable — catalog is read-only right now." }, { status: 503 });
@@ -15,6 +19,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdminSession(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const clean = validateProduct(await req.json());
     const id = `ts-${Date.now().toString(36)}`;

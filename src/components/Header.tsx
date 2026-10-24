@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Search, Heart, ShoppingBag, User, Menu, X, ArrowRight, Truck, Sparkles, Wallet, BookOpen, HelpCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useStore } from "@/context/StoreContext";
+import { useUserAuth } from "@/context/UserAuthContext";
 import { QuickCommandMenu } from "@/components/QuickCommandMenu";
 import { LiveCourierTrackerModal } from "@/components/LiveCourierTrackerModal";
 
@@ -28,6 +29,7 @@ const MORE_LINKS = [
 export const Header: React.FC = () => {
   const pathname = usePathname();
   const { cartItemsCount, wishlist, setIsCartOpen, siteSettings } = useStore();
+  const { user: authCustomer, isAuthenticated } = useUserAuth();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
@@ -164,8 +166,16 @@ export const Header: React.FC = () => {
               <Heart className="h-5 w-5" />
               <Badge n={wishlist.length} tone="bg-crimson text-white" />
             </Link>
-            <Link href="/profile" className={`${iconBtn} hidden sm:flex`} aria-label="My account">
-              <User className="h-5 w-5" />
+            <Link
+              href={isAuthenticated ? "/profile" : "/login"}
+              className={`${iconBtn} hidden sm:flex relative`}
+              aria-label={isAuthenticated ? `Atelier Account (${authCustomer?.name || "Member"})` : "Sign In to Atelier"}
+              title={isAuthenticated ? `Atelier Account (${authCustomer?.name || "Member"})` : "Sign In to Atelier"}
+            >
+              <User className={`h-5 w-5 ${isAuthenticated ? "text-burgundy" : ""}`} />
+              {isAuthenticated && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gold ring-1 ring-white" />
+              )}
             </Link>
             <button onClick={() => setIsCartOpen(true)} className={iconBtn} aria-label={`Bag (${cartItemsCount} items)`}>
               <ShoppingBag className="h-5 w-5" />
@@ -222,8 +232,14 @@ export const Header: React.FC = () => {
                 <Link href="/saved" className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-white text-sm font-semibold text-espresso ring-1 ring-burgundy/10">
                   <Heart className="h-4 w-4 text-crimson" /> Saved ({wishlist.length})
                 </Link>
-                <Link href="/profile" className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-white text-sm font-semibold text-espresso ring-1 ring-burgundy/10">
-                  <User className="h-4 w-4 text-burgundy" /> Account
+                <Link
+                  href={isAuthenticated ? "/profile" : "/login"}
+                  className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-white text-sm font-semibold text-espresso ring-1 ring-burgundy/10 hover:ring-burgundy/30 transition-all"
+                >
+                  <User className={`h-4 w-4 ${isAuthenticated ? "text-burgundy" : "text-espresso/60"}`} />
+                  <span className="truncate max-w-[100px]">
+                    {isAuthenticated ? (authCustomer?.name?.split(" ")[0] || "Account") : "Sign In"}
+                  </span>
                 </Link>
               </div>
             </div>

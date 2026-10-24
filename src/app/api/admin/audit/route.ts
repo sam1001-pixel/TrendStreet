@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 /** Most recent privileged actions for the access register. */
 export async function GET(req: NextRequest) {
+  const auth = await requireAdminSession(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const action = req.nextUrl.searchParams.get("action") || undefined;
     const logs = await prisma.auditLog.findMany({

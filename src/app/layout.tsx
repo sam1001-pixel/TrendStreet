@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { StoreProvider } from "@/context/StoreContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
+import { UserAuthProvider } from "@/context/UserAuthContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
@@ -78,13 +79,15 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-ivory text-espresso antialiased">
         <AdminAuthProvider>
           <StoreProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <ScrollReveal />
-            <Footer />
-            <CartDrawer />
-            <QuickViewModal />
-            <MobileBottomNav />
+            <UserAuthProvider>
+              <Header />
+              <main className="flex-1">{children}</main>
+              <ScrollReveal />
+              <Footer />
+              <CartDrawer />
+              <QuickViewModal />
+              <MobileBottomNav />
+            </UserAuthProvider>
           </StoreProvider>
         </AdminAuthProvider>
       </body>

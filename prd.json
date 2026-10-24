@@ -203,6 +203,112 @@
       "priority": 14,
       "passes": true,
       "notes": "15 unit tests passing covering authentication, paise calculations, shipping waivers, and PIN validation; 27/27 routes compiled cleanly."
+    },
+    {
+      "id": "US-015",
+      "title": "Admin Route-Level Defense-in-Depth Session Protection",
+      "description": "As a security engineer, I want all /api/admin/* endpoints to strictly enforce requireAdminSession at the route handler level.",
+      "acceptanceCriteria": [
+        "All 6 admin API endpoints validate session token and signature at handler level",
+        "Unauthorized requests return HTTP 401 even if edge middleware is bypassed",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 15,
+      "passes": true,
+      "notes": "Implemented requireAdminSession in src/lib/auth.ts and applied across products, orders, settings, and audit admin route handlers."
+    },
+    {
+      "id": "US-016",
+      "title": "Durable Database Webhook Deduplication & Atomic Transactions",
+      "description": "As a payment specialist, I want webhooks deduplicated via PostgreSQL AuditLog and state updates bundled in an atomic transaction.",
+      "acceptanceCriteria": [
+        "Durable database deduplication via AuditLog prevents duplicate credits across serverless instances",
+        "Payment and order state updates execute in an atomic $transaction",
+        "Order amount matches webhook amount",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 16,
+      "passes": true,
+      "notes": "Switched webhook to shared @/lib/prisma, implemented AuditLog eventId deduplication, atomic transaction, and amount mismatch checks."
+    },
+    {
+      "id": "US-017",
+      "title": "Pluggable Carrier-Agnostic Logistics & Shiprocket Adapter",
+      "description": "As an operations lead, I want a carrier-agnostic logistics abstraction with Shiprocket and deterministic sandbox mock mode.",
+      "acceptanceCriteria": [
+        "ShippingProvider interface with serviceability, shipment creation, tracking, and cancellation",
+        "ShiprocketShippingAdapter with token caching and JWT auth",
+        "Deterministic Sandbox Mock Mode fallback for safe testing without carrier wallet billing",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 17,
+      "passes": true,
+      "notes": "Engineered src/lib/shipping/types.ts and src/lib/shipping/shiprocket.ts with Blue Dart Apex & Delhivery Air mapping and full mock fallback."
+    },
+    {
+      "id": "US-018",
+      "title": "Distributed Rate Limiter & Trusted Proxy IP Extraction",
+      "description": "As a DevSecOps engineer, I want rate limiting hardened against IP spoofing and supporting distributed Redis.",
+      "acceptanceCriteria": [
+        "Hardened client IP extraction prioritizing cf-connecting-ip and x-vercel-forwarded-for with regex validation",
+        "Optional Upstash Redis REST distributed limiter with fallback to in-memory sliding window",
+        "Timer unref on interval for clean node exit",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 18,
+      "passes": true,
+      "notes": "Enhanced src/lib/rate-limit.ts with trusted header hierarchy, Upstash Redis REST check, unref interval, and strict route profiles."
+    },
+    {
+      "id": "US-019",
+      "title": "Private Route Intermediary Cache Hardening",
+      "description": "As a security architect, I want private user and admin routes explicitly prevented from caching on intermediate CDNs.",
+      "acceptanceCriteria": [
+        "Strict Cache-Control: no-store, no-cache, must-revalidate headers on /api/admin/*, /api/orders/*, /admin/*, /checkout, /bag, /profile, /saved",
+        "Pragma: no-cache set for legacy proxies",
+        "Typecheck passes",
+        "Build passes"
+      ],
+      "priority": 19,
+      "passes": true,
+      "notes": "Configured private route Cache-Control headers in next.config.js preventing intermediary caching of orders, bag, and admin state."
+    },
+    {
+      "id": "US-020",
+      "title": "CI/CD Pipeline, Operational Documentation & Automated Test Harness",
+      "description": "As an engineering lead, I want full GitHub Actions CI, complete production documentation, and 45 passing unit/security tests.",
+      "acceptanceCriteria": [
+        "GitHub Actions CI pipeline (.github/workflows/ci.yml) running lint, typecheck, tests, and build",
+        "Operational documentation in docs/ (SECURITY_AUDIT, PRODUCTION_DEPLOYMENT, PAYMENT_SETUP, SHIPPING_SETUP)",
+        "Automated unit & security tests pass 100% (45/45)",
+        "Typecheck passes with 0 errors",
+        "Production build compiles 31/31 routes with 0 errors"
+      ],
+      "priority": 20,
+      "passes": true,
+      "notes": "Scaffolded CI pipeline, authored 4 complete operational docs, expanded test harness to 45 passing tests, 31 routes built cleanly."
+    },
+    {
+      "id": "US-021",
+      "title": "Customer User Login System & Active Administrative Credentials",
+      "description": "As a customer and administrator, I want a complete customer login/registration system and active administrative credentials configured for local management.",
+      "acceptanceCriteria": [
+        "Active admin credentials configured in .env.local (admin@trendstreet.in / TrendStreetAdmin2026!)",
+        "Customer authentication backend with PBKDF2 password hashing and HMAC-SHA256 session tokens",
+        "Customer API endpoints for login, register, session verification, and logout",
+        "Luxury /login page supporting customer sign in, registration, and quick demo login",
+        "Header and Profile page reflect authenticated customer state and support sign out",
+        "Unit tests pass (51/51)",
+        "Typecheck passes with 0 errors",
+        "Production build compiles 32/32 routes with 0 errors"
+      ],
+      "priority": 21,
+      "passes": true,
+      "notes": "Configured .env.local with active admin credentials, engineered src/lib/customer-auth.ts, UserAuthContext, luxury /login page, profile integration, and added unit tests."
     }
   ]
 }

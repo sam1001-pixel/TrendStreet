@@ -155,3 +155,32 @@ export function validateAdminCredentials(
 
   return { isValid: isIdValid && isPassValid, email: configuredAdminEmail };
 }
+
+/**
+ * Route-level defense-in-depth authorization check for administrative API routes.
+ * Independent of Edge middleware — guarantees unauthenticated requests are rejected
+ * even if middleware is bypassed or reconfigured.
+ */
+export async function requireAdminSession(
+  req: import("next/server").NextRequest
+): Promise<
+  | { authorized: true; session: SessionPayload }
+  | { authorized: false; response: import("next/server").NextResponse }
+> {
+  const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+  const session = await verifySessionToken(token);
+
+  if (!session || session.role !== "admin") {
+    const { NextResponse } = await import("next/server");
+    return {
+      authorized: false,
+      response: NextResponse.json(
+        { error: "Unauthorized: Valid administrative session token required." },
+        { status: 401 }
+      ),
+    };
+  }
+
+  return { authorized: true, session };
+}
+

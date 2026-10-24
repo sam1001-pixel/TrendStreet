@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
 import { adminOrderInclude, STATUS_TO_DB, STATUS_TO_UI, toAdminOrder } from "@/lib/admin-orders";
+import { requireAdminSession } from "@/lib/auth";
 import type { OrderStatus } from "@/types/store";
 
 export const dynamic = "force-dynamic";
 
 /** Update an order's status and/or courier tracking number. */
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await requireAdminSession(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const body = await req.json();
     const nextStatus = body?.status as OrderStatus | undefined;

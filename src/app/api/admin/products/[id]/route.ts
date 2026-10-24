@@ -3,12 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { getCatalog } from "@/lib/catalog";
 import { writeAudit } from "@/lib/audit";
 import { ProductInputError, saveProduct, validateProduct } from "@/lib/admin-products";
+import { requireAdminSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 type Ctx = { params: { id: string } };
 
 export async function PUT(req: NextRequest, { params }: Ctx) {
+  const auth = await requireAdminSession(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const before = (await getCatalog()).products.find((p) => p.id === params.id);
     if (!before) return NextResponse.json({ error: "Product not found." }, { status: 404 });
@@ -35,6 +39,9 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 }
 
 export async function DELETE(req: NextRequest, { params }: Ctx) {
+  const auth = await requireAdminSession(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const product = await prisma.product.findUnique({ where: { id: params.id }, select: { name: true } });
     if (!product) return NextResponse.json({ error: "Product not found." }, { status: 404 });

@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
 import { settingsFromDb, settingsToDb } from "@/lib/site-settings";
+import { requireAdminSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireAdminSession(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const row = await prisma.siteSettings.findUnique({ where: { id: "global" } });
     return NextResponse.json({ settings: settingsFromDb(row) });
@@ -16,6 +20,9 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
+  const auth = await requireAdminSession(req);
+  if (!auth.authorized) return auth.response;
+
   try {
     const incoming = settingsToDb(await req.json());
     const data = Object.fromEntries(Object.entries(incoming).filter(([, v]) => v !== undefined));
