@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Shield, Lock, Mail, ArrowRight, AlertCircle, CheckCircle, Sparkles, Eye, EyeOff } from "lucide-react";
+import { Shield, Lock, Mail, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const { login, isAuthenticated, isLoading } = useAdminAuth();
 
   const [adminId, setAdminId] = useState("");

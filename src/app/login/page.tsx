@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   User,
@@ -13,15 +13,11 @@ import {
   CheckCircle,
   Eye,
   EyeOff,
-  Sparkles,
-  Shield,
-  KeyRound,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useUserAuth } from "@/context/UserAuthContext";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/profile";
 
@@ -42,9 +38,9 @@ function LoginForm() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push(callbackUrl);
+      window.location.href = callbackUrl;
     }
-  }, [isAuthenticated, isLoading, router, callbackUrl]);
+  }, [isAuthenticated, isLoading, callbackUrl]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +54,8 @@ function LoginForm() {
     if (res.success) {
       setSuccessMsg("Signed in successfully. Redirecting to your atelier dashboard...");
       setTimeout(() => {
-        router.push(callbackUrl);
-      }, 700);
+        window.location.href = callbackUrl;
+      }, 500);
     } else {
       setError(res.message);
     }
@@ -82,25 +78,8 @@ function LoginForm() {
     if (res.success) {
       setSuccessMsg("Atelier account created! Welcome to Trend Street.");
       setTimeout(() => {
-        router.push(callbackUrl);
-      }, 800);
-    } else {
-      setError(res.message);
-    }
-  };
-
-  const handleQuickDemoLogin = async () => {
-    setEmail("customer@trendstreet.in");
-    setPassword("TrendStreet2026!");
-    setError(null);
-    setLoading(true);
-    const res = await login("customer@trendstreet.in", "TrendStreet2026!");
-    setLoading(false);
-    if (res.success) {
-      setSuccessMsg("Signed in with pre-seeded customer account.");
-      setTimeout(() => {
-        router.push(callbackUrl);
-      }, 600);
+        window.location.href = callbackUrl;
+      }, 500);
     } else {
       setError(res.message);
     }
@@ -336,40 +315,13 @@ function LoginForm() {
           </form>
         )}
 
-        {/* Quick Demo Customer Button */}
-        <div className="pt-2 border-t border-burgundy/10">
-          <button
-            type="button"
-            onClick={handleQuickDemoLogin}
-            disabled={loading}
-            className="w-full py-2.5 px-3 rounded-xl bg-gold/15 hover:bg-gold/25 border border-gold/40 text-espresso text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-gold-dark" />
-            <span>Instant Demo Customer Sign-In</span>
-          </button>
-          <p className="text-[10px] text-espresso/50 text-center mt-1">
-            Pre-configured with <code className="font-mono">customer@trendstreet.in</code>
-          </p>
-        </div>
       </div>
 
-      {/* Admin Link & Public Return */}
-      <div className="space-y-3 text-center">
-        <div className="p-3 rounded-2xl bg-espresso/5 border border-burgundy/10 flex items-center justify-between text-xs px-4">
-          <span className="text-espresso/70 flex items-center gap-1.5 font-medium">
-            <Shield className="w-3.5 h-3.5 text-burgundy" /> Atelier Staff Member?
-          </span>
-          <Link
-            href="/admin/login"
-            className="font-bold text-burgundy hover:text-crimson hover:underline flex items-center gap-1"
-          >
-            <KeyRound className="w-3 h-3 text-gold" /> Admin Portal →
-          </Link>
-        </div>
-
+      {/* Return to Public Storefront */}
+      <div className="text-center">
         <Link
           href="/"
-          className="text-xs text-espresso/60 hover:text-burgundy transition-colors inline-flex items-center gap-1"
+          className="text-xs text-espresso/60 hover:text-burgundy transition-colors inline-flex items-center gap-1 font-medium"
         >
           ← Return to Public Storefront
         </Link>

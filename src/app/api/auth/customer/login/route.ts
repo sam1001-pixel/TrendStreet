@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const clientIp = getClientIp(req.headers);
     const rateLimit = checkRateLimit(`cust-login:${clientIp}`, {
       windowMs: 15 * 60 * 1000,
-      maxRequests: 10,
+      maxRequests: 25,
     });
 
     if (!rateLimit.allowed) {

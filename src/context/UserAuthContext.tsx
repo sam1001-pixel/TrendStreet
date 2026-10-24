@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { CustomerUser } from "@/lib/customer-auth";
+import type { CustomerUser } from "@/lib/customer-auth";
 import { useStore } from "@/context/StoreContext";
 
 interface UserAuthContextType {

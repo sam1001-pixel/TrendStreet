@@ -41,11 +41,14 @@ function ProfileContent() {
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [draft, setDraft] = useState<Address | null>(null);
 
-  // Profile loads from device storage after first render — pick it up.
+  // Profile loads from device storage or authenticated user — pick it up.
   useEffect(() => {
-    setDetails({ name: user.name, email: user.email, phone: user.phone });
+    const activeName = authUser?.name || user.name;
+    const activeEmail = authUser?.email || user.email;
+    const activePhone = authUser?.phone || user.phone;
+    setDetails({ name: activeName, email: activeEmail, phone: activePhone });
     setFit(user.measurements);
-  }, [user.name, user.email, user.phone, user.measurements]);
+  }, [user.name, user.email, user.phone, user.measurements, authUser]);
 
   const flash = (m: string) => {
     setSavedMsg(m);

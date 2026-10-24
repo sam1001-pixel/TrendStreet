@@ -1,0 +1,20 @@
+[
+  {
+    "id": "cust_demo_001",
+    "email": "customer@trendstreet.in",
+    "name": "Aryan Mehra",
+    "phone": "+91 98200 54321",
+    "passwordHash": "6c2465301922e7558e582bf353002e5f:877099880972398002af7da5c3a2aa1dff395ea59a0599c8d13e438197b2dc41c716622e19b09c25ebfd741a382781e6a358a55dbcbd45ad7de8871906373c41",
+    "role": "CUSTOMER",
+    "createdAt": "2026-10-24T19:48:45.044Z"
+  },
+  {
+    "id": "cust_1792871411963_pn33o",
+    "email": "test_1792871411797@trendstreet.test",
+    "name": "Test Customer",
+    "phone": "+91 99999 88888",
+    "passwordHash": "030e51716aedff89eb4297976492768b:c31d1db01f88d74071ce04b9f2f5e0c1da67144a4164a5868f27e5d60b24d8a46ab393e6c04d354934922fa730c70e75b6eae46a6877e729ec22d1743df4db0d",
+    "role": "CUSTOMER",
+    "createdAt": "2026-10-24T19:50:11.963Z"
+  }
+]

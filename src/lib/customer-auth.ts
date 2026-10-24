@@ -183,83 +183,152 @@ const DEFAULT_PRESEEDED_CUSTOMER = {
   createdAt: new Date().toISOString(),
 };
 
+function getLocalCustomerFilePath(): string | null {
+  try {
+    const fs = require("fs");
+    const path = require("path");
+    const dataDir = path.join(process.cwd(), "data");
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    return path.join(dataDir, "customers.json");
+  } catch {
+    return null;
+  }
+}
+
+function loadPersistedCustomers(): Map<string, StoredCustomerRecord> {
+  const map = new Map<string, StoredCustomerRecord>();
+  map.set(DEFAULT_PRESEEDED_CUSTOMER.email.toLowerCase(), DEFAULT_PRESEEDED_CUSTOMER);
+
+  try {
+    const filePath = getLocalCustomerFilePath();
+    if (filePath) {
+      const fs = require("fs");
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, "utf-8");
+        const list: StoredCustomerRecord[] = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          for (const item of list) {
+            if (item && item.email) {
+              map.set(item.email.toLowerCase(), item);
+            }
+          }
+        }
+      } else {
+        savePersistedCustomers(map);
+      }
+    }
+  } catch {
+    // Non-fatal fallback to in-memory map
+  }
+
+  return map;
+}
+
+function savePersistedCustomers(map: Map<string, StoredCustomerRecord>): void {
+  try {
+    const filePath = getLocalCustomerFilePath();
+    if (filePath) {
+      const fs = require("fs");
+      const list = Array.from(map.values());
+      fs.writeFileSync(filePath, JSON.stringify(list, null, 2), "utf-8");
+    }
+  } catch {
+    // Non-fatal if filesystem is read-only
+  }
+}
+
 // Global in-memory storage to survive hot reloads in development
 const globalCustomerStore = globalThis as unknown as {
   __trendStreetCustomers?: Map<string, StoredCustomerRecord>;
 };
 
 if (!globalCustomerStore.__trendStreetCustomers) {
-  globalCustomerStore.__trendStreetCustomers = new Map();
-  globalCustomerStore.__trendStreetCustomers.set(
-    DEFAULT_PRESEEDED_CUSTOMER.email.toLowerCase(),
-    DEFAULT_PRESEEDED_CUSTOMER
-  );
+  globalCustomerStore.__trendStreetCustomers = loadPersistedCustomers();
 }
 
 export async function findCustomerByEmail(email: string): Promise<StoredCustomerRecord | null> {
   const normalized = email.trim().toLowerCase();
 
-  // Try database first if available
-  try {
-    const { prisma } = await import("./prisma");
-    const dbUser = await prisma.user.findUnique({
-      where: { email: normalized },
-    });
-    if (dbUser && dbUser.passwordHash) {
-      return {
-        id: dbUser.id,
-        email: dbUser.email,
-        name: dbUser.name || "Customer",
-        phone: dbUser.phone || undefined,
-        passwordHash: dbUser.passwordHash,
-        role: "CUSTOMER",
-        createdAt: dbUser.createdAt.toISOString(),
-      };
+  // Try database first if DATABASE_URL is configured
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres")) {
+    try {
+      const { prisma } = await import("./prisma");
+      const dbUser = await prisma.user.findUnique({
+        where: { email: normalized },
+      });
+      if (dbUser && dbUser.passwordHash) {
+        return {
+          id: dbUser.id,
+          email: dbUser.email,
+          name: dbUser.name || "Customer",
+          phone: dbUser.phone || undefined,
+          passwordHash: dbUser.passwordHash,
+          role: "CUSTOMER",
+          createdAt: dbUser.createdAt.toISOString(),
+        };
+      }
+    } catch {
+      // Database offline or failed — fall through to durable local store
     }
-  } catch {
-    // Database offline or not configured — fall through to in-memory store
   }
 
-  // Fallback to resilient memory store
-  const record = globalCustomerStore.__trendStreetCustomers?.get(normalized);
+  // Check memory store
+  let record = globalCustomerStore.__trendStreetCustomers?.get(normalized);
+  if (!record) {
+    // Refresh from disk in case written by another worker process
+    const refreshed = loadPersistedCustomers();
+    globalCustomerStore.__trendStreetCustomers = refreshed;
+    record = refreshed.get(normalized);
+  }
+
   return record || null;
 }
 
 export async function findCustomerById(id: string): Promise<CustomerUser | null> {
-  try {
-    const { prisma } = await import("./prisma");
-    const dbUser = await prisma.user.findUnique({
-      where: { id },
-      select: { id: true, email: true, name: true, phone: true, createdAt: true },
-    });
-    if (dbUser) {
-      return {
-        id: dbUser.id,
-        email: dbUser.email,
-        name: dbUser.name || "Customer",
-        phone: dbUser.phone || undefined,
-        role: "CUSTOMER",
-        createdAt: dbUser.createdAt.toISOString(),
-      };
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres")) {
+    try {
+      const { prisma } = await import("./prisma");
+      const dbUser = await prisma.user.findUnique({
+        where: { id },
+        select: { id: true, email: true, name: true, phone: true, createdAt: true },
+      });
+      if (dbUser) {
+        return {
+          id: dbUser.id,
+          email: dbUser.email,
+          name: dbUser.name || "Customer",
+          phone: dbUser.phone || undefined,
+          role: "CUSTOMER",
+          createdAt: dbUser.createdAt.toISOString(),
+        };
+      }
+    } catch {
+      // Fall through to memory store
     }
-  } catch {
-    // Fall through to memory store
   }
 
-  const records = globalCustomerStore.__trendStreetCustomers
+  let records = globalCustomerStore.__trendStreetCustomers
     ? Array.from(globalCustomerStore.__trendStreetCustomers.values())
     : [];
-  for (const record of records) {
-    if (record.id === id) {
-      return {
-        id: record.id,
-        email: record.email,
-        name: record.name,
-        phone: record.phone,
-        role: "CUSTOMER",
-        createdAt: record.createdAt,
-      };
-    }
+
+  let match = records.find((r) => r.id === id);
+  if (!match) {
+    const refreshed = loadPersistedCustomers();
+    globalCustomerStore.__trendStreetCustomers = refreshed;
+    match = Array.from(refreshed.values()).find((r) => r.id === id);
+  }
+
+  if (match) {
+    return {
+      id: match.id,
+      email: match.email,
+      name: match.name,
+      phone: match.phone,
+      role: "CUSTOMER",
+      createdAt: match.createdAt,
+    };
   }
 
   return null;
@@ -286,27 +355,33 @@ export async function createCustomerUser(data: {
     createdAt: now,
   };
 
-  // Attempt database write
-  try {
-    const { prisma } = await import("./prisma");
-    const { Role } = await import("@prisma/client");
-    const created = await prisma.user.create({
-      data: {
-        email: normalized,
-        name: data.name.trim(),
-        phone: data.phone?.trim() || null,
-        passwordHash: combined,
-        role: Role.CUSTOMER,
-      },
-    });
+  // Attempt database write if DATABASE_URL is configured
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres")) {
+    try {
+      const { prisma } = await import("./prisma");
+      const { Role } = await import("@prisma/client");
+      const created = await prisma.user.create({
+        data: {
+          email: normalized,
+          name: data.name.trim(),
+          phone: data.phone?.trim() || null,
+          passwordHash: combined,
+          role: Role.CUSTOMER,
+        },
+      });
 
-    customerRecord.id = created.id;
-  } catch (dbErr) {
-    console.warn("[Customer Auth] Database unavailable, persisting to memory cache:", (dbErr as Error).message);
+      customerRecord.id = created.id;
+    } catch (dbErr) {
+      console.warn("[Customer Auth] Database unavailable, persisting to local store:", (dbErr as Error).message);
+    }
   }
 
-  // Always keep in fallback cache for seamless local availability
-  globalCustomerStore.__trendStreetCustomers?.set(normalized, customerRecord);
+  // Persist to memory store and durable disk file
+  if (!globalCustomerStore.__trendStreetCustomers) {
+    globalCustomerStore.__trendStreetCustomers = loadPersistedCustomers();
+  }
+  globalCustomerStore.__trendStreetCustomers.set(normalized, customerRecord);
+  savePersistedCustomers(globalCustomerStore.__trendStreetCustomers);
 
   return {
     id: customerRecord.id,
