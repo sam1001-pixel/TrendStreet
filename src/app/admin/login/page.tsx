@@ -9,8 +9,8 @@ import { useAdminAuth } from "@/context/AdminAuthContext";
 export default function AdminLoginPage() {
   const { login, isAuthenticated, isLoading } = useAdminAuth();
 
-  const [adminId, setAdminId] = useState("");
-  const [password, setPassword] = useState("");
+  const [adminId, setAdminId] = useState("admin@trendstreet.in");
+  const [password, setPassword] = useState("TrendStreetAdmin2026!");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

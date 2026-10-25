@@ -32,9 +32,9 @@ function LoginForm() {
 
   // Form Fields
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("customer@trendstreet.in");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("TrendStreet2026!");
 
   // Redirect if already authenticated
   useEffect(() => {
