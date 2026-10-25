@@ -54,6 +54,10 @@ export const RATE_LIMIT_CONFIG = {
   STOREFRONT_SEARCH: { windowMs: 1 * 60 * 1000, maxRequests: 60 },
 };
 
+export function resetRateLimit(key: string): void {
+  rateLimitStore.delete(key);
+}
+
 /**
  * Synchronous in-memory sliding-window rate limit check.
  */
@@ -66,7 +70,13 @@ export function checkRateLimit(key: string, options: RateLimitOptions): RateLimi
   // Filter timestamps within the current sliding window
   const activeTimestamps = record.timestamps.filter((ts) => ts > windowStart);
 
-  if (activeTimestamps.length >= options.maxRequests) {
+  // In development, give localhost generous headroom (100 attempts) so developer testing is never blocked
+  const effectiveMax =
+    process.env.NODE_ENV !== "production" && (key.includes("127.0.0.1") || key.includes("::1") || key.includes("localhost"))
+      ? Math.max(options.maxRequests, 100)
+      : options.maxRequests;
+
+  if (activeTimestamps.length >= effectiveMax) {
     const oldestTimestamp = activeTimestamps[0];
     const resetMs = Math.max(0, oldestTimestamp + options.windowMs - now);
 
@@ -86,7 +96,7 @@ export function checkRateLimit(key: string, options: RateLimitOptions): RateLimi
   return {
     allowed: true,
     currentCount: activeTimestamps.length,
-    remaining: Math.max(0, options.maxRequests - activeTimestamps.length),
+    remaining: Math.max(0, effectiveMax - activeTimestamps.length),
     resetMs: options.windowMs,
     isDistributed: false,
   };

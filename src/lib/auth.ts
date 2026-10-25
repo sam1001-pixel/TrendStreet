@@ -117,6 +117,22 @@ export async function verifySessionToken(token: string | undefined): Promise<Ses
 
 /**
  * Constant-time string equality to prevent timing attacks.
+/**
+ * Determines whether the incoming request is arriving over an encrypted HTTPS connection.
+ * Used to avoid setting 'Secure' cookie flag over local plain HTTP connections (e.g., localhost:3000),
+ * which causes modern browsers to reject/drop the cookie.
+ */
+export function isRequestSecure(req: { nextUrl?: { protocol: string }; headers: Headers }): boolean {
+  if (req.nextUrl?.protocol === "https:") return true;
+  const proto = req.headers.get("x-forwarded-proto");
+  if (proto === "https") return true;
+  const host = req.headers.get("host") || "";
+  if (host.includes("localhost") || host.includes("127.0.0.1") || host.includes("[::1]")) return false;
+  return process.env.NODE_ENV === "production" && (process.env.NEXT_PUBLIC_SITE_URL?.startsWith("https://") ?? false);
+}
+
+/**
+ * Constant-time string equality to prevent timing attacks.
  * Universal implementation compatible with Node.js and Edge Runtime.
  */
 export function timingSafeEqualStr(a: string, b: string): boolean {
@@ -156,23 +172,26 @@ export function validateAdminCredentials(
   }
 
   const normalizedId = id.trim().toLowerCase();
+  const candidatePass = pass.trim();
 
   // Primary check: exact configured email
   const isEmailMatch = timingSafeEqualStr(normalizedId, configuredAdminEmail);
 
-  // When standard Trend Street admin is configured, accept canonical username "admin" and founder alias "sujal@trendstreet.com"
+  // When standard Trend Street admin is configured, accept canonical username "admin" and founder aliases
   const isStandardAdmin =
     configuredAdminEmail === "admin@trendstreet.in" || configuredAdminEmail === "sujal@trendstreet.com";
   const isAliasMatch =
     isStandardAdmin &&
     (timingSafeEqualStr(normalizedId, "admin") ||
       timingSafeEqualStr(normalizedId, "admin@trendstreet.in") ||
-      timingSafeEqualStr(normalizedId, "sujal@trendstreet.com"));
+      timingSafeEqualStr(normalizedId, "sujal") ||
+      timingSafeEqualStr(normalizedId, "sujal@trendstreet.com") ||
+      timingSafeEqualStr(normalizedId, "trendstreet"));
 
   const isIdValid = isEmailMatch || isAliasMatch;
 
-  // Constant-time, case-sensitive password comparison.
-  const isPassValid = timingSafeEqualStr(pass.trim(), configuredAdminPass);
+  // Constant-time password comparison against configured admin password
+  const isPassValid = timingSafeEqualStr(candidatePass, configuredAdminPass);
 
   return { isValid: isIdValid && isPassValid, email: configuredAdminEmail };
 }
@@ -188,7 +207,11 @@ export async function requireAdminSession(
   | { authorized: true; session: SessionPayload }
   | { authorized: false; response: import("next/server").NextResponse }
 > {
-  const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+  const token =
+    req.cookies.get(SESSION_COOKIE_NAME)?.value ||
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
+    req.headers.get("x-admin-token") ||
+    undefined;
   const session = await verifySessionToken(token);
 
   if (!session || session.role !== "admin") {

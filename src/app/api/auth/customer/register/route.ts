@@ -86,10 +86,17 @@ export async function POST(req: NextRequest) {
       name: newUser.name,
     });
 
+    // Clear rate limit on successful registration
+    const { resetRateLimit } = await import("@/lib/rate-limit");
+    resetRateLimit(`cust-register:${clientIp}`);
+
+    const { isRequestSecure } = await import("@/lib/auth");
+
     const response = NextResponse.json(
       {
         success: true,
         message: "Your Atelier Account has been successfully created.",
+        token,
         user: newUser,
       },
       { status: 201 }
@@ -99,7 +106,7 @@ export async function POST(req: NextRequest) {
       name: CUSTOMER_SESSION_COOKIE,
       value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isRequestSecure(req),
       sameSite: "lax",
       path: "/",
       maxAge: CUSTOMER_SESSION_MAX_AGE,

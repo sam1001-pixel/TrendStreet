@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   findCustomerByEmail,
-  verifyPassword,
+  verifyCustomerPassword,
   signCustomerToken,
   CUSTOMER_SESSION_COOKIE,
   CUSTOMER_SESSION_MAX_AGE,
 } from "@/lib/customer-auth";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { isRequestSecure } from "@/lib/auth";
+import { checkRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Sliding-window rate limit (10 attempts per 15 minutes per IP)
+    // 1. Sliding-window rate limit (25 attempts per 15 minutes per IP)
     const clientIp = getClientIp(req.headers);
     const rateLimit = checkRateLimit(`cust-login:${clientIp}`, {
       windowMs: 15 * 60 * 1000,
@@ -51,13 +52,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isPasswordValid = verifyPassword(password, customer.passwordHash);
+    const isPasswordValid = verifyCustomerPassword(password, customer.passwordHash);
     if (!isPasswordValid) {
       return NextResponse.json(
         { success: false, message: "Invalid email or password." },
         { status: 401 }
       );
     }
+
+    // Reset rate limit on successful credentials
+    resetRateLimit(`cust-login:${clientIp}`);
 
     const token = await signCustomerToken({
       id: customer.id,
@@ -68,6 +72,7 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       success: true,
       message: "Welcome back to Trend Street.",
+      token,
       user: {
         id: customer.id,
         email: customer.email,
@@ -81,7 +86,7 @@ export async function POST(req: NextRequest) {
       name: CUSTOMER_SESSION_COOKIE,
       value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isRequestSecure(req),
       sameSite: "lax",
       path: "/",
       maxAge: CUSTOMER_SESSION_MAX_AGE,

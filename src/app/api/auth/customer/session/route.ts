@@ -9,7 +9,11 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value;
+    const token =
+      req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value ||
+      req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
+      req.headers.get("x-customer-token") ||
+      undefined;
     const session = await verifyCustomerToken(token);
 
     if (!session) {

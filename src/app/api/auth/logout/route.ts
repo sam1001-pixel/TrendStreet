@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeAudit } from "@/lib/audit";
-import { SESSION_COOKIE_NAME } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, isRequestSecure } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     name: SESSION_COOKIE_NAME,
     value: "",
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isRequestSecure(req),
     sameSite: "lax",
     path: "/",
     maxAge: 0,

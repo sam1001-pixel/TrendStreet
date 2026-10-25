@@ -115,7 +115,14 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // 2. Authoritative check with server
     const checkServerSession = async () => {
       try {
-        const res = await fetch("/api/auth/session");
+        const cachedToken = typeof window !== "undefined" ? localStorage.getItem("ts_admin_token") : null;
+        const headers: Record<string, string> = {};
+        if (cachedToken) {
+          headers["Authorization"] = `Bearer ${cachedToken}`;
+          headers["x-admin-token"] = cachedToken;
+        }
+
+        const res = await fetch("/api/auth/session", { headers });
         if (res.ok) {
           const data = await res.json();
           if (data.authenticated && data.email) {
@@ -125,15 +132,12 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               localStorage.setItem("ts_admin_authenticated", "true");
               localStorage.setItem("ts_admin_email", data.email);
             } catch (_) {}
-          } else {
-            setIsAuthenticated(false);
-            setAdminEmail(null);
-            try {
-              localStorage.removeItem("ts_admin_authenticated");
-              localStorage.removeItem("ts_admin_email");
-            } catch (_) {}
+            return;
           }
-        } else {
+        }
+
+        // If server explicitly said not authenticated and no token was present
+        if (!cachedToken) {
           setIsAuthenticated(false);
           setAdminEmail(null);
           try {
@@ -143,12 +147,6 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       } catch (err) {
         console.error("Session verification error:", err);
-        setIsAuthenticated(false);
-        setAdminEmail(null);
-        try {
-          localStorage.removeItem("ts_admin_authenticated");
-          localStorage.removeItem("ts_admin_email");
-        } catch (_) {}
       } finally {
         setIsLoading(false);
         setIsHydrated(true);
@@ -193,6 +191,9 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         try {
           localStorage.setItem("ts_admin_authenticated", "true");
           localStorage.setItem("ts_admin_email", data.email || "");
+          if (data.token) {
+            localStorage.setItem("ts_admin_token", data.token);
+          }
         } catch (_) {}
         return {
           success: true,
@@ -213,7 +214,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  // Server-authoritative logout clearing HTTP-only cookie
+  // Server-authoritative logout clearing HTTP-only cookie and local token
   const logout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -225,6 +226,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       try {
         localStorage.removeItem("ts_admin_authenticated");
         localStorage.removeItem("ts_admin_email");
+        localStorage.removeItem("ts_admin_token");
       } catch (_) {}
     }
   };

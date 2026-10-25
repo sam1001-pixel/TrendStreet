@@ -13,6 +13,7 @@ import {
   CheckCircle,
   Eye,
   EyeOff,
+  Sparkles,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useUserAuth } from "@/context/UserAuthContext";
@@ -77,6 +78,26 @@ function LoginForm() {
 
     if (res.success) {
       setSuccessMsg("Atelier account created! Welcome to Trend Street.");
+      setTimeout(() => {
+        window.location.href = callbackUrl;
+      }, 500);
+    } else {
+      setError(res.message);
+    }
+  };
+
+  const handleQuickDemoLogin = async () => {
+    setEmail("customer@trendstreet.in");
+    setPassword("TrendStreet2026!");
+    setError(null);
+    setSuccessMsg(null);
+    setLoading(true);
+
+    const res = await login("customer@trendstreet.in", "TrendStreet2026!");
+    setLoading(false);
+
+    if (res.success) {
+      setSuccessMsg("Signed in with pre-seeded customer account. Redirecting...");
       setTimeout(() => {
         window.location.href = callbackUrl;
       }, 500);
@@ -315,6 +336,32 @@ function LoginForm() {
           </form>
         )}
 
+        {/* 1-Click Fast Track Demo Customer Sign-In */}
+        <div className="pt-4 border-t border-burgundy/15 space-y-2">
+          <button
+            type="button"
+            onClick={handleQuickDemoLogin}
+            disabled={loading}
+            className="w-full py-2.5 px-3 rounded-xl bg-gold/15 hover:bg-gold/25 border border-gold/40 text-espresso text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-60"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-gold-dark" />
+            <span>Instant 1-Click Demo Customer Sign-In</span>
+          </button>
+
+          <div className="p-2.5 bg-ivory rounded-xl border border-burgundy/10 text-[11px] text-espresso/70 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-burgundy">Pre-Seeded Account:</span>
+              <code className="bg-white px-1.5 py-0.5 rounded font-mono text-[10px]">customer@trendstreet.in</code>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-burgundy">Password:</span>
+              <code className="bg-white px-1.5 py-0.5 rounded font-mono text-[10px]">TrendStreet2026!</code>
+            </div>
+            <p className="text-[10px] text-espresso/50 italic pt-0.5">
+              Click the button above to sign in instantly with Aryan Mehra&apos;s atelier account.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Return to Public Storefront */}

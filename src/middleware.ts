@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth";
 
+function extractAdminToken(req: NextRequest): string | undefined {
+  return (
+    req.cookies.get(SESSION_COOKIE_NAME)?.value ||
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
+    req.headers.get("x-admin-token") ||
+    undefined
+  );
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const cleanPath = pathname.replace(/\/+$/, "") || "/";
 
   // Intercept administrative API routes
-  if (pathname.startsWith("/api/admin")) {
-    const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+  if (cleanPath.startsWith("/api/admin")) {
+    const token = extractAdminToken(req);
     const session = await verifySessionToken(token);
 
     if (!session) {
@@ -19,11 +29,11 @@ export async function middleware(req: NextRequest) {
   }
 
   // Intercept administrative UI paths
-  if (pathname.startsWith("/admin")) {
+  if (cleanPath.startsWith("/admin")) {
     // Permit access to the login page itself
-    if (pathname === "/admin/login") {
+    if (cleanPath === "/admin/login") {
       // If already authenticated, redirect to /admin dashboard
-      const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+      const token = extractAdminToken(req);
       const session = await verifySessionToken(token);
       if (session) {
         return NextResponse.redirect(new URL("/admin", req.url));
@@ -32,7 +42,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Verify cryptographic session cookie at Edge
-    const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+    const token = extractAdminToken(req);
     const session = await verifySessionToken(token);
 
     if (!session) {

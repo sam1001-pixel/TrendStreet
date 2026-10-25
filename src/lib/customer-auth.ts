@@ -66,6 +66,14 @@ export function verifyPassword(password: string, storedHashOrCombined: string, e
   }
 }
 
+/**
+ * Verifies candidate password against stored cryptographic salt + PBKDF2 hash.
+ */
+export function verifyCustomerPassword(password: string, storedHashOrCombined: string): boolean {
+  if (!password || !storedHashOrCombined) return false;
+  return verifyPassword(password, storedHashOrCombined);
+}
+
 // ----------------------------------------------------
 // 2. CRYPTOGRAPHIC SESSION TOKENS (Web Crypto HMAC-SHA256)
 // ----------------------------------------------------
@@ -281,6 +289,10 @@ export async function findCustomerByEmail(email: string): Promise<StoredCustomer
     const refreshed = loadPersistedCustomers();
     globalCustomerStore.__trendStreetCustomers = refreshed;
     record = refreshed.get(normalized);
+  }
+
+  if (!record && (normalized === "customer@trendstreet.in" || normalized === "demo@trendstreet.in")) {
+    return DEFAULT_PRESEEDED_CUSTOMER;
   }
 
   return record || null;

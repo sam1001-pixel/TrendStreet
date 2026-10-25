@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { signSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE, validateAdminCredentials } from "@/lib/auth";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { signSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE, validateAdminCredentials, isRequestSecure } from "@/lib/auth";
+import { checkRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";
 import { writeAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
-    const trimmedPass = password.trim();
 
     // Centralized server-side credential validation
     const { isValid, email: validatedEmail } = validateAdminCredentials(email, password);
@@ -49,6 +48,8 @@ export async function POST(req: NextRequest) {
     const resolvedEmail = validatedEmail;
 
     if (isAuthenticatedAdmin) {
+      // Clear rate limit on successful authentication
+      resetRateLimit(`login:${clientIp}`);
       await writeAudit(req, { action: "ADMIN_LOGIN", entityType: "Session", actorEmail: resolvedEmail });
       const token = await signSessionToken(resolvedEmail);
 
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
         {
           success: true,
           email: resolvedEmail,
+          token,
           message: "Authentication successful. Administrative session initialized.",
         },
         { status: 200 }
@@ -65,7 +67,7 @@ export async function POST(req: NextRequest) {
         name: SESSION_COOKIE_NAME,
         value: token,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: isRequestSecure(req),
         sameSite: "lax",
         path: "/",
         maxAge: SESSION_MAX_AGE,
