@@ -20,12 +20,17 @@ import {
   Megaphone,
   Tag,
   Percent,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  UploadCloud,
 } from "lucide-react";
 import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { formatPrice } from "@/lib/pricing";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { OrderStatus, Product } from "@/types/store";
+import { ImageGalleryUpload } from "@/components/admin/ImageGalleryUpload";
 
 export default function AdminDashboardPage() {
   const {
@@ -65,6 +70,34 @@ export default function AdminDashboardPage() {
   const [quickPromoCode, setQuickPromoCode] = useState("");
   const [quickPromoPercent, setQuickPromoPercent] = useState(15);
   const [quickPromoDesc, setQuickPromoDesc] = useState("Seasonal VIP Flash Discount");
+
+  // Atelier Media Gallery state
+  const [galleryImages, setGalleryImages] = useState<string[]>([
+    "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop",
+  ]);
+
+  // Storefront sections state
+  const storefrontSections = siteSettings?.storefrontSections || {
+    hero: true,
+    weightTest: true,
+    shopByPriceOccasion: true,
+    runwayReel: true,
+    hangingRail: true,
+    dropList: true,
+    silhouetteAccordion: true,
+    reviewGallery: true,
+    trustStrip: true,
+  };
+
+  const handleToggleSection = async (key: keyof typeof storefrontSections) => {
+    await updateSiteSettings({
+      ...siteSettings,
+      storefrontSections: {
+        ...storefrontSections,
+        [key]: !storefrontSections[key],
+      },
+    });
+  };
 
   // Metrics calculation
   const liveOrders = orders.filter((o) => o.status !== "Cancelled");
@@ -415,6 +448,107 @@ export default function AdminDashboardPage() {
               Advanced Settings →
             </Link>
           </div>
+        </div>
+      </div>
+
+      {/* Full Site Control: Storefront Sections & Atelier Gallery Upload */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Storefront Sections Controller */}
+        <div className="bg-white p-6 rounded-2xl border border-burgundy/15 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-burgundy/10">
+            <div>
+              <div className="flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-crimson mb-1">
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Live Site Controller</span>
+              </div>
+              <h3 className="font-serif text-lg font-bold text-espresso">
+                Homepage Sections
+              </h3>
+            </div>
+            <Link
+              href="/admin/settings"
+              className="text-xs font-bold uppercase tracking-wider text-burgundy hover:text-crimson flex items-center gap-1"
+            >
+              <span>Full Manager</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <p className="text-xs text-espresso/70">
+            Toggle homepage sections on or off live. Visitors will immediately see updated layouts.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            {[
+              { key: "weightTest" as const, name: "The Weight Test (Fabric)" },
+              { key: "shopByPriceOccasion" as const, name: "Shop Your Way (Occasion)" },
+              { key: "runwayReel" as const, name: "The Runway Reel" },
+              { key: "hangingRail" as const, name: "Fresh off the Rail" },
+              { key: "dropList" as const, name: "The Drop List" },
+              { key: "silhouetteAccordion" as const, name: "Three Cuts Accordion" },
+              { key: "reviewGallery" as const, name: "Reviews Gallery" },
+              { key: "trustStrip" as const, name: "Promises Trust Strip" },
+            ].map((sec) => {
+              const isVisible = storefrontSections[sec.key];
+              return (
+                <button
+                  key={sec.key}
+                  type="button"
+                  onClick={() => handleToggleSection(sec.key)}
+                  className={`p-2.5 rounded-xl border text-left flex items-center justify-between gap-2 transition-all text-xs ${
+                    isVisible
+                      ? "bg-ivory border-burgundy/30 text-espresso shadow-xs"
+                      : "bg-espresso/5 border-espresso/15 text-espresso/50 line-through"
+                  }`}
+                >
+                  <span className="font-medium truncate">{sec.name}</span>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1 ${
+                      isVisible
+                        ? "bg-green-100 text-green-800"
+                        : "bg-espresso/10 text-espresso/60 no-underline"
+                    }`}
+                  >
+                    {isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                    <span>{isVisible ? "Active" : "Hidden"}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Quick Atelier Device Gallery Upload Desk */}
+        <div className="bg-white p-6 rounded-2xl border border-burgundy/15 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-burgundy/10">
+            <div>
+              <div className="flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-crimson mb-1">
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Media & Asset Desk</span>
+              </div>
+              <h3 className="font-serif text-lg font-bold text-espresso">
+                Device Gallery Upload
+              </h3>
+            </div>
+            <Link
+              href="/admin/products"
+              className="text-xs font-bold uppercase tracking-wider text-burgundy hover:text-crimson flex items-center gap-1"
+            >
+              <span>Product Catalog</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <p className="text-xs text-espresso/70">
+            Upload garment photography directly from device photo gallery, mobile camera, or pick atelier presets.
+          </p>
+
+          <ImageGalleryUpload
+            images={galleryImages}
+            onChange={setGalleryImages}
+            label="Live Media Sandbox"
+            helperText="Uploaded assets are immediately stored and ready for garment listings."
+          />
         </div>
       </div>
 

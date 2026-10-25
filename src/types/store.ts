@@ -180,4 +180,15 @@ export interface SiteSettings {
     address: string;
     hours: string;
   };
+  storefrontSections?: {
+    hero?: boolean;
+    weightTest?: boolean;
+    shopByPriceOccasion?: boolean;
+    runwayReel?: boolean;
+    hangingRail?: boolean;
+    dropList?: boolean;
+    silhouetteAccordion?: boolean;
+    reviewGallery?: boolean;
+    trustStrip?: boolean;
+  };
 }

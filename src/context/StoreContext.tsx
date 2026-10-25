@@ -122,6 +122,16 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     address: "Atelier 4, Pali Hill Road, Bandra West, Mumbai 400050, India",
     hours: "Monday – Saturday: 10:00 AM – 8:00 PM IST",
   },
+  storefrontSections: {
+    weightTest: true,
+    shopByPriceOccasion: true,
+    runwayReel: true,
+    hangingRail: true,
+    dropList: true,
+    silhouetteAccordion: true,
+    reviewGallery: true,
+    trustStrip: true,
+  },
 };
 
 const INITIAL_ORDERS: Order[] = [

@@ -13,6 +13,7 @@ export type EditableSettings = {
   hero?: Partial<SiteSettings["hero"]>;
   marqueePhrases?: string[];
   contactInfo?: Partial<SiteSettings["contactInfo"]>;
+  storefrontSections?: Partial<NonNullable<SiteSettings["storefrontSections"]>>;
 };
 
 export function settingsFromDb(row: DbSiteSettings | null): EditableSettings {
@@ -35,6 +36,7 @@ export function settingsFromDb(row: DbSiteSettings | null): EditableSettings {
     },
     ...(row.marqueeText.length ? { marqueePhrases: row.marqueeText } : {}),
     contactInfo: { phone: row.conciergePhone, email: row.conciergeEmail },
+    ...(row.storefrontSections ? { storefrontSections: row.storefrontSections as any } : {}),
   };
 }
 
@@ -56,5 +58,6 @@ export function settingsToDb(s: Partial<SiteSettings>) {
     marqueeText: Array.isArray(s.marqueePhrases) ? s.marqueePhrases.filter((p) => typeof p === "string").slice(0, 30) : undefined,
     conciergePhone: str(s.contactInfo?.phone),
     conciergeEmail: str(s.contactInfo?.email),
+    storefrontSections: s.storefrontSections ? JSON.parse(JSON.stringify(s.storefrontSections)) : undefined,
   };
 }

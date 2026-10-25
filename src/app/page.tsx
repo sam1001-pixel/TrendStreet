@@ -8,7 +8,8 @@ import { ScrollProductReel } from "@/components/premium/ScrollProductReel";
 import { VelocityMarquee } from "@/components/premium/VelocityMarquee";
 import { TrustStrip } from "@/components/premium/TrustStrip";
 import { HangingRail } from "@/components/premium/HangingRail";
-import { ScrollProgress } from "@/components/premium/ScrollProgress";
+import { WeightTest } from "@/components/premium/WeightTest";
+import { ShopByPriceOccasion } from "@/components/premium/ShopByPriceOccasion";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { CustomerReviewGallery } from "@/components/CustomerReviewGallery";
 import { OffcultAssistDrawer } from "@/components/OffcultAssistDrawer";
@@ -20,28 +21,33 @@ export default function HomePage() {
 
   return (
     <div className="space-y-14 bg-bone pb-16 text-stone-900 sm:space-y-24 sm:pb-24 md:space-y-28">
-      <CinematicHero />
+      {siteSettings?.storefrontSections?.hero !== false && <CinematicHero />}
 
       <div className="!mt-0">
         <VelocityMarquee phrases={siteSettings.marqueePhrases} />
       </div>
 
-      <TrustStrip />
+      {siteSettings?.storefrontSections?.trustStrip !== false && <TrustStrip />}
 
       {/* Products first: what's new and what sells */}
-      <ProductShowcase />
+      {siteSettings?.storefrontSections?.dropList !== false && <ProductShowcase />}
 
-      <SilhouetteAccordion />
+      {siteSettings?.storefrontSections?.silhouetteAccordion !== false && <SilhouetteAccordion />}
 
-      <HangingRail />
+      {siteSettings?.storefrontSections?.hangingRail !== false && <HangingRail />}
 
-      <ScrollProductReel />
+      {/* Fabric weight comparison */}
+      {siteSettings?.storefrontSections?.weightTest !== false && <WeightTest />}
 
-      <CustomerReviewGallery />
+      {siteSettings?.storefrontSections?.runwayReel !== false && <ScrollProductReel />}
+
+      {/* Curated shopping shortcuts */}
+      {siteSettings?.storefrontSections?.shopByPriceOccasion !== false && <ShopByPriceOccasion />}
+
+      {siteSettings?.storefrontSections?.reviewGallery !== false && <CustomerReviewGallery />}
 
       <OffcultAssistDrawer onOpenTracker={() => setIsTrackerOpen(true)} />
       <LiveCourierTrackerModal isOpen={isTrackerOpen} onClose={() => setIsTrackerOpen(false)} />
-      <ScrollProgress />
     </div>
   );
 }

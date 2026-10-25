@@ -22,8 +22,9 @@ export function validateProduct(p: Partial<Product>) {
   if (!(price > 0 && price < 1_000_000)) throw new ProductInputError("Enter a price in rupees.");
   const originalPrice = p.originalPrice ? Number(p.originalPrice) : undefined;
   if (originalPrice !== undefined && !(originalPrice >= price)) throw new ProductInputError("Original price must be at least the selling price.");
-  const images = list(p.images, 12).filter((u) => /^(https:\/\/|\/)/.test(u));
-  if (!images.length) throw new ProductInputError("Add at least one image URL (https://…).");
+  const rawImages = Array.isArray(p.images) ? p.images.map((x) => (typeof x === "string" ? x.trim() : "")).filter(Boolean) : [];
+  const images = rawImages.filter((u) => /^(https:\/\/|\/(?![\/\\])|data:image\/)/.test(u)).slice(0, 12);
+  if (!images.length) throw new ProductInputError("Add at least one image URL or upload from gallery.");
   const sizes = Array.from(new Set(list(p.sizes, 12)));
   if (!sizes.length) throw new ProductInputError("Add at least one size.");
   const colors = (Array.isArray(p.colors) ? p.colors : [])

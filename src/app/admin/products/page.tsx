@@ -19,6 +19,7 @@ import {
 import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { Product, ProductCategory } from "@/types/store";
+import { ImageGalleryUpload } from "@/components/admin/ImageGalleryUpload";
 
 const CATEGORIES: ProductCategory[] = [
   "Oversized",
@@ -56,7 +57,7 @@ export default function AdminProductsPage() {
     details: "520gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders\nDouble-needle reinforced seams",
     fabric: "520gsm Japanese Loopback Terry",
     careInstructions: "Machine wash cold inside out\nAir dry flat",
-    imageUrl: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop",
+    images: ["https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop"],
     sizes: "S, M, L, XL",
     colorName: "Deep Burgundy",
     colorHex: "#4A1216",
@@ -96,7 +97,7 @@ export default function AdminProductsPage() {
       details: newForm.details.split("\n").filter(Boolean),
       fabric: newForm.fabric,
       careInstructions: newForm.careInstructions.split("\n").filter(Boolean),
-      images: [newForm.imageUrl],
+      images: newForm.images && newForm.images.length > 0 ? newForm.images : ["https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop"],
       sizes: newForm.sizes.split(",").map((s) => s.trim()),
       colors: [{ name: newForm.colorName, hex: newForm.colorHex }],
       featured: newForm.featured,
@@ -117,7 +118,7 @@ export default function AdminProductsPage() {
       details: "520gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders",
       fabric: "520gsm Japanese Loopback Terry",
       careInstructions: "Machine wash cold inside out\nAir dry flat",
-      imageUrl: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop",
+      images: ["https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop"],
       sizes: "S, M, L, XL",
       colorName: "Deep Burgundy",
       colorHex: "#4A1216",
@@ -518,13 +519,11 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-semibold text-espresso mb-1">Primary Image URL</label>
-                  <input
-                    type="url"
-                    required
-                    value={newForm.imageUrl}
-                    onChange={(e) => setNewForm({ ...newForm, imageUrl: e.target.value })}
-                    className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
+                  <ImageGalleryUpload
+                    images={newForm.images}
+                    onChange={(imgs) => setNewForm({ ...newForm, images: imgs })}
+                    label="Garment Gallery Imagery"
+                    helperText="Upload photos from device gallery, choose atelier presets, or paste image URL."
                   />
                 </div>
 
@@ -628,11 +627,35 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
+                  <label className="block font-semibold text-espresso mb-1">Original Price (₹ MRP)</label>
+                  <input
+                    type="number"
+                    placeholder="Optional MRP"
+                    value={editingProduct.originalPrice || ""}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, originalPrice: e.target.value ? Number(e.target.value) : undefined })}
+                    className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
+                  />
+                </div>
+
+                <div>
                   <label className="block font-semibold text-espresso mb-1">Stock Count</label>
                   <input
                     type="number"
                     value={editingProduct.stockCount}
                     onChange={(e) => setEditingProduct({ ...editingProduct, stockCount: Number(e.target.value) })}
+                    className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-espresso mb-1">Available Sizes (comma separated)</label>
+                  <input
+                    type="text"
+                    value={(editingProduct.sizes || []).join(", ")}
+                    onChange={(e) => setEditingProduct({
+                      ...editingProduct,
+                      sizes: e.target.value.split(",").map((s) => s.trim()).filter(Boolean)
+                    })}
                     className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
                   />
                 </div>
@@ -655,6 +678,36 @@ export default function AdminProductsPage() {
                     onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
                     className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
                   />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <ImageGalleryUpload
+                    images={editingProduct.images || []}
+                    onChange={(imgs) => setEditingProduct({ ...editingProduct, images: imgs })}
+                    label="Garment Gallery Imagery"
+                    helperText="Upload photos from device gallery, choose atelier presets, or paste image URL."
+                  />
+                </div>
+
+                <div className="flex items-center gap-6 sm:col-span-2 pt-1 border-t border-burgundy/10">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-espresso">
+                    <input
+                      type="checkbox"
+                      checked={editingProduct.inStock}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, inStock: e.target.checked })}
+                      className="accent-burgundy w-4 h-4 rounded"
+                    />
+                    <span>Available / In Stock</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-espresso">
+                    <input
+                      type="checkbox"
+                      checked={editingProduct.featured}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, featured: e.target.checked })}
+                      className="accent-burgundy w-4 h-4 rounded"
+                    />
+                    <span>Featured on Storefront</span>
+                  </label>
                 </div>
               </div>
 

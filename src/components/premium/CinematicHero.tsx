@@ -126,20 +126,9 @@ export function CinematicHero() {
               onClick={() => setActive(i)}
               className="group min-h-[44px] text-left"
             >
-              <span className="relative block h-[2px] w-full overflow-hidden bg-white/25">
-                {i === active && (
-                  <motion.span
-                    key={`${l.key}-${paused}`}
-                    initial={{ scaleX: reduce || paused ? 1 : 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: reduce || paused ? 0 : 5.2, ease: "linear" }}
-                    className="absolute inset-0 origin-left bg-gold"
-                  />
-                )}
-              </span>
               <span
-                className={`mt-2 block text-[10px] font-bold uppercase tracking-[0.18em] transition-colors sm:text-xs ${
-                  i === active ? "text-white" : "text-white/50 group-hover:text-white/80"
+                className={`block text-[10px] font-bold uppercase tracking-[0.18em] transition-colors sm:text-xs ${
+                  i === active ? "text-gold font-black" : "text-white/50 group-hover:text-white/80"
                 }`}
               >
                 {l.key}

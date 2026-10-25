@@ -228,9 +228,6 @@ export function ScrollProductReel() {
             <RunwayCard key={p.id} p={p} i={i} total={items.length} />
           ))}
         </motion.div>
-        <div className="mx-4 mt-8 h-[2px] bg-white/15 sm:mx-8 lg:mx-12">
-          <motion.div style={{ scaleX: scrollYProgress }} className="h-full origin-left bg-gold" />
-        </div>
       </div>
       <ViewCursor scope={ref} />
     </section>

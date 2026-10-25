@@ -15,7 +15,6 @@ import { formatPrice } from "@/lib/pricing";
  */
 const ROWS = [
   { category: "Oversized", productId: "ts-002", unit: "gsm", ours: 520, typical: 180, max: 560, note: "Loopback terry that stands off the shoulder" },
-  { category: "Jeans", productId: "ts-004", unit: "oz", ours: 15, typical: 9, max: 16, note: "Okayama selvedge that fades to you" },
   { category: "Boxy Fit", productId: "ts-007", unit: "gsm", ours: 320, typical: 140, max: 560, note: "Poplin heavy enough to hold a square line" },
   { category: "Jackets", productId: "ts-011", unit: "oz", ours: 14, typical: 7, max: 16, note: "Duck canvas that breaks in, not down" },
 ] as const;
@@ -61,12 +60,12 @@ export function WeightTest() {
           </h2>
         </div>
         <p className="max-w-sm text-sm text-espresso/70">
-          Weight is what makes a tee drape and denim fade. Here&apos;s ours next to a typical high-street piece.
+          Weight is what makes a tee drape and outerwear hold its structure. Here&apos;s ours next to a typical high-street piece.
         </p>
       </div>
 
-      {/* Mobile: swipe carousel. Desktop: 4-up grid. */}
-      <ul className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-4">
+      {/* Mobile: swipe carousel. Desktop: 3-up grid. */}
+      <ul className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-3">
         {ROWS.map((row, i) => {
           const product = products.find((p) => p.id === row.productId);
           const dark = i % 2 === 1;
@@ -96,7 +95,7 @@ export function WeightTest() {
                   </div>
                 </div>
 
-                {product && (
+                {product && product.images?.[0] && (
                   <Link
                     href={`/product/${product.id}`}
                     className={`group mt-auto flex items-center gap-3 border-t p-4 transition-colors ${

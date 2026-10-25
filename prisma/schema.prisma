@@ -306,6 +306,7 @@ model SiteSettings {
   marqueeText        String[]
   conciergePhone     String   @default("+91 98200 12345")
   conciergeEmail     String   @default("concierge@trendstreet.in")
+  storefrontSections Json?
   updatedAt          DateTime @updatedAt
 
   @@map("site_settings")

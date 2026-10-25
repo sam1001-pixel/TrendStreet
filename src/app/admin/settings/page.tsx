@@ -17,6 +17,8 @@ import {
   Trash2,
   CheckCircle2,
   AlertCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
@@ -29,7 +31,7 @@ export default function AdminSettingsPage() {
   useEffect(() => setFormData(siteSettings), [siteSettings]);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved">("idle");
   const [activeTab, setActiveTab] = useState<
-    "hero" | "announcement" | "categories" | "marquee" | "promos" | "contact"
+    "hero" | "sections" | "announcement" | "categories" | "marquee" | "promos" | "contact"
   >("hero");
   const [newPromoCode, setNewPromoCode] = useState({
     code: "",
@@ -37,6 +39,45 @@ export default function AdminSettingsPage() {
     description: "",
   });
   const [newMarqueeText, setNewMarqueeText] = useState("");
+
+  const storefrontSections = formData.storefrontSections || {
+    hero: true,
+    weightTest: true,
+    shopByPriceOccasion: true,
+    runwayReel: true,
+    hangingRail: true,
+    dropList: true,
+    silhouetteAccordion: true,
+    reviewGallery: true,
+    trustStrip: true,
+  };
+
+  const toggleSection = (key: keyof typeof storefrontSections) => {
+    setFormData({
+      ...formData,
+      storefrontSections: {
+        ...storefrontSections,
+        [key]: !storefrontSections[key],
+      },
+    });
+  };
+
+  const setAllSections = (enabled: boolean) => {
+    setFormData({
+      ...formData,
+      storefrontSections: {
+        hero: enabled,
+        weightTest: enabled,
+        shopByPriceOccasion: enabled,
+        runwayReel: enabled,
+        hangingRail: enabled,
+        dropList: enabled,
+        silhouetteAccordion: enabled,
+        reviewGallery: enabled,
+        trustStrip: enabled,
+      },
+    });
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,6 +202,7 @@ export default function AdminSettingsPage() {
       <div className="flex overflow-x-auto border-b border-burgundy/15 gap-2 no-scrollbar">
         {[
           { id: "hero", label: "Hero & Headlines", icon: Layout },
+          { id: "sections", label: "Storefront Sections", icon: Sliders },
           { id: "announcement", label: "Announcement Bar", icon: Sparkles },
           { id: "categories", label: "Category Taglines", icon: Layers },
           { id: "marquee", label: "Marquee Ticker", icon: Tag },
@@ -433,7 +475,156 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        {/* Tab 2: Top Announcement Bar */}
+        {/* Tab 2: Storefront Sections Visibility */}
+        {activeTab === "sections" && (
+          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-burgundy/10 gap-3">
+              <div>
+                <h2 className="font-serif text-lg font-bold text-espresso">
+                  Storefront Sections Visibility Controller
+                </h2>
+                <p className="text-xs text-espresso/60">
+                  Toggle any homepage section on or off in real-time. Changes sync across all visitor sessions.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAllSections(true)}
+                  className="px-3 py-1.5 bg-burgundy/10 hover:bg-burgundy/20 text-burgundy text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors"
+                >
+                  Enable All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAllSections(false)}
+                  className="px-3 py-1.5 bg-espresso/5 hover:bg-espresso/15 text-espresso/80 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors"
+                >
+                  Disable All
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                {
+                  key: "hero" as const,
+                  title: "Cinematic Hero & Silhouette Switcher",
+                  desc: "Primary storefront entrance with luxury typography, interactive silhouette cards, and live metrics.",
+                  tag: "Top of Page",
+                },
+                {
+                  key: "weightTest" as const,
+                  title: "The Weight Test (Fabric Comparison)",
+                  desc: "Side-by-side GSM and textile comparison between Oversized (520gsm), Boxy Fit (320gsm), and Jackets (14oz).",
+                  tag: "Fabric Science",
+                },
+                {
+                  key: "shopByPriceOccasion" as const,
+                  title: "Shop Your Way (Price & Occasion)",
+                  desc: "Curated shopping pathways filtered by budget tiers and dress occasions.",
+                  tag: "Curated Discovery",
+                },
+                {
+                  key: "runwayReel" as const,
+                  title: "The Runway Reel",
+                  desc: "Horizontal scrollable reel showcasing highlight pieces with quick add-to-bag drawers.",
+                  tag: "Interactive Showcase",
+                },
+                {
+                  key: "hangingRail" as const,
+                  title: "Fresh off the Rail",
+                  desc: "Highlight grid of newly dropped garments directly from the atelier production line.",
+                  tag: "New Arrivals",
+                },
+                {
+                  key: "dropList" as const,
+                  title: "The Drop List",
+                  desc: "Tabbed garment catalog covering Oversized, Boxy Fit, and Jackets with live stock counts.",
+                  tag: "Full Collection",
+                },
+                {
+                  key: "silhouetteAccordion" as const,
+                  title: "The Three Silhouette Cuts",
+                  desc: "Expandable sartorial breakdown explaining shoulder drops, chest drape, and hem lengths.",
+                  tag: "Design Architecture",
+                },
+                {
+                  key: "reviewGallery" as const,
+                  title: "Customer Reviews Gallery",
+                  desc: "Compact buyer review widgets featuring verified ratings, styling notes, and customer feedback.",
+                  tag: "Social Proof",
+                },
+                {
+                  key: "trustStrip" as const,
+                  title: "Promises & Atelier Guarantees",
+                  desc: "3-point luxury assurance strip (Ethical Craftsmanship, Express Dispatch, Concierge Support).",
+                  tag: "Brand Assurance",
+                },
+              ].map((section) => {
+                const isEnabled = storefrontSections[section.key];
+                return (
+                  <div
+                    key={section.key}
+                    className={`p-4 rounded-xl border transition-all flex flex-col justify-between gap-3 ${
+                      isEnabled
+                        ? "bg-white border-burgundy/30 shadow-xs ring-1 ring-burgundy/10"
+                        : "bg-espresso/5 border-espresso/15 opacity-75"
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-crimson bg-crimson/10 px-2 py-0.5 rounded-full">
+                          {section.tag}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${
+                            isEnabled
+                              ? "bg-green-100 text-green-800"
+                              : "bg-espresso/15 text-espresso/60"
+                          }`}
+                        >
+                          {isEnabled ? "Visible on Site" : "Hidden"}
+                        </span>
+                      </div>
+                      <h3 className="font-serif font-bold text-sm text-espresso pt-1">
+                        {section.title}
+                      </h3>
+                      <p className="text-xs text-espresso/70 leading-relaxed">
+                        {section.desc}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(section.key)}
+                      className={`w-full py-2 px-3 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 ${
+                        isEnabled
+                          ? "bg-burgundy text-gold hover:bg-crimson shadow-xs"
+                          : "bg-white text-espresso border border-burgundy/25 hover:border-burgundy"
+                      }`}
+                    >
+                      {isEnabled ? (
+                        <>
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Visible (Click to Hide)</span>
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="w-3.5 h-3.5" />
+                          <span>Hidden (Click to Show)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Top Announcement Bar */}
         {activeTab === "announcement" && (
           <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
             <div className="border-b border-burgundy/10 pb-3 flex items-center justify-between">
