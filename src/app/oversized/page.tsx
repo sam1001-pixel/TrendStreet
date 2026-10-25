@@ -21,6 +21,7 @@ const CONFIG: CategoryConfig = {
     {"value": "Double-walled", "title": "Hoods that stand up", "line": "Two-ply hoods hold their shape on their own and frame the face."},
   ],
   fitTip: "Take your usual size for the intended oversized drape, or size down once for a closer fit.",
+  clothesFirst: true,
 };
 
 export default function OversizedPage() {

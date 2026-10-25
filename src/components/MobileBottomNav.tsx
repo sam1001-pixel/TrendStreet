@@ -31,7 +31,6 @@ export const MobileBottomNav: React.FC = () => {
         pathname === "/shop" ||
         pathname === "/shop-your-way" ||
         pathname === "/oversized" ||
-        pathname === "/jeans" ||
         pathname === "/boxy-fit" ||
         pathname === "/jackets",
     },

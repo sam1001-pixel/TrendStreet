@@ -8,8 +8,6 @@ import { ScrollProductReel } from "@/components/premium/ScrollProductReel";
 import { VelocityMarquee } from "@/components/premium/VelocityMarquee";
 import { TrustStrip } from "@/components/premium/TrustStrip";
 import { HangingRail } from "@/components/premium/HangingRail";
-import { WeightTest } from "@/components/premium/WeightTest";
-import { ShopByPriceOccasion } from "@/components/premium/ShopByPriceOccasion";
 import { ScrollProgress } from "@/components/premium/ScrollProgress";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { CustomerReviewGallery } from "@/components/CustomerReviewGallery";
@@ -37,12 +35,7 @@ export default function HomePage() {
 
       <HangingRail />
 
-      {/* Fabric weight comparison (replaces the former Blue City edit) */}
-      <WeightTest />
-
       <ScrollProductReel />
-
-      <ShopByPriceOccasion />
 
       <CustomerReviewGallery />
 

@@ -4,11 +4,6 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Scissors,
-  Award,
-  Globe,
-  ShieldCheck,
-  Sparkles,
   ArrowRight,
   Mail,
   Phone,
@@ -48,7 +43,7 @@ export default function AboutPage() {
               Trend Street was founded to redefine contemporary menswear through uncompromising material density and calculated proportion. We reject disposable fast-fashion and synthetic polyester blends in favor of authentic heirloom construction.
             </p>
             <p className="text-xs sm:text-base text-espresso/80 leading-relaxed font-light">
-              Every piece across our four core silhouettes—Oversized, Jeans, Boxy Fit, and Jackets—is engineered from pure natural fibers: custom-milled 520gsm Japanese loopback terry, 14.5oz Okayama redline selvedge denim, 220gsm mercerized poplin, and butter-soft Tuscan lambskin suede. The result is a sculptural drape that holds its presence and patinas beautifully over decades.
+              Every piece across our three core silhouettes—Oversized, Boxy Fit, and Jackets—is engineered from pure natural fibers: custom-milled 520gsm Japanese loopback terry, 220gsm mercerized poplin, and butter-soft Tuscan lambskin suede. The result is a sculptural drape that holds its presence and patinas beautifully over decades.
             </p>
           </div>
 
@@ -161,7 +156,7 @@ export default function AboutPage() {
               href="/shop"
               className="inline-flex items-center gap-2 py-3.5 px-8 bg-burgundy hover:bg-crimson text-gold text-xs font-bold uppercase tracking-[0.2em] rounded-lg transition-colors shadow-lg"
             >
-              <span>Explore The 4 Silhouettes</span>
+              <span>Explore The 3 Silhouettes</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

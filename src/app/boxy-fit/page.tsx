@@ -21,6 +21,7 @@ const CONFIG: CategoryConfig = {
     {"value": "220–320 GSM", "title": "Fabric that holds an edge", "line": "Mercerized poplin and dense jersey keep the square shape all day."},
   ],
   fitTip: "Boxy pieces are meant to be wide and short. If you're between sizes, go with your usual one.",
+  clothesFirst: true,
 };
 
 export default function BoxyFitPage() {

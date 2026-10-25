@@ -7,9 +7,9 @@ import { TrustStrip } from "@/components/premium/TrustStrip";
 import { CountUp } from "@/components/premium/CountUp";
 
 export const metadata: Metadata = {
-  title: "Why Trend Street | Four Silhouettes, Made Heavy",
+  title: "Why Trend Street | Three Core Silhouettes, Made Heavy",
   description:
-    "Why Trend Street makes only four things — oversized, jeans, boxy fit and jackets — in heavyweight fabric built to last. Our mills, our process and our promises.",
+    "Why Trend Street makes only three things — oversized, boxy fit and jackets — in heavyweight fabric built to last. Our mills, our process and our promises.",
   alternates: { canonical: "/why-trend-street" },
 };
 
@@ -20,13 +20,6 @@ const PILLARS = [
     spec: "320–520 gsm",
     line: "Loopback and combed jersey heavy enough to hang off the shoulder instead of clinging to it.",
     image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=900&auto=format&fit=crop",
-  },
-  {
-    name: "Jeans",
-    href: "/jeans",
-    spec: "14–15 oz",
-    line: "Okayama and Kurabo selvedge that starts rigid and fades into a record of how you live.",
-    image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=900&auto=format&fit=crop",
   },
   {
     name: "Boxy Fit",
@@ -53,7 +46,7 @@ const PROCESS = [
 ];
 
 const STATS = [
-  { value: 4, suffix: "", label: "Silhouettes. Nothing else." },
+  { value: 3, suffix: "", label: "Silhouettes. Nothing else." },
   { value: 520, suffix: "gsm", label: "Heaviest loopback we cut" },
   { value: 19000, suffix: "+", label: "PIN codes we deliver to" },
   { value: 30, suffix: " days", label: "Doorstep exchange window" },
@@ -76,12 +69,12 @@ export default function WhyTrendStreetPage() {
         <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-24 sm:px-8 sm:pb-20 sm:pt-36">
           <p className="font-mono text-xs uppercase tracking-[0.25em] text-gold">Why Trend Street</p>
           <h1 className="mt-3 font-display text-5xl font-black uppercase leading-[0.85] sm:text-7xl lg:text-8xl">
-            Four things.
+            Three things.
             <br />
             <span className="text-gold">Made heavy.</span>
           </h1>
           <p className="mt-5 max-w-xl text-sm leading-relaxed text-ivory/80 sm:text-base">
-            Most brands make everything. We make oversized tops, jeans, boxy fits and jackets — and we make them in fabric
+            Most brands make everything. We make oversized tops, boxy fits and jackets — and we make them in fabric
             heavy enough to hold a shape for years.
           </p>
         </div>
@@ -105,12 +98,12 @@ export default function WhyTrendStreetPage() {
         </dl>
       </section>
 
-      {/* The four */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-8" aria-labelledby="four-heading">
-        <h2 id="four-heading" className="font-display text-4xl font-black uppercase leading-none text-espresso sm:text-6xl">
-          The four we make
+      {/* The three */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-8" aria-labelledby="three-heading">
+        <h2 id="three-heading" className="font-display text-4xl font-black uppercase leading-none text-espresso sm:text-6xl">
+          The three we make
         </h2>
-        <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+        <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
           {PILLARS.map((p) => (
             <li key={p.name}>
               <Link href={p.href} className="group block overflow-hidden rounded-2xl bg-white ring-1 ring-burgundy/10 transition-shadow hover:shadow-xl">

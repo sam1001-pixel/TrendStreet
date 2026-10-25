@@ -14,29 +14,22 @@ const PANELS = [
     copy: "Heavyweight loopback hoodies and 320gsm drop-shoulder tees.",
   },
   {
-    name: "Jeans",
-    href: "/jeans",
-    no: "02",
-    image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1400&auto=format&fit=crop",
-    copy: "Redline selvedge off vintage shuttle looms, cut to stack.",
-  },
-  {
     name: "Boxy Fit",
     href: "/boxy-fit",
-    no: "03",
+    no: "02",
     image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1400&auto=format&fit=crop",
     copy: "Cropped, wide-body knits and structured flannel layers.",
   },
   {
     name: "Jackets",
     href: "/jackets",
-    no: "04",
+    no: "03",
     image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1400&auto=format&fit=crop",
     copy: "Suede flight bombers, Melton overcoats, duck canvas chores.",
   },
 ];
 
-/** Four silhouettes as expanding panels on desktop, a stacked list on mobile. */
+/** Three silhouettes as expanding panels on desktop, a stacked list on mobile. */
 export function SilhouetteAccordion() {
   const [open, setOpen] = useState(0);
 
@@ -44,16 +37,16 @@ export function SilhouetteAccordion() {
     <section className="mx-auto max-w-[1600px] px-3 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-end justify-between gap-4 sm:mb-10">
         <h2 className="font-display text-4xl font-black uppercase leading-[0.85] text-stone-950 sm:text-7xl lg:text-8xl">
-          Four cuts.
+          Three cuts.
           <br />
           <span className="text-outline text-burgundy">Nothing else.</span>
         </h2>
         <p className="hidden max-w-xs text-sm leading-relaxed text-stone-600 md:block">
-          No suits, no formal shoes. Every piece in the store belongs to one of four silhouettes.
+          No suits, no formal shoes. Every piece in the store belongs to one of three silhouettes.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:flex lg:h-[620px] lg:flex-row">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 lg:flex lg:h-[620px] lg:flex-row">
         {PANELS.map((p, i) => {
           const isOpen = open === i;
           return (

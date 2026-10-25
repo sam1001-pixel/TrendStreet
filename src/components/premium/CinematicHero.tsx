@@ -13,12 +13,6 @@ const LOOKS = [
     line: "520gsm loopback. Built to hang, not cling.",
   },
   {
-    key: "Jeans",
-    href: "/jeans",
-    image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=2000&auto=format&fit=crop",
-    line: "14.5oz selvedge with a skater puddle stack.",
-  },
-  {
     key: "Boxy Fit",
     href: "/boxy-fit",
     image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=2000&auto=format&fit=crop",
@@ -118,7 +112,7 @@ export function CinematicHero() {
 
         {/* Silhouette switcher with progress */}
         <div
-          className="mt-6 sm:mt-8 grid grid-cols-4 gap-2 sm:max-w-xl"
+          className="mt-6 sm:mt-8 grid grid-cols-3 gap-2 sm:max-w-xl"
           role="tablist"
           aria-label="Choose silhouette"
           onMouseEnter={() => setPaused(true)}

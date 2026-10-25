@@ -12,7 +12,6 @@ const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: "All drops", href: "/shop" },
       { label: "Oversized", href: "/oversized" },
-      { label: "Jeans", href: "/jeans" },
       { label: "Boxy Fit", href: "/boxy-fit" },
       { label: "Jackets", href: "/jackets" },
       { label: "Complete the Fit", href: "/complete-the-fit" },

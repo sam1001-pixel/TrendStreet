@@ -7,12 +7,11 @@ export const StoreJsonLd: React.FC = () => {
     name: "Trend Street",
     alternateName: "The Style Hub",
     description:
-      "Premier luxury menswear fashion house specializing in four architectural silhouettes: Oversized hoodies & tees, Okayama selvedge carpenter jeans, boxy fit knits & poplin overshirts, and handcrafted structural jackets.",
+      "Premier luxury menswear fashion house specializing in three architectural silhouettes: Oversized hoodies & tees, boxy fit knits & poplin overshirts, and handcrafted structural jackets.",
     url: "https://trendstreet.com",
     logo: "https://trendstreet.com/trend-street-logo-burgundy.png",
     department: [
       { "@type": "Department", "name": "Oversized Silhouette", "url": "https://trendstreet.com/oversized" },
-      { "@type": "Department", "name": "Okayama Selvedge Jeans", "url": "https://trendstreet.com/jeans" },
       { "@type": "Department", "name": "Boxy Fit Architecture", "url": "https://trendstreet.com/boxy-fit" },
       { "@type": "Department", "name": "Structural Jackets", "url": "https://trendstreet.com/jackets" },
     ],

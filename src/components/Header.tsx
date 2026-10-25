@@ -13,7 +13,6 @@ import { LiveCourierTrackerModal } from "@/components/LiveCourierTrackerModal";
 
 const CATEGORIES = [
   { label: "Oversized", href: "/oversized", image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop" },
-  { label: "Jeans", href: "/jeans", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=600&auto=format&fit=crop" },
   { label: "Boxy Fit", href: "/boxy-fit", image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop" },
   { label: "Jackets", href: "/jackets", image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop" },
 ];

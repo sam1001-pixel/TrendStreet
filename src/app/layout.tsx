@@ -12,15 +12,14 @@ import { StoreJsonLd } from "@/components/seo/JsonLd";
 import { ScrollReveal } from "@/components/premium/ScrollReveal";
 
 export const metadata: Metadata = {
-  title: "Trend Street | The Style Hub — Oversized, Jeans, Boxy Fit & Jackets",
+  title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
   description:
-    "Trend Street is the definitive contemporary luxury menswear house. Specializing in 520gsm loopback oversized hoodies, 14oz Okayama selvedge carpenter jeans, boxy fit knits, and handcrafted flight jackets.",
+    "Trend Street is the definitive contemporary luxury menswear house. Specializing in 520gsm loopback oversized hoodies, boxy fit knits, and handcrafted flight jackets.",
   keywords: [
     "trend street",
     "oversized hoodie",
     "heavyweight oversized tee",
-    "okayama selvedge jeans",
-    "carpenter denim",
+    "heavyweight streetwear",
     "boxy fit shirt",
     "boxy knitwear",
     "suede bomber jacket",
@@ -42,9 +41,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: "https://trendstreet.com",
-    title: "Trend Street | The Style Hub — Oversized, Jeans, Boxy Fit & Jackets",
+    title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
     description:
-      "Contemporary luxury menswear engineering. 520gsm Japanese loopback hoodies, Okayama redline selvedge denim jeans, boxy fit architecture, and handcrafted jackets.",
+      "Contemporary luxury menswear engineering. 520gsm Japanese loopback hoodies, boxy fit architecture, and handcrafted jackets.",
     siteName: "Trend Street",
     images: [
       {
@@ -58,7 +57,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Trend Street | The Style Hub",
-    description: "Contemporary Streetwear & Luxury Menswear: Oversized, Jeans, Boxy Fit, Jackets.",
+    description: "Contemporary Streetwear & Luxury Menswear: Oversized, Boxy Fit, Jackets.",
     creator: "@trendstreet",
   },
   icons: {

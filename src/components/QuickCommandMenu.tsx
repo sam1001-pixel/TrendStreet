@@ -221,12 +221,11 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
           {/* Quick Category / Silhouette Jump (OFFCULT style) */}
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/50 block px-2 mb-2">
-              Four Core Silhouettes
+              Three Core Silhouettes
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {[
                 { label: "Oversized", path: "/oversized", spec: "520gsm Terry" },
-                { label: "Jeans", path: "/jeans", spec: "15oz Selvedge" },
                 { label: "Boxy Fit", path: "/boxy-fit", spec: "320gsm Cotton" },
                 { label: "Jackets", path: "/jackets", spec: "700gsm Wool" },
               ].map((sil) => (

@@ -12,9 +12,8 @@ type Tab = { id: string; label: string; href: string; pick: (all: Product[]) => 
 const TABS: Tab[] = [
   { id: "new", label: "New in", href: "/shop?sort=newest", pick: (a) => a.filter((p) => p.isNew) },
   { id: "best", label: "Best sellers", href: "/shop", pick: (a) => a.filter((p) => p.isBestSeller) },
-  { id: "value", label: "Under ₹2,999", href: "/shop-your-way?budget=u2k", pick: (a) => a.filter((p) => p.price < 3000).sort((x, y) => x.price - y.price) },
+  { id: "value", label: "Under ₹2,999", href: "/shop?budget=u2k", pick: (a) => a.filter((p) => p.price < 3000).sort((x, y) => x.price - y.price) },
   { id: "Oversized", label: "Oversized", href: "/oversized", pick: (a) => a.filter((p) => p.category === "Oversized") },
-  { id: "Jeans", label: "Jeans", href: "/jeans", pick: (a) => a.filter((p) => p.category === "Jeans") },
   { id: "Boxy Fit", label: "Boxy Fit", href: "/boxy-fit", pick: (a) => a.filter((p) => p.category === "Boxy Fit") },
   { id: "Jackets", label: "Jackets", href: "/jackets", pick: (a) => a.filter((p) => p.category === "Jackets") },
 ];

@@ -67,6 +67,24 @@ export function useAdminData({ orders: wantOrders = false, products: wantProduct
     }
   };
 
+  const updateOrder = async (orderId: string, updates: { status?: OrderStatus; trackingNumber?: string }) => {
+    const prev = orders;
+    setOrders((os) => os.map((o) => (o.id === orderId ? { ...o, ...updates } : o)));
+    try {
+      const { order } = await api<{ order: Order }>(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        body: JSON.stringify(updates),
+      });
+      setOrders((os) => os.map((o) => (o.id === orderId ? order : o)));
+      flash(`Order ${order.orderNumber} updated`);
+      return order;
+    } catch (e) {
+      setOrders(prev);
+      fail(e);
+      throw e;
+    }
+  };
+
   const updateOrderTracking = async (orderId: string, trackingNumber: string) => {
     try {
       const { order } = await api<{ order: Order }>(`/api/admin/orders/${orderId}`, { method: "PATCH", body: JSON.stringify({ trackingNumber }) });
@@ -137,6 +155,7 @@ export function useAdminData({ orders: wantOrders = false, products: wantProduct
     refresh,
     updateOrderStatus,
     updateOrderTracking,
+    updateOrder,
     addProduct,
     updateProduct,
     deleteProduct,

@@ -559,10 +559,10 @@ export default function AdminSettingsPage() {
             </p>
             <div className="border-b border-burgundy/10 pb-3">
               <h2 className="font-serif text-lg font-bold text-espresso">
-                4 Core Silhouette Category Taglines
+                3 Core Silhouette Category Taglines
               </h2>
               <p className="text-xs text-espresso/60">
-                Fine-tune the brand copy for Oversized, Jeans, Boxy Fit, and Jackets across homepage cards and landing banners.
+                Fine-tune the brand copy for Oversized, Boxy Fit, and Jackets across homepage cards and landing banners.
               </p>
             </div>
 
@@ -580,26 +580,6 @@ export default function AdminSettingsPage() {
                       categoryTaglines: {
                         ...formData.categoryTaglines,
                         Oversized: e.target.value,
-                      },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Jeans Silhouette Tagline
-                </label>
-                <input
-                  type="text"
-                  value={formData.categoryTaglines.Jeans}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      categoryTaglines: {
-                        ...formData.categoryTaglines,
-                        Jeans: e.target.value,
                       },
                     })
                   }

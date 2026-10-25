@@ -165,7 +165,7 @@ export interface SiteSettings {
   marqueePhrases: string[];
   categoryTaglines: {
     Oversized: string;
-    Jeans: string;
+    Jeans?: string;
     "Boxy Fit": string;
     Jackets: string;
   };
