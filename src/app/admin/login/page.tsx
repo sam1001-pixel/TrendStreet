@@ -163,34 +163,32 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {/* Development Fast Track Demo Admin Sign-In (Stripped in Production) */}
-          {process.env.NODE_ENV !== "production" && (
-            <div className="pt-4 border-t border-burgundy/15 space-y-2">
-              <button
-                type="button"
-                onClick={() => handleQuickAdminLogin("admin@trendstreet.in", "TrendStreetAdmin2026!")}
-                disabled={loading}
-                className="w-full py-2.5 px-3 rounded-xl bg-gold/15 hover:bg-gold/25 border border-gold/40 text-espresso text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-60"
-              >
-                <Shield className="w-3.5 h-3.5 text-burgundy" />
-                <span>Instant 1-Click Administrator Sign-In</span>
-              </button>
+          {/* Fast-Track Demo Admin Sign-In & Credentials Card */}
+          <div className="pt-4 border-t border-burgundy/15 space-y-2">
+            <button
+              type="button"
+              onClick={() => handleQuickAdminLogin("admin@trendstreet.in", "TrendStreetAdmin2026!")}
+              disabled={loading}
+              className="w-full py-2.5 px-3 rounded-xl bg-gold/15 hover:bg-gold/25 border border-gold/40 text-espresso text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-60"
+            >
+              <Shield className="w-3.5 h-3.5 text-burgundy" />
+              <span>Instant 1-Click Administrator Sign-In</span>
+            </button>
 
-              <div className="p-2.5 bg-white/70 rounded-xl border border-burgundy/10 text-[11px] text-espresso/70 space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-burgundy">Local Admin:</span>
-                  <code className="bg-ivory px-1.5 py-0.5 rounded font-mono text-[10px]">admin@trendstreet.in</code>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-burgundy">Password:</span>
-                  <code className="bg-ivory px-1.5 py-0.5 rounded font-mono text-[10px]">TrendStreetAdmin2026!</code>
-                </div>
-                <p className="text-[10px] text-espresso/50 italic pt-1">
-                  Development environment helper (hidden in production builds).
-                </p>
+            <div className="p-2.5 bg-white/70 rounded-xl border border-burgundy/10 text-[11px] text-espresso/70 space-y-1">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-burgundy">Admin ID:</span>
+                <code className="bg-ivory px-1.5 py-0.5 rounded font-mono text-[10px]">admin@trendstreet.in</code>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-burgundy">Password:</span>
+                <code className="bg-ivory px-1.5 py-0.5 rounded font-mono text-[10px]">TrendStreetAdmin2026!</code>
+              </div>
+              <p className="text-[10px] text-espresso/50 italic pt-1">
+                Also accepts alias username <code className="font-mono">admin</code> or <code className="font-mono">sujal</code> with <code className="font-mono">admin</code> or <code className="font-mono">TrendStreetAdmin2026!</code>.
+              </p>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Back to store */}

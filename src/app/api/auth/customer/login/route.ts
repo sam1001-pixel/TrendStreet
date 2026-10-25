@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isPasswordValid = verifyCustomerPassword(password, customer.passwordHash);
+    const isPasswordValid = verifyCustomerPassword(password, customer.passwordHash, customer.email);
     if (!isPasswordValid) {
       return NextResponse.json(
         { success: false, message: "Invalid email or password." },
