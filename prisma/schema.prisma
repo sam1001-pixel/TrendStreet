@@ -153,14 +153,33 @@ model ProductVariant {
 }
 
 model Inventory {
-  id          String         @id @default(cuid())
-  variantId   String         @unique
-  variant     ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  quantity    Int            @default(0)
-  reservedQty Int            @default(0) // Quantity locked in active pending checkouts
-  updatedAt   DateTime       @updatedAt
+  id          String          @id @default(cuid())
+  variantId   String          @unique
+  variant     ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity    Int             @default(0)
+  reservedQty Int             @default(0) // Quantity locked in active pending checkouts
+  updatedAt   DateTime        @updatedAt
+
+  movements   StockMovement[]
 
   @@map("inventory")
+}
+
+model StockMovement {
+  id            String    @id @default(cuid())
+  inventoryId   String
+  inventory     Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  changeQty     Int       // Quantity changed (e.g. +10, -5)
+  balanceBefore Int       // Snapshot before adjustment
+  balanceAfter  Int       // Snapshot after adjustment
+  reason        String    // "RESTOCK", "DAMAGE", "RETURN", "CORRECTION", "AUDIT_RECONCILIATION", "PROMOTION"
+  notes         String?
+  performedBy   String?   // Admin identifier or user email
+  createdAt     DateTime  @default(now())
+
+  @@index([inventoryId])
+  @@index([createdAt])
+  @@map("stock_movements")
 }
 
 // ----------------------------------------------------

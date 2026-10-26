@@ -4,9 +4,9 @@
  */
 import type { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
-import { SESSION_COOKIE_NAME, verifySessionToken } from "@/lib/auth";
-import { getClientIp } from "@/lib/rate-limit";
+import { prisma } from "./prisma";
+import { SESSION_COOKIE_NAME, verifySessionToken } from "./auth";
+import { getClientIp } from "./rate-limit";
 
 export type AuditAction =
   | "ADMIN_LOGIN"
@@ -17,7 +17,12 @@ export type AuditAction =
   | "PRODUCT_CREATE"
   | "PRODUCT_EDIT"
   | "PRODUCT_DELETE"
-  | "SETTINGS_CHANGE";
+  | "SETTINGS_CHANGE"
+  | "STOCK_ADJUSTMENT"
+  | "COUPON_CREATE"
+  | "COUPON_UPDATE"
+  | "COUPON_DELETE"
+  | "STAFF_INVITE";
 
 /** Email of the signed-in admin for this request, or null. */
 export async function getAdminEmail(req: NextRequest): Promise<string | null> {

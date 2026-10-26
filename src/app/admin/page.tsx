@@ -99,11 +99,29 @@ export default function AdminDashboardPage() {
     });
   };
 
+  // Date range filter state
+  const [dateFilter, setDateFilter] = useState<"today" | "7d" | "30d" | "all">("all");
+
+  // Filter orders by date range
+  const now = new Date();
+  const filteredOrders = orders.filter((o) => {
+    if (dateFilter === "all") return true;
+    const orderDate = new Date(o.createdAt);
+    if (dateFilter === "today") {
+      return orderDate.toDateString() === now.toDateString();
+    }
+    const diffDays = (now.getTime() - orderDate.getTime()) / (1000 * 3600 * 24);
+    if (dateFilter === "7d") return diffDays <= 7;
+    if (dateFilter === "30d") return diffDays <= 30;
+    return true;
+  });
+
   // Metrics calculation
-  const liveOrders = orders.filter((o) => o.status !== "Cancelled");
+  const liveOrders = filteredOrders.filter((o) => o.status !== "Cancelled");
   const totalRevenue = liveOrders.reduce((sum, o) => sum + o.total, 0);
   const averageOrderValue = liveOrders.length > 0 ? Math.round(totalRevenue / liveOrders.length) : 0;
   const inStockCount = products.filter((p) => p.inStock && p.stockCount > 0).length;
+  const unfulfilledOrders = filteredOrders.filter((o) => o.status === "Pending" || o.status === "Processing" || o.status === "Confirmed");
 
   // Low stock products (<= 5 units)
   const lowStockItems = products.filter((p) => p.stockCount <= 5);
@@ -181,93 +199,120 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date Filter Pills */}
+          <div className="flex items-center bg-white border border-espresso/15 p-1 rounded-xl shadow-xs">
+            {(["today", "7d", "30d", "all"] as const).map((df) => (
+              <button
+                key={df}
+                onClick={() => setDateFilter(df)}
+                className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                  dateFilter === df
+                    ? "bg-burgundy text-gold shadow-xs"
+                    : "text-espresso/70 hover:text-espresso"
+                }`}
+              >
+                {df === "all" ? "All Time" : df === "today" ? "Today" : df.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
           <Link
-            href="/admin/settings"
-            className="py-2.5 px-4 bg-burgundy hover:bg-crimson text-gold text-xs font-bold uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1.5 shadow-sm"
+            href="/admin/inventory"
+            className="py-2 px-3.5 bg-burgundy hover:bg-crimson text-gold text-xs font-bold uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
           >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Site Customizer (Live)</span>
+            <span>Inventory Workspace</span>
           </Link>
 
           <Link
-            href="/admin/products"
-            className="py-2.5 px-4 bg-white border border-burgundy/25 hover:border-burgundy text-burgundy text-xs font-bold uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1.5"
+            href="/admin/analytics"
+            className="py-2 px-3.5 bg-white border border-burgundy/25 hover:border-burgundy text-burgundy text-xs font-bold uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1.5"
           >
-            <Shirt className="w-3.5 h-3.5" />
-            <span>Manage Products</span>
-          </Link>
-
-          <Link
-            href="/admin/orders"
-            className="py-2.5 px-4 bg-white border border-burgundy/25 hover:border-burgundy text-burgundy text-xs font-bold uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1.5"
-          >
-            <Package className="w-3.5 h-3.5" />
-            <span>Fulfill Orders</span>
+            <span>Analytics & Reports</span>
           </Link>
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white p-6 rounded-2xl border border-burgundy/15 shadow-xs space-y-2">
+      {/* Clickable Operational Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-white p-5 rounded-2xl border border-burgundy/15 shadow-xs space-y-1.5 hover:border-gold/50 transition-all">
           <div className="flex items-center justify-between text-xs text-espresso/60 font-semibold uppercase tracking-wider">
-            <span>Total Sales Revenue</span>
-            <div className="p-2 bg-green-100 rounded-lg text-green-800">
+            <span>Net Realized Sales</span>
+            <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <span className="text-3xl font-serif font-bold text-burgundy block">
+          <span className="text-2xl sm:text-3xl font-serif font-bold text-burgundy block">
             {formatPrice(totalRevenue)}
           </span>
-          <p className="text-[11px] text-green-700 font-semibold flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" /> +18.4% vs previous luxury cycle
-          </p>
+          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-espresso/5">
+            <span className="text-emerald-700 font-semibold flex items-center gap-0.5">
+              <TrendingUp className="w-3 h-3" /> Live Realized
+            </span>
+            <Link href="/admin/analytics" className="text-gold font-bold uppercase tracking-wider hover:underline">
+              Inspect →
+            </Link>
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-burgundy/15 shadow-xs space-y-2">
+        <div className="bg-white p-5 rounded-2xl border border-burgundy/15 shadow-xs space-y-1.5 hover:border-gold/50 transition-all">
           <div className="flex items-center justify-between text-xs text-espresso/60 font-semibold uppercase tracking-wider">
-            <span>Customer Allocations</span>
-            <div className="p-2 bg-burgundy/10 rounded-lg text-burgundy">
+            <span>Allocations / Orders</span>
+            <div className="p-2 bg-burgundy/10 text-burgundy rounded-xl">
               <Package className="w-4 h-4" />
             </div>
           </div>
-          <span className="text-3xl font-serif font-bold text-espresso block">
-            {orders.length}
+          <span className="text-2xl sm:text-3xl font-serif font-bold text-espresso block">
+            {filteredOrders.length}
           </span>
-          <p className="text-[11px] text-espresso/60">
-            {orders.filter((o) => o.status === "Delivered").length} successfully delivered
-          </p>
+          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-espresso/5">
+            <span className="text-espresso/60">
+              {unfulfilledOrders.length} require fulfillment
+            </span>
+            <Link href="/admin/orders" className="text-gold font-bold uppercase tracking-wider hover:underline">
+              View →
+            </Link>
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-burgundy/15 shadow-xs space-y-2">
+        <div className="bg-white p-5 rounded-2xl border border-burgundy/15 shadow-xs space-y-1.5 hover:border-gold/50 transition-all">
           <div className="flex items-center justify-between text-xs text-espresso/60 font-semibold uppercase tracking-wider">
-            <span>Average Basket (AOV)</span>
-            <div className="p-2 bg-gold/20 rounded-lg text-espresso">
+            <span>Average Order Value</span>
+            <div className="p-2 bg-gold/20 text-espresso rounded-xl">
               <Sparkles className="w-4 h-4 text-gold" />
             </div>
           </div>
-          <span className="text-3xl font-serif font-bold text-espresso block">
+          <span className="text-2xl sm:text-3xl font-serif font-bold text-espresso block">
             {formatPrice(averageOrderValue)}
           </span>
-          <p className="text-[11px] text-espresso/60">
-            Across 3 core tailored silhouettes
-          </p>
+          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-espresso/5">
+            <span className="text-espresso/60">
+              Across 3 silhouettes
+            </span>
+            <Link href="/admin/analytics" className="text-gold font-bold uppercase tracking-wider hover:underline">
+              Report →
+            </Link>
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-burgundy/15 shadow-xs space-y-2">
+        <div className="bg-white p-5 rounded-2xl border border-burgundy/15 shadow-xs space-y-1.5 hover:border-gold/50 transition-all">
           <div className="flex items-center justify-between text-xs text-espresso/60 font-semibold uppercase tracking-wider">
-            <span>Catalog Garments</span>
-            <div className="p-2 bg-ivory-dark rounded-lg text-espresso">
-              <Shirt className="w-4 h-4" />
+            <span>Catalog & Stock Status</span>
+            <div className="p-2 bg-espresso/5 text-espresso rounded-xl">
+              <Shirt className="w-4 h-4 text-burgundy" />
             </div>
           </div>
-          <span className="text-3xl font-serif font-bold text-espresso block">
-            {products.length}
+          <span className="text-2xl sm:text-3xl font-serif font-bold text-espresso block">
+            {products.length} Garments
           </span>
-          <p className="text-[11px] text-espresso/60">
-            {inStockCount} active in stock ({lowStockItems.length} low stock)
-          </p>
+          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-espresso/5">
+            <span className={lowStockItems.length > 0 ? "text-amber-600 font-bold" : "text-emerald-700"}>
+              {lowStockItems.length} low stock
+            </span>
+            <Link href="/admin/inventory" className="text-gold font-bold uppercase tracking-wider hover:underline">
+              Manage →
+            </Link>
+          </div>
         </div>
       </div>
 
