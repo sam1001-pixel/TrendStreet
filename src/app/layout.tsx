@@ -1,6 +1,25 @@
 import type { Metadata } from "next";
+import { Playfair_Display, Plus_Jakarta_Sans, Big_Shoulders_Display } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
+
+const serif = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const sans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const display = Big_Shoulders_Display({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 import { StoreProvider } from "@/context/StoreContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { UserAuthProvider } from "@/context/UserAuthContext";
@@ -77,7 +96,7 @@ export default function RootLayout({
       <head>
         <StoreJsonLd />
       </head>
-      <body className="min-h-screen flex flex-col bg-ivory text-espresso antialiased">
+      <body className={`${sans.variable} ${serif.variable} ${display.variable} min-h-screen flex flex-col bg-ivory text-espresso antialiased`}>
         <SmoothScroll />
         <AdminAuthProvider>
           <StoreProvider>

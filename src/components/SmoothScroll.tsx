@@ -19,13 +19,14 @@ export function SmoothScroll() {
     }
 
     const lenis = new Lenis({
+      autoRaf: true,
       duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Luxury exponential decay
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
       wheelMultiplier: 0.95,
-      touchMultiplier: 1.4,
+      touchMultiplier: 1.2,
       infinite: false,
     });
 
@@ -34,18 +35,10 @@ export function SmoothScroll() {
     // Expose lenis instance globally for dialog locks & programmatic navigation
     (window as unknown as { lenis?: Lenis }).lenis = lenis;
 
-    let rafId: number;
-    function raf(time: number) {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    }
-
-    rafId = requestAnimationFrame(raf);
-
     return () => {
-      cancelAnimationFrame(rafId);
       lenis.destroy();
       (window as unknown as { lenis?: null }).lenis = null;
+      lenisRef.current = null;
     };
   }, []);
 

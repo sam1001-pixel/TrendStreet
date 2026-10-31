@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { MagneticButton } from "./MagneticButton";
@@ -57,17 +58,23 @@ export function CinematicHero() {
       {/* Image stage */}
       <motion.div style={{ scale: reduce ? 1 : imgScale }} className="absolute inset-0">
         <AnimatePresence mode="sync">
-          <motion.img
+          <motion.div
             key={look.key}
-            src={look.image}
-            alt={`${look.key} silhouette by Trend Street`}
             initial={{ opacity: 0, scale: 1.08 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.1, ease: EASE }}
-            className="absolute inset-0 h-full w-full object-cover"
-            fetchPriority="high"
-          />
+            className="absolute inset-0 h-full w-full"
+          >
+            <Image
+              src={look.image}
+              alt={`${look.key} silhouette by Trend Street`}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          </motion.div>
         </AnimatePresence>
       </motion.div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/50" />

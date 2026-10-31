@@ -70,11 +70,20 @@ export function ScrollReveal() {
     const scan = () => document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el, i) => prime(el, i));
     scan();
 
-    // Cards rendered later (filters, live catalog load, tab switches) join automatically.
-    const mo = new MutationObserver(() => scan());
+    // Cards rendered later (filters, live catalog load, tab switches) join automatically via debounced scan.
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const debouncedScan = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        scan();
+      }, 200);
+    };
+
+    const mo = new MutationObserver(debouncedScan);
     mo.observe(document.body, { childList: true, subtree: true });
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       io.disconnect();
       mo.disconnect();
     };

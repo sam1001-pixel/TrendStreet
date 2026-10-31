@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import type { CustomerUser } from "@/lib/customer-auth";
 import { useStore } from "@/context/StoreContext";
 
@@ -26,36 +26,21 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Hook into StoreContext to sync profile
+  // Hook into StoreContext to sync profile without triggering re-render loops
   const store = useStore();
-
-  const syncStoreProfile = useCallback(
-    (customerUser: CustomerUser | null) => {
-      if (!store || !store.updateUserProfile) return;
-      if (customerUser) {
-        store.updateUserProfile({
-          name: customerUser.name,
-          email: customerUser.email,
-          phone: customerUser.phone || "",
-        });
-      }
-    },
-    [store]
-  );
-
-  // 1. Optimistic hydration from localStorage to eliminate route bouncing
+  const updateUserProfileRef = useRef(store?.updateUserProfile);
   useEffect(() => {
-    try {
-      const cachedAuth = localStorage.getItem("ts_customer_authenticated");
-      const cachedUserStr = localStorage.getItem("ts_customer_user");
-      if (cachedAuth === "true" && cachedUserStr) {
-        const parsed = JSON.parse(cachedUserStr);
-        setUser(parsed);
-        setIsAuthenticated(true);
-        syncStoreProfile(parsed);
-      }
-    } catch (_) {}
-  }, [syncStoreProfile]);
+    updateUserProfileRef.current = store?.updateUserProfile;
+  }, [store?.updateUserProfile]);
+
+  const syncStoreProfile = useCallback((customerUser: CustomerUser | null) => {
+    if (!customerUser || !updateUserProfileRef.current) return;
+    updateUserProfileRef.current({
+      name: customerUser.name,
+      email: customerUser.email,
+      phone: customerUser.phone || "",
+    });
+  }, []);
 
   const checkSession = useCallback(async () => {
     try {
@@ -97,9 +82,23 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [syncStoreProfile]);
 
+  // Initial check once on mount
   useEffect(() => {
+    // 1. Optimistic hydration from localStorage to eliminate route bouncing
+    try {
+      const cachedAuth = localStorage.getItem("ts_customer_authenticated");
+      const cachedUserStr = localStorage.getItem("ts_customer_user");
+      if (cachedAuth === "true" && cachedUserStr) {
+        const parsed = JSON.parse(cachedUserStr);
+        setUser(parsed);
+        setIsAuthenticated(true);
+        syncStoreProfile(parsed);
+      }
+    } catch (_) {}
+
+    // 2. Authoritative check with server (runs once on mount)
     checkSession();
-  }, [checkSession]);
+  }, [checkSession, syncStoreProfile]);
 
   const login = async (email: string, pass: string): Promise<{ success: boolean; message: string }> => {
     try {
@@ -199,8 +198,8 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         localStorage.removeItem("ts_customer_user");
         localStorage.removeItem("ts_customer_token");
       } catch (_) {}
-      if (store && store.updateUserProfile) {
-        store.updateUserProfile({
+      if (updateUserProfileRef.current) {
+        updateUserProfileRef.current({
           name: "",
           email: "",
           phone: "",
