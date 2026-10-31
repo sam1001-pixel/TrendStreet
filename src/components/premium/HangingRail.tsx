@@ -1,65 +1,50 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  motion,
-  useAnimationControls,
-  useInView,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-  useVelocity,
-  MotionValue,
-} from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
 import type { Product } from "@/types/store";
 
-/** Architectural tailored brass coat hanger with contoured shoulder curve and brass swivel collar. */
+/** Architectural tailored brass coat hanger with curved hook and collar ring (ultra-lightweight vector). */
 function Hanger() {
   return (
     <svg
-      viewBox="0 0 100 36"
-      className="mx-auto block h-auto w-[56%] sm:w-[52%] max-w-[120px]"
+      viewBox="0 0 100 34"
+      className="mx-auto block h-auto w-[52%] sm:w-[48%] max-w-[110px]"
       aria-hidden
     >
       <defs>
-        <linearGradient id="brassHangerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F9F6F4" />
+        <linearGradient id="brassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#F6EFE3" />
           <stop offset="45%" stopColor="#E3A33B" />
-          <stop offset="100%" stopColor="#8C6D3F" />
+          <stop offset="100%" stopColor="#96723B" />
         </linearGradient>
-        <filter id="hangerShadow" x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="1" stdDeviation="0.8" floodOpacity="0.25" />
-        </filter>
       </defs>
-      {/* Hook: loops cleanly over the brass rod */}
+      {/* Swivel hook wrapping over the brass rail */}
       <path
-        d="M50 13 V11 C50 6 45 2.5 40 4.5 C36 6.5 36 10.5 38 12"
+        d="M50 12 V10 C50 5.5 45 2 40 4 C36.5 5.8 36.5 9.5 38.5 11"
         fill="none"
-        stroke="url(#brassHangerGrad)"
+        stroke="url(#brassGrad)"
         strokeWidth="2.0"
         strokeLinecap="round"
-        filter="url(#hangerShadow)"
       />
-      {/* Brass swivel ring */}
-      <circle cx="50" cy="13.5" r="1.8" fill="#E3A33B" stroke="#8C6D3F" strokeWidth="0.6" />
-      {/* Contoured tailored shoulder frame */}
+      {/* Turned brass collar bead */}
+      <circle cx="50" cy="12.5" r="1.6" fill="#E3A33B" stroke="#96723B" strokeWidth="0.5" />
+      {/* Contoured coat frame */}
       <path
-        d="M50 15 Q28 19 8 30 C5 31.5 5.5 34 8.5 34 L91.5 34 C94.5 34 95 31.5 92 30 Q72 19 50 15 Z"
+        d="M50 14 Q28 18 8 28 C5.5 29.2 6 31.5 8.5 31.5 L91.5 31.5 C94 31.5 94.5 29.2 92 28 Q72 18 50 14 Z"
         fill="none"
-        stroke="url(#brassHangerGrad)"
+        stroke="url(#brassGrad)"
         strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
-        filter="url(#hangerShadow)"
       />
-      {/* Subtle crossbar highlight */}
-      <line x1="16" y1="32" x2="84" y2="32" stroke="#E3A33B" strokeWidth="1" strokeOpacity="0.5" />
+      {/* Crossbar */}
+      <line x1="16" y1="30" x2="84" y2="30" stroke="#E3A33B" strokeWidth="1" strokeOpacity="0.45" />
     </svg>
   );
 }
@@ -68,109 +53,118 @@ function Garment({
   p,
   index,
   inView,
-  sway,
   reduce,
+  onCardClick,
 }: {
   p: Product;
   index: number;
   inView: boolean;
-  sway: MotionValue<number>;
   reduce: boolean | null;
+  onCardClick: (e: React.MouseEvent) => void;
 }) {
-  const swing = useAnimationControls();
-  // Neighbouring garments sway slightly out of phase with gentle damping for natural inertia
-  const phase = useTransform(sway, (v) => v * (0.6 + (index % 3) * 0.2));
   const low = p.inStock && p.stockCount < 10;
-
-  const pendulum = () => {
-    if (reduce) return;
-    swing.start({
-      rotate: [0, 3.5, -2.2, 1.2, -0.5, 0],
-      transition: { duration: 1.4, ease: [0.25, 1, 0.5, 1] },
-    });
-  };
 
   return (
     <motion.li
-      className="relative w-[160px] xs:w-[175px] sm:w-[210px] md:w-[225px] lg:w-[240px] flex-shrink-0 snap-start select-none"
-      initial={reduce ? false : { y: -36, opacity: 0, rotate: index % 2 ? 3 : -3 }}
-      animate={inView ? { y: 0, opacity: 1, rotate: 0 } : undefined}
+      className="relative w-[155px] xs:w-[170px] sm:w-[200px] md:w-[215px] lg:w-[230px] flex-shrink-0 select-none transform-gpu"
+      initial={reduce ? false : { opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : undefined}
       transition={{
-        type: "spring",
-        stiffness: 120,
-        damping: 16,
-        mass: 0.7,
-        delay: Math.min(index * 0.05, 0.35),
+        duration: 0.55,
+        delay: Math.min(index * 0.05, 0.3),
+        ease: [0.16, 1, 0.3, 1],
       }}
       style={{ transformOrigin: "50% 0%" }}
     >
-      <motion.div style={{ rotate: reduce ? 0 : phase, transformOrigin: "50% 0%" }}>
-        <motion.div
-          animate={swing}
-          style={{ transformOrigin: "50% 0%" }}
-          onHoverStart={pendulum}
-          onFocus={pendulum}
+      {/* Ambient atelier breathing sway (pure compositor GPU animation, 0% CPU impact) */}
+      <motion.div
+        className="transform-gpu"
+        style={{ transformOrigin: "50% 0%" }}
+        animate={
+          reduce
+            ? undefined
+            : {
+                rotate: [0, 1.2, 0, -1.2, 0],
+              }
+        }
+        transition={{
+          duration: 4.8 + (index % 3) * 0.6,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: (index % 4) * 0.4,
+        }}
+        whileHover={
+          reduce
+            ? undefined
+            : {
+                rotate: [0, 2.6, -1.6, 0.8, 0],
+                transition: { duration: 1.1, ease: "easeOut" },
+              }
+        }
+      >
+        <Hanger />
+        <Link
+          href={`/product/${p.id}`}
+          onClick={onCardClick}
+          draggable={false}
+          className="group relative -mt-[8px] sm:-mt-[10px] block rounded-t-[2.1rem] rounded-b-2xl bg-white p-2 sm:p-2.5 shadow-[0_10px_24px_-8px_rgba(26,23,18,0.18)] ring-1 ring-burgundy/10 transition-all duration-300 hover:shadow-[0_16px_36px_-8px_rgba(26,23,18,0.28)] hover:-translate-y-0.5"
         >
-          <Hanger />
-          <Link
-            href={`/product/${p.id}`}
-            className="group relative -mt-[8px] sm:-mt-[10px] block rounded-t-[2.2rem] rounded-b-2xl bg-white p-2 sm:p-2.5 shadow-[0_12px_28px_-10px_rgba(26,23,18,0.22)] ring-1 ring-burgundy/10 transition-all duration-300 hover:shadow-[0_20px_40px_-10px_rgba(26,23,18,0.32)] hover:-translate-y-0.5"
-          >
-            <div className="relative aspect-[4/5] overflow-hidden rounded-t-[1.9rem] rounded-b-xl bg-ivory-dark">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-t-[1.8rem] rounded-b-xl bg-ivory-dark">
+            <Image
+              src={p.images[0]}
+              alt={p.name}
+              fill
+              draggable={false}
+              sizes="(max-width: 640px) 170px, (max-width: 1024px) 215px, 230px"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none"
+            />
+            {p.images[1] && (
               <Image
-                src={p.images[0]}
-                alt={p.name}
+                src={p.images[1]}
+                alt=""
+                aria-hidden
                 fill
-                sizes="(max-width: 640px) 175px, (max-width: 1024px) 225px, 240px"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                draggable={false}
+                sizes="(max-width: 640px) 170px, (max-width: 1024px) 215px, 230px"
+                className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none"
               />
-              {p.images[1] && (
-                <Image
-                  src={p.images[1]}
-                  alt=""
-                  aria-hidden
-                  fill
-                  sizes="(max-width: 640px) 175px, (max-width: 1024px) 225px, 240px"
-                  className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                />
-              )}
-              {low && (
-                <span className="absolute left-2 top-2.5 rounded-full bg-crimson px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
-                  Only {p.stockCount} left
-                </span>
-              )}
-            </div>
+            )}
+            {low && (
+              <span className="absolute left-2 top-2 rounded-full bg-crimson px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+                Only {p.stockCount} left
+              </span>
+            )}
+          </div>
 
-            {/* Luxury Brass-Eyelet Hanging Price Tag */}
-            <span className="absolute -right-1.5 sm:-right-2 top-[24%] origin-top-left rotate-6 transition-transform duration-300 ease-out group-hover:rotate-12 pointer-events-none">
-              <span className="mx-auto block h-3.5 w-px bg-espresso/40" aria-hidden />
-              <span className="flex items-center gap-1 rounded bg-espresso px-2 py-0.5 text-center font-mono text-[10px] sm:text-[11px] font-bold text-gold shadow-md border border-gold/30">
-                {formatPrice(p.price)}
-              </span>
+          {/* Luxury Brass-Eyelet Hanging Price Tag */}
+          <span className="absolute -right-1.5 sm:-right-2 top-[24%] origin-top-left rotate-6 transition-transform duration-300 ease-out group-hover:rotate-12 pointer-events-none">
+            <span className="mx-auto block h-3.5 w-px bg-espresso/40" aria-hidden />
+            <span className="flex items-center gap-1 rounded bg-espresso px-2 py-0.5 text-center font-mono text-[10px] sm:text-[11px] font-bold text-gold shadow-md border border-gold/30">
+              {formatPrice(p.price)}
             </span>
+          </span>
 
-            {/* Garment Details */}
-            <span className="block px-1 pb-1 pt-2">
-              <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] text-crimson">
-                {p.category}
-              </span>
-              <span className="mt-0.5 block truncate font-serif text-xs sm:text-sm font-bold text-espresso group-hover:text-burgundy transition-colors">
-                {p.name}
-              </span>
-              {p.fabric && (
-                <span className="mt-0.5 block truncate text-[10px] text-espresso/60 font-light">
-                  {p.fabric}
-                </span>
-              )}
+          {/* Garment Details */}
+          <span className="block px-1 pb-1 pt-2">
+            <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] text-crimson">
+              {p.category}
             </span>
-          </Link>
-        </motion.div>
+            <span className="mt-0.5 block truncate font-serif text-xs sm:text-sm font-bold text-espresso group-hover:text-burgundy transition-colors">
+              {p.name}
+            </span>
+            {p.fabric && (
+              <span className="mt-0.5 block truncate text-[10px] text-espresso/60 font-light">
+                {p.fabric}
+              </span>
+            )}
+          </span>
+        </Link>
       </motion.div>
     </motion.li>
   );
 }
 
-/** "The Rail": garments gently settle onto an architectural brass rail, sway with scroll inertia, and swing on hover. */
+/** "The Rail": garments gently settle onto an architectural brass rail with fluid momentum gliding. */
 export function HangingRail({
   title = "Fresh off the rail",
   filter,
@@ -184,21 +178,50 @@ export function HangingRail({
   const inView = useInView(ref, { once: true, margin: "0px 0px -15% 0px" });
   const reduce = useReducedMotion();
 
-  const { scrollY } = useScroll();
-  const velocity = useVelocity(scrollY);
-  // High damping prevents jerky oscillations on mobile touch bursts
-  const sway = useSpring(
-    useTransform(velocity, [-2000, 0, 2000], [3, 0, -3], { clamp: true }),
-    {
-      stiffness: 70,
-      damping: 18,
-      mass: 0.8,
+  // Desktop mouse drag-to-scroll state
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftStart = useRef(0);
+  const hasMoved = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    isDown.current = true;
+    hasMoved.current = false;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftStart.current = scrollRef.current.scrollLeft;
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDown.current || !scrollRef.current) return;
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.35;
+    if (Math.abs(walk) > 6) {
+      if (!isDragging) setIsDragging(true);
+      hasMoved.current = true;
     }
-  );
+    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
+  };
+
+  const onMouseUpOrLeave = () => {
+    isDown.current = false;
+    if (isDragging) {
+      // Delay releasing drag state slightly so click event evaluates hasMoved
+      setTimeout(() => setIsDragging(false), 50);
+    }
+  };
+
+  const handleCardClick = useCallback((e: React.MouseEvent) => {
+    if (hasMoved.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, []);
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
-    const distance = scrollRef.current.clientWidth * 0.75;
+    const distance = scrollRef.current.clientWidth * 0.72;
     scrollRef.current.scrollBy({
       left: direction === "left" ? -distance : distance,
       behavior: "smooth",
@@ -249,7 +272,7 @@ export function HangingRail({
             href="/shop"
             className="ml-1 min-h-[40px] content-center text-xs font-bold uppercase tracking-[0.2em] text-burgundy hover:text-crimson transition-colors"
           >
-            Shop the rail →
+            Shop all →
           </Link>
         </div>
       </div>
@@ -259,13 +282,23 @@ export function HangingRail({
         {/* Polished brass rod running across */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-[8px] sm:top-[9px] z-0 h-[6px] sm:h-[7px] rounded-full bg-gradient-to-r from-amber-900/60 via-amber-400 to-amber-900/60 shadow-[0_2px_6px_rgba(0,0,0,0.3)] border-b border-amber-950/20"
+          className="absolute inset-x-0 top-[7px] sm:top-[8px] z-0 h-[6px] rounded-full bg-gradient-to-r from-amber-950/70 via-gold to-amber-950/70 shadow-[0_2px_4px_rgba(0,0,0,0.25)] border-b border-amber-950/20"
         />
 
-        {/* Scrollable track with momentum snap */}
+        {/* Scrollable track with native momentum + desktop mouse drag */}
         <ul
           ref={scrollRef}
-          className="no-scrollbar relative z-10 flex snap-x snap-mandatory gap-3 sm:gap-5 overflow-x-auto px-4 pb-8 pt-0 sm:px-8 lg:px-12 scroll-smooth overscroll-x-contain"
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUpOrLeave}
+          onMouseLeave={onMouseUpOrLeave}
+          className={`no-scrollbar relative z-10 flex gap-3 sm:gap-5 overflow-x-auto px-4 pb-8 pt-0 sm:px-8 lg:px-12 overscroll-x-contain select-none ${
+            isDragging ? "cursor-grabbing" : "cursor-grab"
+          }`}
+          style={{
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+          }}
         >
           {items.map((p, i) => (
             <Garment
@@ -273,8 +306,8 @@ export function HangingRail({
               p={p}
               index={i}
               inView={inView}
-              sway={sway}
               reduce={reduce}
+              onCardClick={handleCardClick}
             />
           ))}
         </ul>
