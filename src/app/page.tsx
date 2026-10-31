@@ -9,7 +9,6 @@ import { VelocityMarquee } from "@/components/premium/VelocityMarquee";
 import { TrustStrip } from "@/components/premium/TrustStrip";
 import { HangingRail } from "@/components/premium/HangingRail";
 import { WeightTest } from "@/components/premium/WeightTest";
-import { ShopByPriceOccasion } from "@/components/premium/ShopByPriceOccasion";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { CustomerReviewGallery } from "@/components/CustomerReviewGallery";
 import { OffcultAssistDrawer } from "@/components/OffcultAssistDrawer";
@@ -40,9 +39,6 @@ export default function HomePage() {
       {siteSettings?.storefrontSections?.weightTest !== false && <WeightTest />}
 
       {siteSettings?.storefrontSections?.runwayReel !== false && <ScrollProductReel />}
-
-      {/* Curated shopping shortcuts */}
-      {siteSettings?.storefrontSections?.shopByPriceOccasion !== false && <ShopByPriceOccasion />}
 
       {siteSettings?.storefrontSections?.reviewGallery !== false && <CustomerReviewGallery />}
 
