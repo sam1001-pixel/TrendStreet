@@ -229,32 +229,34 @@ export function ScrollProductReel() {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    const el = trackRef.current;
-    if (!el) return;
+    // Only primary left button starts drag
+    if (e.button !== 0 || !trackRef.current) return;
     isDragging.current = true;
     hasDragged.current = false;
-    startX.current = e.pageX - el.offsetLeft;
-    scrollStart.current = el.scrollLeft;
-  };
+    startX.current = e.pageX - trackRef.current.offsetLeft;
+    scrollStart.current = trackRef.current.scrollLeft;
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current) return;
-    const el = trackRef.current;
-    if (!el) return;
-    e.preventDefault();
-    const x = e.pageX - el.offsetLeft;
-    const walk = (x - startX.current) * 1.3;
-    if (Math.abs(walk) > 5) {
-      hasDragged.current = true;
-    }
-    el.scrollLeft = scrollStart.current - walk;
-  };
+    const handleWindowMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDragging.current || !trackRef.current) return;
+      const x = moveEvent.pageX - trackRef.current.offsetLeft;
+      const walk = (x - startX.current) * 1.3;
+      if (Math.abs(walk) > 5) {
+        hasDragged.current = true;
+      }
+      trackRef.current.scrollLeft = scrollStart.current - walk;
+    };
 
-  const handleMouseUpOrLeave = () => {
-    isDragging.current = false;
-    setTimeout(() => {
-      hasDragged.current = false;
-    }, 60);
+    const handleWindowMouseUp = () => {
+      isDragging.current = false;
+      window.removeEventListener("mousemove", handleWindowMouseMove);
+      window.removeEventListener("mouseup", handleWindowMouseUp);
+      setTimeout(() => {
+        hasDragged.current = false;
+      }, 60);
+    };
+
+    window.addEventListener("mousemove", handleWindowMouseMove);
+    window.addEventListener("mouseup", handleWindowMouseUp);
   };
 
   if (items.length === 0) return null;
@@ -309,12 +311,8 @@ export function ScrollProductReel() {
       {/* Horizontal Interactive Slider Track */}
       <div
         ref={trackRef}
-        data-lenis-prevent
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUpOrLeave}
-        onMouseLeave={handleMouseUpOrLeave}
-        className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory px-4 sm:px-8 lg:px-12 py-2 cursor-grab active:cursor-grabbing select-none"
+        className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory px-4 sm:px-8 lg:px-12 py-2 cursor-grab active:cursor-grabbing select-none touch-pan-y"
         style={{ scrollBehavior: isDragging.current ? "auto" : "smooth" }}
       >
         {items.map((p, i) => (

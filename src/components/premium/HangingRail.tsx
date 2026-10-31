@@ -186,30 +186,36 @@ export function HangingRail({
   const [isDragging, setIsDragging] = useState(false);
 
   const onMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
+    // Only primary left button starts drag
+    if (e.button !== 0 || !scrollRef.current) return;
     isDown.current = true;
     hasMoved.current = false;
     startX.current = e.pageX - scrollRef.current.offsetLeft;
     scrollLeftStart.current = scrollRef.current.scrollLeft;
-  };
 
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!isDown.current || !scrollRef.current) return;
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.35;
-    if (Math.abs(walk) > 6) {
-      if (!isDragging) setIsDragging(true);
-      hasMoved.current = true;
-    }
-    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
-  };
+    const handleWindowMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDown.current || !scrollRef.current) return;
+      const x = moveEvent.pageX - scrollRef.current.offsetLeft;
+      const walk = (x - startX.current) * 1.35;
+      if (Math.abs(walk) > 6) {
+        setIsDragging(true);
+        hasMoved.current = true;
+      }
+      scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
+    };
 
-  const onMouseUpOrLeave = () => {
-    isDown.current = false;
-    if (isDragging) {
-      // Delay releasing drag state slightly so click event evaluates hasMoved
-      setTimeout(() => setIsDragging(false), 50);
-    }
+    const handleWindowMouseUp = () => {
+      isDown.current = false;
+      window.removeEventListener("mousemove", handleWindowMouseMove);
+      window.removeEventListener("mouseup", handleWindowMouseUp);
+      setTimeout(() => {
+        setIsDragging(false);
+        hasMoved.current = false;
+      }, 50);
+    };
+
+    window.addEventListener("mousemove", handleWindowMouseMove);
+    window.addEventListener("mouseup", handleWindowMouseUp);
   };
 
   const handleCardClick = useCallback((e: React.MouseEvent) => {
@@ -288,12 +294,8 @@ export function HangingRail({
         {/* Scrollable track with native momentum + desktop mouse drag */}
         <ul
           ref={scrollRef}
-          data-lenis-prevent
           onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUpOrLeave}
-          onMouseLeave={onMouseUpOrLeave}
-          className={`no-scrollbar relative z-10 flex gap-3 sm:gap-5 overflow-x-auto px-4 pb-8 pt-0 sm:px-8 lg:px-12 overscroll-x-contain select-none ${
+          className={`no-scrollbar relative z-10 flex gap-3 sm:gap-5 overflow-x-auto px-4 pb-8 pt-0 sm:px-8 lg:px-12 overscroll-x-contain select-none touch-pan-y ${
             isDragging ? "cursor-grabbing" : "cursor-grab"
           }`}
           style={{
