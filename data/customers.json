@@ -70,5 +70,23 @@
     "passwordHash": "67872dff8a6b1535262c1efc72a8c26b:551e4618cda84b06e655b4aafe93d2f82e0bed71af7ac0b90d0ee2223f5d441043f71f6f7bd8ac953b8042e74e16d5d0df6a72931e4a04074b96daa11d4bd219",
     "role": "CUSTOMER",
     "createdAt": "2026-10-26T03:26:31.053Z"
+  },
+  {
+    "id": "cust_1793362636400_lhod6",
+    "email": "test_1793362636336@trendstreet.test",
+    "name": "Test Customer",
+    "phone": "+91 99999 88888",
+    "passwordHash": "cd06c38f817f23cd56520a67ce5c01a2:0d59f55a37341c6595b0278a9fd4849f5c5894269e42ac8264c6ed4dc3ff5cf50b1a3d8cab09fc2bbba9a57e27476dc7d0f89ccc3894f48b6cdf28788ca359fe",
+    "role": "CUSTOMER",
+    "createdAt": "2026-10-30T12:17:16.400Z"
+  },
+  {
+    "id": "cust_1793363207316_h9sjt",
+    "email": "test_1793363207213@trendstreet.test",
+    "name": "Test Customer",
+    "phone": "+91 99999 88888",
+    "passwordHash": "4a4773969e9f5dc7e64b39781440b572:8ed4a62ba4c4b06a3e8119903664c13f030c9975f2149bbe7603b28567c02c61d537d9c4d61a138ac74a174c4406a611b6c04fe200281cc589edaaabd07b6fd3",
+    "role": "CUSTOMER",
+    "createdAt": "2026-10-30T12:26:47.316Z"
   }
 ]

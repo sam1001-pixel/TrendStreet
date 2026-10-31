@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Truck,
@@ -37,10 +38,25 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
   const [identifier, setIdentifier] = useState(initialQuery);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [smsSubscribed, setSmsSubscribed] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Keyboard Escape listener for modal dismissal
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (initialQuery) {
+      setIdentifier(initialQuery);
+    }
+  }, [initialQuery]);
+
+  // Keyboard Escape listener + body scroll lock for modal dismissal
   useEffect(() => {
     if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -48,10 +64,14 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   // Guard query logic: strictly require input and at least 5 digits for phone match
   const cleanId = identifier.trim().toLowerCase();
@@ -122,23 +142,23 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
     }, 400);
   };
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label="No-Login Live Courier Tracker"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-hidden my-0"
     >
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-espresso/70 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-espresso/75 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
       />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-burgundy/20 overflow-hidden z-10 animate-in zoom-in-95 duration-200 my-8">
+      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-burgundy/20 overflow-hidden z-10 animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] sm:max-h-[88vh] my-auto">
         {/* Header */}
-        <div className="p-5 sm:p-6 bg-espresso text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div className="shrink-0 p-4 sm:p-5 bg-espresso text-ivory flex items-center justify-between border-b border-burgundy/40">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-burgundy flex items-center justify-center text-gold border border-gold/30">
               <Truck className="w-5 h-5" />
@@ -162,7 +182,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
         </div>
 
         {/* Search Input Section */}
-        <div className="p-5 sm:p-6 bg-ivory border-b border-burgundy/10">
+        <div className="shrink-0 p-4 sm:p-5 bg-ivory border-b border-burgundy/10">
           <form onSubmit={handleSearch} className="space-y-3">
             <label className="text-xs font-bold uppercase tracking-wider text-espresso block">
               Enter 10-Digit Mobile, Order ID, or AWB
@@ -201,7 +221,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
         </div>
 
         {/* Results Area */}
-        <div className="p-5 sm:p-6 max-h-[50vh] overflow-y-auto space-y-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-5 overscroll-contain">
           {/* Active Waybill Summary Card */}
           <div className="p-4 rounded-xl bg-white border border-burgundy/15 shadow-sm space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-burgundy/10">
@@ -312,7 +332,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
         </div>
 
         {/* Footer Support Hotline */}
-        <div className="p-4 bg-white border-t border-burgundy/10 flex items-center justify-between text-xs text-espresso/60">
+        <div className="shrink-0 p-3.5 sm:p-4 bg-white border-t border-burgundy/10 flex items-center justify-between text-xs text-espresso/60">
           <div className="flex items-center space-x-2">
             <Phone className="w-3.5 h-3.5 text-burgundy" />
             <span>Atelier Logistics Hotline: <strong className="text-espresso">+91 98200 12345</strong></span>
@@ -320,6 +340,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
           <span className="text-[10px] text-espresso/40">Mon–Sat • 10:00 to 20:00 IST</span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

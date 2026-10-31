@@ -65,7 +65,7 @@ export function ProductShowcase() {
 
       <ul
         key={tab.id}
-        className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-5 sm:overflow-visible sm:px-0 lg:grid-cols-4"
+        className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-14"
       >
         {items.map((p, i) => (
           <li key={p.id} className="w-[46%] flex-shrink-0 snap-start sm:w-auto">

@@ -11,10 +11,13 @@ import {
 
 interface OffcultAssistDrawerProps {
   onOpenTracker?: () => void;
+  /** Hide the floating trigger pill (e.g. while another modal owns the screen). */
+  hideTrigger?: boolean;
 }
 
 export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({
   onOpenTracker,
+  hideTrigger = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"quiz" | "concierge">("quiz");
@@ -81,23 +84,33 @@ export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({
   return (
     <>
       {/* Floating Trigger Pill (Bottom Right) */}
-      <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40">
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-expanded={isOpen}
-          aria-label="Open Streetwear Atelier Concierge"
-          className="flex items-center space-x-2 py-2.5 px-4 rounded-full bg-espresso text-ivory border border-gold/40 shadow-xl hover:bg-burgundy transition-all hover:scale-105 group active:scale-95"
+      {!hideTrigger && (
+        <div
+          className={`fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 transition-opacity duration-200 ${
+            isOpen ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
         >
-          <div className="relative">
-            <MessageSquare className="w-4 h-4 text-gold group-hover:rotate-12 transition-transform" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-crimson animate-ping" />
-          </div>
-          <span className="text-xs font-bold uppercase tracking-wider hidden sm:inline-block">
-            Fit Concierge
-          </span>
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+            aria-label="Open Fit Concierge"
+            title="Fit Concierge"
+            className="flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full bg-espresso text-ivory border border-gold/40 shadow-xl hover:bg-burgundy transition-colors group active:scale-[0.98] motion-reduce:active:scale-100"
+          >
+            <span className="relative flex h-5 w-5 items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-gold transition-transform group-hover:rotate-6 motion-reduce:transition-none motion-reduce:group-hover:rotate-0" />
+              <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-crimson opacity-70 animate-ping motion-reduce:hidden" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-crimson ring-2 ring-espresso" />
+              </span>
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider">
+              Fit Concierge
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Slide-Up Concierge Card */}
       {isOpen && (

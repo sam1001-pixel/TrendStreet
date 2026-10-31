@@ -46,7 +46,10 @@ export default function HomePage() {
 
       {siteSettings?.storefrontSections?.reviewGallery !== false && <CustomerReviewGallery />}
 
-      <OffcultAssistDrawer onOpenTracker={() => setIsTrackerOpen(true)} />
+      <OffcultAssistDrawer
+        onOpenTracker={() => setIsTrackerOpen(true)}
+        hideTrigger={isTrackerOpen}
+      />
       <LiveCourierTrackerModal isOpen={isTrackerOpen} onClose={() => setIsTrackerOpen(false)} />
     </div>
   );
