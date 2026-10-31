@@ -288,6 +288,7 @@ export function HangingRail({
         {/* Scrollable track with native momentum + desktop mouse drag */}
         <ul
           ref={scrollRef}
+          data-lenis-prevent
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUpOrLeave}

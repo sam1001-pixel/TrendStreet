@@ -221,7 +221,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
         </div>
 
         {/* Results Area */}
-        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-5 overscroll-contain">
+        <div data-lenis-prevent className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-5 overscroll-contain">
           {/* Active Waybill Summary Card */}
           <div className="p-4 rounded-xl bg-white border border-burgundy/15 shadow-sm space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-burgundy/10">

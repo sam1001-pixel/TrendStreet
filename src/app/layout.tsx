@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 import { StoreProvider } from "@/context/StoreContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
@@ -10,6 +11,7 @@ import { QuickViewModal } from "@/components/QuickViewModal";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { StoreJsonLd } from "@/components/seo/JsonLd";
 import { ScrollReveal } from "@/components/premium/ScrollReveal";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
 export const metadata: Metadata = {
   title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
@@ -71,11 +73,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en">
       <head>
         <StoreJsonLd />
       </head>
       <body className="min-h-screen flex flex-col bg-ivory text-espresso antialiased">
+        <SmoothScroll />
         <AdminAuthProvider>
           <StoreProvider>
             <UserAuthProvider>
