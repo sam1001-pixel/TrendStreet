@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
+import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { formatPrice } from "@/lib/pricing";
 import type { Product } from "@/types/store";
 
@@ -66,7 +67,7 @@ function Garment({
 
   return (
     <motion.li
-      className="relative w-[155px] xs:w-[170px] sm:w-[200px] md:w-[215px] lg:w-[230px] flex-shrink-0 select-none transform-gpu"
+      className="relative w-[44vw] max-w-[190px] snap-start sm:w-[200px] sm:max-w-none md:w-[215px] lg:w-[230px] flex-shrink-0 select-none transform-gpu"
       initial={reduce ? false : { opacity: 0, y: 24 }}
       animate={inView ? { opacity: 1, y: 0 } : undefined}
       transition={{
@@ -177,6 +178,7 @@ export function HangingRail({
   const scrollRef = useRef<HTMLUListElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -15% 0px" });
   const reduce = useReducedMotion();
+  useAutoScroll(scrollRef, { interval: 3200 });
 
   // Desktop mouse drag-to-scroll state
   const isDown = useRef(false);
@@ -242,7 +244,7 @@ export function HangingRail({
   return (
     <section ref={ref} className="relative overflow-hidden py-6 sm:py-8" aria-labelledby="rail-heading">
       {/* Section Header with Left/Right Scroll Controls */}
-      <div className="mx-auto mb-6 sm:mb-8 flex max-w-[1600px] items-end justify-between gap-4 px-4 sm:px-8 lg:px-12">
+      <div className="mx-auto mb-5 sm:mb-8 flex max-w-[1600px] items-end justify-between gap-3 px-4 sm:px-8 lg:px-12">
         <div>
           <div className="flex items-center gap-1.5 text-gold text-xs font-bold uppercase tracking-wider mb-1">
             <Sparkles className="w-3.5 h-3.5 text-gold" />
@@ -250,7 +252,7 @@ export function HangingRail({
           </div>
           <h2
             id="rail-heading"
-            className="font-display text-3xl font-black uppercase leading-[0.85] text-espresso sm:text-6xl lg:text-7xl"
+            className="font-display text-[2.5rem] font-black uppercase leading-[0.85] text-espresso sm:text-6xl lg:text-7xl"
           >
             {title}
           </h2>
@@ -276,7 +278,7 @@ export function HangingRail({
           </button>
           <Link
             href="/shop"
-            className="ml-1 min-h-[40px] content-center text-xs font-bold uppercase tracking-[0.2em] text-burgundy hover:text-crimson transition-colors"
+            className="ml-1 inline-flex min-h-[44px] flex-shrink-0 items-center whitespace-nowrap text-xs font-bold uppercase tracking-[0.15em] text-burgundy hover:text-crimson transition-colors"
           >
             Shop all →
           </Link>
@@ -295,7 +297,7 @@ export function HangingRail({
         <ul
           ref={scrollRef}
           onMouseDown={onMouseDown}
-          className={`no-scrollbar relative z-10 flex gap-3 sm:gap-5 overflow-x-auto px-4 pb-8 pt-0 sm:px-8 lg:px-12 overscroll-x-contain select-none touch-pan-y ${
+          className={`no-scrollbar relative z-10 flex gap-3 sm:gap-5 snap-x snap-proximity scroll-px-4 overflow-x-auto px-4 pb-8 pt-0 sm:scroll-px-8 sm:px-8 lg:scroll-px-12 lg:px-12 overscroll-x-contain select-none touch-manipulation ${
             isDragging ? "cursor-grabbing" : "cursor-grab"
           }`}
           style={{
@@ -317,7 +319,7 @@ export function HangingRail({
 
         {/* Mobile Swipe Cue */}
         <div className="flex sm:hidden items-center justify-center gap-1.5 text-[11px] font-medium text-espresso/50 pt-1">
-          <span>← Swipe to explore the rail →</span>
+          <span>Swipe to browse · it moves on its own too</span>
         </div>
       </div>
     </section>

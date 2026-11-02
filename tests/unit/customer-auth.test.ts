@@ -15,7 +15,7 @@ test("customer-auth - hashes password and verifies correctly", () => {
 
   assert.equal(typeof hash, "string");
   assert.equal(typeof salt, "string");
-  assert.equal(combined.includes(":"), true);
+  assert.equal(combined.startsWith("pbkdf2."), true);
 
   // Correct password verification via combined string
   assert.equal(verifyPassword(password, combined), true);
@@ -83,30 +83,31 @@ test("customer-auth - rejects empty and malformed tokens gracefully", async () =
   assert.equal(await verifyCustomerToken("singleparttoken"), null);
 });
 
-test("customer-auth - finds pre-seeded default customer user", async () => {
-  const user = await findCustomerByEmail("customer@trendstreet.in");
-  assert.notEqual(user, null);
-  assert.equal(user?.email, "customer@trendstreet.in");
-  assert.equal(user?.name, "Aryan Mehra");
-  assert.equal(verifyPassword("TrendStreet2026!", user!.passwordHash), true);
+test("customer-auth - demo accounts and demo passwords are gone", async () => {
+  const { verifyCustomerPassword } = await import("../../src/lib/customer-auth");
+  const { combined } = hashPassword("A-Real-Password-2026");
+  for (const demo of ["password", "customer", "customer123", "demo123", "TrendStreet2026!"]) {
+    assert.equal(verifyCustomerPassword(demo, combined), false);
+  }
 });
 
-test("customer-auth - creates new customer and prevents duplicate lookup mismatch", async () => {
-  const uniqueEmail = `test_${Date.now()}@trendstreet.test`;
-  const newUser = await createCustomerUser({
-    email: uniqueEmail,
-    name: "Test Customer",
-    phone: "+91 99999 88888",
-    password: "CustomPassword2026!",
-  });
+test("customer-auth - still verifies hashes made by the previous 100k-iteration format", async () => {
+  const crypto = await import("crypto");
+  const salt = "a1b2c3d4e5f60718293a4b5c6d7e8f90";
+  const legacy = `${salt}:${crypto.pbkdf2Sync("OldPassword!", salt, 100000, 64, "sha512").toString("hex")}`;
+  assert.equal(verifyPassword("OldPassword!", legacy), true);
+  assert.equal(verifyPassword("oldpassword!", legacy), false);
+});
 
-  assert.equal(newUser.email, uniqueEmail);
-  assert.equal(newUser.name, "Test Customer");
-  assert.equal(newUser.role, "CUSTOMER");
-
-  const fetched = await findCustomerByEmail(uniqueEmail);
-  assert.notEqual(fetched, null);
-  assert.equal(fetched?.id, newUser.id);
-  assert.equal(verifyPassword("CustomPassword2026!", fetched!.passwordHash), true);
-  assert.equal(verifyPassword("WrongPassword", fetched!.passwordHash), false);
+test("customer-auth - account lookups fail loudly without a database instead of using a file", async () => {
+  const saved = process.env.DATABASE_URL;
+  delete process.env.DATABASE_URL;
+  try {
+    await assert.rejects(() => findCustomerByEmail("customer@trendstreet.in"));
+    await assert.rejects(() =>
+      createCustomerUser({ email: "x@trendstreet.test", name: "X", password: "CustomPassword2026!" })
+    );
+  } finally {
+    if (saved !== undefined) process.env.DATABASE_URL = saved;
+  }
 });

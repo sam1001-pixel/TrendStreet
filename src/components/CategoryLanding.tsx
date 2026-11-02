@@ -6,7 +6,6 @@ import Image from "next/image";
 import { ArrowRight, ArrowUpRight, Check, SlidersHorizontal, X } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/ProductCard";
-import { CURATED_LOOKS } from "@/data/looks";
 import type { ProductCategory } from "@/types/store";
 
 export interface CategoryConfig {
@@ -72,7 +71,6 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
 
   const prices = inCategory.map((p) => p.price);
   const from = prices.length ? Math.min(...prices) : 0;
-  const looks = CURATED_LOOKS.filter((l) => l.pieces.some((pc) => inCategory.some((p) => p.id === pc.productId))).slice(0, 3);
   const tagline = siteSettings?.categoryTaglines?.[config.category] || config.fallbackTagline;
 
   // Catalogue Component (Clothes Grid)
@@ -264,44 +262,6 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
           {SpecsSection}
           {CatalogueSection}
         </>
-      )}
-
-      {/* Styled looks with this category */}
-      {looks.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-labelledby="looks-h">
-          <div className="mb-4 flex items-end justify-between">
-            <h2 id="looks-h" className="font-display text-3xl font-black uppercase leading-none text-espresso sm:text-5xl">
-              Wear it with
-            </h2>
-            <Link
-              href="/complete-the-fit"
-              className="inline-flex min-h-[40px] items-center gap-1 text-xs font-bold uppercase tracking-wider text-burgundy"
-            >
-              All looks <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <ul className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:px-0">
-            {looks.map((l) => (
-              <li key={l.id} className="w-[70%] flex-shrink-0 snap-start sm:w-auto">
-                <Link href={`/complete-the-fit?look=${l.id}`} className="group relative block aspect-[4/5] overflow-hidden rounded-3xl bg-espresso">
-                  <Image
-                    src={l.image}
-                    alt=""
-                    fill
-                    sizes="(max-width:640px) 70vw, 33vw"
-                    className="object-cover opacity-85 transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <span className="absolute inset-0 bg-gradient-to-t from-espresso via-transparent" />
-                  <span className="absolute inset-x-0 bottom-0 p-4 text-ivory">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gold">{l.occasion} · {l.pieces.length} pieces</span>
-                    <span className="mt-0.5 block font-serif text-xl font-bold">{l.name}</span>
-                    <span className="mt-1 block text-[11px] text-ivory/70">{l.vibe}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
       )}
 
       {/* Other silhouettes (without Jeans) */}

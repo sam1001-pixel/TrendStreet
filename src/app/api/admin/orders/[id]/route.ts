@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
 import { adminOrderInclude, STATUS_TO_DB, STATUS_TO_UI, toAdminOrder } from "@/lib/admin-orders";
 import { requireAdminSession } from "@/lib/auth";
+import { releaseOrderResources } from "@/lib/orders";
 import type { OrderStatus } from "@/types/store";
 
 export const dynamic = "force-dynamic";
@@ -29,13 +30,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const reopening = before.status === "CANCELLED" && dbStatus !== undefined && dbStatus !== "CANCELLED";
 
     const updated = await prisma.$transaction(async (tx) => {
-      // Cancelling returns units to stock; re-opening a cancelled order takes them again.
-      if (cancelling || reopening) {
+      // Cancelling returns units to stock (and the coupon use); re-opening a cancelled order takes them again.
+      if (cancelling) {
+        await releaseOrderResources(tx, before);
+      } else if (reopening) {
         for (const item of before.items) {
-          await tx.inventory.update({
-            where: { variantId: item.variantId },
-            data: { quantity: cancelling ? { increment: item.quantity } : { decrement: item.quantity } },
+          const taken = await tx.inventory.updateMany({
+            where: { variantId: item.variantId, quantity: { gte: item.quantity } },
+            data: { quantity: { decrement: item.quantity } },
           });
+          if (taken.count === 0) throw new Error("NOT_ENOUGH_STOCK");
         }
       }
       return tx.order.update({
@@ -64,6 +68,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     return NextResponse.json({ order: toAdminOrder(updated) });
   } catch (err) {
+    if (err instanceof Error && err.message === "NOT_ENOUGH_STOCK") {
+      return NextResponse.json({ error: "Not enough stock left to re-open this order." }, { status: 409 });
+    }
     console.error("[Admin order update]:", err);
     return NextResponse.json({ error: "Could not update the order." }, { status: 503 });
   }

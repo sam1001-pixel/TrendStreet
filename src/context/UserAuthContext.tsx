@@ -44,37 +44,28 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const checkSession = useCallback(async () => {
     try {
-      const cachedToken = typeof window !== "undefined" ? localStorage.getItem("ts_customer_token") : null;
-      const headers: Record<string, string> = {};
-      if (cachedToken) {
-        headers["Authorization"] = `Bearer ${cachedToken}`;
-        headers["x-customer-token"] = cachedToken;
-      }
-
-      const res = await fetch("/api/auth/customer/session", { headers });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.authenticated && data.user) {
-          setUser(data.user);
-          setIsAuthenticated(true);
-          syncStoreProfile(data.user);
-          try {
-            localStorage.setItem("ts_customer_authenticated", "true");
-            localStorage.setItem("ts_customer_user", JSON.stringify(data.user));
-          } catch (_) {}
-          return;
-        }
-      }
-
-      // If server explicitly confirms no session and no token exists
-      if (!cachedToken) {
-        setUser(null);
-        setIsAuthenticated(false);
+      // The httpOnly session cookie is sent automatically.
+      const res = await fetch("/api/auth/customer/session", { credentials: "same-origin" });
+      const data = res.ok ? await res.json() : null;
+      if (data?.authenticated && data.user) {
+        setUser(data.user);
+        setIsAuthenticated(true);
+        syncStoreProfile(data.user);
         try {
-          localStorage.removeItem("ts_customer_authenticated");
-          localStorage.removeItem("ts_customer_user");
+          localStorage.setItem("ts_customer_authenticated", "true");
+          localStorage.setItem("ts_customer_user", JSON.stringify(data.user));
         } catch (_) {}
+        return;
       }
+
+      // No valid session on the server: clear any optimistic state.
+      setUser(null);
+      setIsAuthenticated(false);
+      try {
+        localStorage.removeItem("ts_customer_authenticated");
+        localStorage.removeItem("ts_customer_user");
+        localStorage.removeItem("ts_customer_token"); // left behind by older builds
+      } catch (_) {}
     } catch (err) {
       console.error("[UserAuth] Session verification error:", err);
     } finally {
@@ -117,9 +108,6 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           localStorage.setItem("ts_customer_authenticated", "true");
           localStorage.setItem("ts_customer_user", JSON.stringify(data.user));
-          if (data.token) {
-            localStorage.setItem("ts_customer_token", data.token);
-          }
         } catch (_) {}
         return {
           success: true,
@@ -162,9 +150,6 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         try {
           localStorage.setItem("ts_customer_authenticated", "true");
           localStorage.setItem("ts_customer_user", JSON.stringify(resData.user));
-          if (resData.token) {
-            localStorage.setItem("ts_customer_token", resData.token);
-          }
         } catch (_) {}
         return {
           success: true,

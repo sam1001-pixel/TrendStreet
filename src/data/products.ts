@@ -1,6 +1,6 @@
 import { Product } from "@/types/store";
 
-export const INITIAL_PRODUCTS: Product[] = [
+const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
   // 1. OVERSIZED
   {
     id: "ts-001",
@@ -1126,3 +1126,14 @@ export const INITIAL_PRODUCTS: Product[] = [
     , "winter", "jodhpur"]
   },
 ];
+
+/**
+ * The ratings and reviews above are sample copy written for the design, not from real buyers.
+ * Showing them as genuine is misleading (and a consumer-protection risk), so they're stripped
+ * until real, verified-purchase reviews exist. Set this to true only for local design previews.
+ */
+const SHOW_SAMPLE_REVIEWS = false;
+
+export const INITIAL_PRODUCTS: Product[] = SHOW_SAMPLE_REVIEWS
+  ? CATALOG_WITH_SAMPLE_REVIEWS
+  : CATALOG_WITH_SAMPLE_REVIEWS.map((p) => ({ ...p, rating: 0, reviewsCount: 0, reviews: [] }));

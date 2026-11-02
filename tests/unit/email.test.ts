@@ -92,3 +92,24 @@ test("isOrderEmailAlreadySent - handles deduplication check gracefully", async (
   const isSent = await isOrderEmailAlreadySent(freshOrderNumber);
   assert.equal(typeof isSent, "boolean");
 });
+
+test("email - customer-entered text is HTML-escaped in the confirmation email", async () => {
+  const { generateOrderConfirmationHtml } = await import("../../src/lib/email");
+  const html = generateOrderConfirmationHtml({
+    orderNumber: "TS-261103-AAAAA",
+    orderId: "o1",
+    customerName: '<a href="https://evil.example">Claim refund</a>',
+    customerEmail: "x@example.com",
+    items: [{ productName: "Tee", size: "M", color: "Black", quantity: 1, unitPrice: 2499 }],
+    subtotal: 2499,
+    discount: 0,
+    shipping: 0,
+    tax: 119,
+    total: 2499,
+    paymentMethod: "Cash on Delivery",
+    shippingAddress: { street: "<script>alert(1)</script>", city: "Mumbai", state: "MH", postalCode: "400050", country: "India" },
+  } as any);
+  assert.equal(html.includes('<a href="https://evil.example">'), false);
+  assert.equal(html.includes("<script>alert(1)</script>"), false);
+  assert.equal(html.includes("&lt;script&gt;"), true);
+});

@@ -3,13 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { Search, Heart, ShoppingBag, User, Menu, X, ArrowRight, Truck, Sparkles, Wallet, BookOpen, HelpCircle } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Search, Heart, ShoppingBag, User, Menu, X, ArrowRight, Truck, HelpCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useStore } from "@/context/StoreContext";
 import { useUserAuth } from "@/context/UserAuthContext";
 import { QuickCommandMenu } from "@/components/QuickCommandMenu";
-import { LiveCourierTrackerModal } from "@/components/LiveCourierTrackerModal";
 
 const CATEGORIES = [
   { label: "Oversized", href: "/oversized", image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop" },
@@ -18,9 +17,6 @@ const CATEGORIES = [
 ];
 
 const MORE_LINKS = [
-  { label: "Complete the Fit", href: "/complete-the-fit", icon: Sparkles },
-  { label: "Shop Your Way", href: "/shop-your-way", icon: Wallet },
-  { label: "Lookbook", href: "/lookbook", icon: BookOpen },
   { label: "Why Trend Street", href: "/why-trend-street", icon: HelpCircle },
   { label: "Track my order", href: "/track", icon: Truck },
 ];
@@ -32,7 +28,7 @@ export const Header: React.FC = () => {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
-  const [isTrackerOpen, setIsTrackerOpen] = useState(false);
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(false);
 
@@ -250,8 +246,7 @@ export const Header: React.FC = () => {
         </div>
       )}
 
-      <QuickCommandMenu isOpen={isCommandMenuOpen} onClose={() => setIsCommandMenuOpen(false)} onOpenTracker={() => setIsTrackerOpen(true)} />
-      <LiveCourierTrackerModal isOpen={isTrackerOpen} onClose={() => setIsTrackerOpen(false)} />
+      <QuickCommandMenu isOpen={isCommandMenuOpen} onClose={() => setIsCommandMenuOpen(false)} onOpenTracker={() => router.push("/track")} />
     </>
   );
 };

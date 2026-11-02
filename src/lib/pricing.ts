@@ -1,22 +1,36 @@
 /**
  * Trend Street — Server-Authoritative Pricing & Checkout Calculation Engine
- * All monetary calculations are performed in integer minor units (cents / paise)
- * to strictly prevent IEEE 754 floating-point rounding inaccuracies.
+ * All monetary calculations are performed in integer minor units (paise)
+ * to prevent floating-point rounding errors.
+ *
+ * This module is pure and shared with the browser: it holds no coupon codes.
+ * Coupons live in the database (`coupons` table, managed in /admin/discounts) and are
+ * resolved on the server (src/lib/coupons.ts) before being passed in here.
  */
 
 export interface PricingItem {
   id: string;
   name: string;
-  unitPriceMinor: number; // e.g. 16000 for $160.00
+  unitPriceMinor: number; // e.g. 249900 for ₹2,499
   quantity: number;
   size: string;
   color: string;
 }
 
+/** A coupon already looked up and checked (active, not expired, uses left) on the server. */
+export interface ResolvedCoupon {
+  code: string;
+  percent: number; // 0 = no percentage discount
+  minSpendMinor: number;
+  freeShipping: boolean;
+  /** Minimum number of different products in the bag (bundle codes). */
+  minDistinctProducts?: number;
+  description?: string | null;
+}
+
 export interface PricingOptions {
-  promoCode?: string | null;
+  coupon?: ResolvedCoupon | null;
   deliveryMethod?: "standard" | "express" | "vip_courier";
-  taxRateBasisPoints?: number; // e.g., 800 for 8.00%, 1800 for 18.00%
   currency?: "USD" | "INR";
 }
 
@@ -33,34 +47,45 @@ export interface PricingSummary {
   isFreeShipping: boolean;
 }
 
-// Active Promo Code Registry with discount percentages (Paise / Cents)
-export const VALID_PROMO_CODES: Record<string, { percent: number; description: string; minSpendMinor: number }> = {
-  TREND10: { percent: 10, description: "10% off inaugural order over ₹1,999", minSpendMinor: 199900 },
-  STREET20: { percent: 20, description: "20% off seasonal drop orders over ₹3,999", minSpendMinor: 399900 },
-  BUNDLE15: { percent: 15, description: "15% off complete outfit bundles", minSpendMinor: 0 },
-  VIP15: { percent: 15, description: "15% VIP atelier patron discount over ₹2,499", minSpendMinor: 249900 },
-  FREESHIP: { percent: 0, description: "Complimentary priority shipping on all orders", minSpendMinor: 0 },
-};
-
 // Shipping rules: Orders >= ₹1,999 (199,900 paise) receive complimentary courier across India
 export const FREE_SHIPPING_THRESHOLD_MINOR = 199900;
 export const SHIPPING_RATES_MINOR: Record<"standard" | "express" | "vip_courier", number> = {
   standard: 15000, // ₹150.00
-  express: 25000,  // ₹250.00
+  express: 25000, // ₹250.00
   vip_courier: 35000, // ₹350.00
 };
 
 /**
- * Calculates complete order pricing breakdown server-side.
+ * GST on readymade garments (Notification 9/2025-Central Tax (Rate), effective 22 Sep 2025):
+ * 5% when the sale value of a piece is up to ₹2,500, 18% above that.
+ * The test is per piece, on the price after discount. Confirm against your HSN codes with your CA.
  */
-export function calculateOrderPricing(
-  items: PricingItem[],
-  options: PricingOptions = {}
-): PricingSummary {
+export const GST_PIECE_THRESHOLD_MINOR = 250000;
+export const GST_LOW_RATE_BPS = 500;
+export const GST_HIGH_RATE_BPS = 1800;
+
+export function gstRateBpsForPiece(pieceSaleValueMinor: number): number {
+  return pieceSaleValueMinor <= GST_PIECE_THRESHOLD_MINOR ? GST_LOW_RATE_BPS : GST_HIGH_RATE_BPS;
+}
+
+/** Why a coupon doesn't apply to these items, or null if it does. */
+export function couponIneligibilityReason(items: PricingItem[], coupon: ResolvedCoupon, subtotalMinor: number): string | null {
+  if (subtotalMinor < coupon.minSpendMinor) {
+    return `${coupon.code} needs a bag of ₹${(coupon.minSpendMinor / 100).toLocaleString("en-IN")} or more.`;
+  }
+  const distinct = new Set(items.map((i) => i.id)).size;
+  if (coupon.minDistinctProducts && distinct < coupon.minDistinctProducts) {
+    return `${coupon.code} needs at least ${coupon.minDistinctProducts} different pieces in your bag.`;
+  }
+  return null;
+}
+
+/**
+ * Calculates complete order pricing breakdown.
+ */
+export function calculateOrderPricing(items: PricingItem[], options: PricingOptions = {}): PricingSummary {
   const currency = options.currency || "INR";
   const deliveryMethod = options.deliveryMethod || "standard";
-  // GST 12% standard for Indian apparel (1200 bps)
-  const taxRateBps = options.taxRateBasisPoints ?? 1200;
 
   if (!items || items.length === 0) {
     return {
@@ -76,43 +101,36 @@ export function calculateOrderPricing(
     };
   }
 
-  // 1. Server Subtotal (minor units)
-  const subtotalMinor = items.reduce((acc, item) => {
-    const qty = Math.max(1, Math.floor(item.quantity));
-    const price = Math.max(0, Math.floor(item.unitPriceMinor));
-    return acc + price * qty;
-  }, 0);
+  const lines = items.map((item) => ({
+    qty: Math.max(1, Math.floor(item.quantity)),
+    price: Math.max(0, Math.floor(item.unitPriceMinor)),
+  }));
 
-  // 2. Promo code validation & discount
-  let promoCodeApplied: string | null = null;
-  let discountPercent = 0;
-  let discountMinor = 0;
+  // 1. Subtotal
+  const subtotalMinor = lines.reduce((acc, l) => acc + l.price * l.qty, 0);
 
-  if (options.promoCode) {
-    const normalizedCode = options.promoCode.trim().toUpperCase();
-    const coupon = VALID_PROMO_CODES[normalizedCode];
-
-    if (coupon && subtotalMinor >= coupon.minSpendMinor) {
-      promoCodeApplied = normalizedCode;
-      discountPercent = coupon.percent;
-      discountMinor = Math.round((subtotalMinor * coupon.percent) / 100);
-    }
-  }
-
+  // 2. Coupon
+  const coupon = options.coupon ?? null;
+  const couponApplies = !!coupon && couponIneligibilityReason(items, coupon, subtotalMinor) === null;
+  const discountPercent = couponApplies ? Math.max(0, Math.min(90, coupon!.percent)) : 0;
+  const discountMinor = Math.round((subtotalMinor * discountPercent) / 100);
   const discountedSubtotalMinor = Math.max(0, subtotalMinor - discountMinor);
 
-  // 3. Shipping threshold (threshold met OR FREESHIP coupon applied)
+  // 3. Shipping (threshold met OR a free-shipping coupon applies)
   const isFreeShipping =
-    discountedSubtotalMinor >= FREE_SHIPPING_THRESHOLD_MINOR ||
-    promoCodeApplied === "FREESHIP";
+    discountedSubtotalMinor >= FREE_SHIPPING_THRESHOLD_MINOR || (couponApplies && coupon!.freeShipping);
   const baseShipping = SHIPPING_RATES_MINOR[deliveryMethod] || SHIPPING_RATES_MINOR.standard;
   const shippingMinor = isFreeShipping ? 0 : baseShipping;
 
-  // 4. GST is included in listed prices (Consumer Protection rules: displayed price is all-inclusive).
-  //    Extract the embedded component for invoices: tax = gross * rate / (1 + rate).
-  const taxMinor = Math.round((discountedSubtotalMinor * taxRateBps) / (10000 + taxRateBps));
+  // 4. GST is included in listed prices. Extract the embedded component per piece:
+  //    tax = piece value * rate / (1 + rate), with the rate chosen from the piece's discounted value.
+  const taxMinor = lines.reduce((acc, l) => {
+    const pieceValue = (l.price * (100 - discountPercent)) / 100;
+    const bps = gstRateBpsForPiece(pieceValue);
+    return acc + Math.round((pieceValue * l.qty * bps) / (10000 + bps));
+  }, 0);
 
-  // 5. Total — the customer pays exactly the displayed prices, less discount, plus shipping
+  // 5. Total — the customer pays the displayed prices, less discount, plus shipping
   const totalMinor = discountedSubtotalMinor + shippingMinor;
 
   return {
@@ -122,14 +140,14 @@ export function calculateOrderPricing(
     shippingMinor,
     taxMinor,
     totalMinor,
-    promoCodeApplied,
+    promoCodeApplied: couponApplies ? coupon!.code : null,
     discountPercent,
     isFreeShipping,
   };
 }
 
 /**
- * Formats minor units for display (e.g., 16000 -> "$160.00" or "₹16,000")
+ * Formats minor units for display (e.g., 249900 -> "₹2,499")
  */
 export function formatMinorUnits(amountMinor: number, currency: "USD" | "INR" = "INR"): string {
   const major = amountMinor / 100;
@@ -156,4 +174,3 @@ export function formatMinorUnits(amountMinor: number, currency: "USD" | "INR" = 
 export function formatPrice(amountMajor: number, currency: "USD" | "INR" = "INR"): string {
   return formatMinorUnits(Math.round(amountMajor * 100), currency);
 }
-

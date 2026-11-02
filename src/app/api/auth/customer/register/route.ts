@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  CustomerStoreUnavailableError,
   findCustomerByEmail,
   createCustomerUser,
   signCustomerToken,
@@ -14,11 +15,11 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Sliding-window rate limit (5 registration attempts per 15 minutes per IP)
+    // 1. Sliding-window rate limit (10 registration attempts per 15 minutes per IP)
     const clientIp = getClientIp(req.headers);
     const rateLimit = checkRateLimit(`cust-register:${clientIp}`, {
       windowMs: 15 * 60 * 1000,
-      maxRequests: 20,
+      maxRequests: 10,
     });
 
     if (!rateLimit.allowed) {
@@ -96,7 +97,6 @@ export async function POST(req: NextRequest) {
       {
         success: true,
         message: "Your Atelier Account has been successfully created.",
-        token,
         user: newUser,
       },
       { status: 201 }
@@ -114,6 +114,19 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
+    if (error instanceof Error && error.message === "ACCOUNT_EXISTS") {
+      return NextResponse.json(
+        { success: false, message: "An account with this email address already exists. Please sign in." },
+        { status: 409 }
+      );
+    }
+    if (error instanceof CustomerStoreUnavailableError) {
+      console.error("[Customer Auth] Store unavailable:", error.message);
+      return NextResponse.json(
+        { success: false, message: "Registration is temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
     console.error("[Customer Auth] Register error:", error);
     return NextResponse.json(
       { success: false, message: "Unable to complete account registration. Please try again." },

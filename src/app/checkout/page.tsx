@@ -80,6 +80,7 @@ export default function CheckoutPage() {
   const {
     cart,
     promoCode,
+    coupon,
     createOrder,
     user,
     updateUserProfile,
@@ -123,7 +124,7 @@ export default function CheckoutPage() {
       size: item.selectedSize,
       color: item.selectedColor,
     })),
-    { promoCode, deliveryMethod: formData.deliveryMethod, currency: "INR" }
+    { coupon, deliveryMethod: formData.deliveryMethod, currency: "INR" }
   );
   const cartSubtotal = pricing.subtotalMinor / 100;
   const cartDiscount = pricing.discountMinor / 100;
@@ -239,7 +240,7 @@ export default function CheckoutPage() {
               state: formData.state,
               postalCode: formData.postalCode,
             },
-            promoCode: promoCode || undefined,
+            promoCode: coupon?.code || undefined,
             deliveryMethod: formData.deliveryMethod,
           }),
         });
@@ -271,7 +272,7 @@ export default function CheckoutPage() {
           shipping: codData.pricing.shippingMinor / 100,
           tax: codData.pricing.taxMinor / 100,
           total: codData.pricing.totalMinor / 100,
-          promoCode: promoCode || undefined,
+          promoCode: coupon?.code || undefined,
           customer: {
             fullName: formData.fullName,
             email: formData.email,
@@ -320,9 +321,19 @@ export default function CheckoutPage() {
             selectedColor: item.selectedColor,
             quantity: item.quantity,
           })),
-          promoCode: promoCode || undefined,
+          customer: {
+            fullName: formData.fullName,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            apartment: formData.apartment,
+            landmark: formData.landmark,
+            city: formData.city,
+            state: formData.state,
+            postalCode: formData.postalCode,
+          },
+          promoCode: coupon?.code || undefined,
           deliveryMethod: formData.deliveryMethod,
-          currency: "INR",
         }),
       });
 
@@ -342,7 +353,7 @@ export default function CheckoutPage() {
         name: "TREND STREET",
         description: "Luxury Indian Menswear Order",
         order_id: orderData.orderId,
-        image: "/favicon.ico",
+        image: "/icon.png",
         handler: async function (paymentResponse: {
           razorpay_order_id: string;
           razorpay_payment_id: string;
@@ -357,21 +368,6 @@ export default function CheckoutPage() {
                 razorpay_order_id: paymentResponse.razorpay_order_id,
                 razorpay_payment_id: paymentResponse.razorpay_payment_id,
                 razorpay_signature: paymentResponse.razorpay_signature,
-                orderData: {
-                  customer: formData,
-                  items: cart.map((item) => ({
-                    productId: item.product.id,
-                    productName: item.product.name,
-                    price: item.product.price,
-                    selectedSize: item.selectedSize,
-                    selectedColor: item.selectedColor,
-                    quantity: item.quantity,
-                  })),
-                  pricing: orderData.pricing,
-                  promoCode: promoCode || undefined,
-                  deliveryMethod: formData.deliveryMethod,
-                  paymentMethod: formData.paymentMethod,
-                },
               }),
             });
 
@@ -379,7 +375,7 @@ export default function CheckoutPage() {
 
             if (!verifyRes.ok || !verifyData.success || !verifyData.verified) {
               setValidationError(
-                verifyData.error || "Payment cryptographic signature verification failed. Please contact concierge."
+                verifyData.error || "We couldn't confirm your payment. Please contact us before paying again."
               );
               setIsProcessing(false);
               return;
@@ -396,20 +392,16 @@ export default function CheckoutPage() {
               image: item.product.images[0],
             }));
 
-            if (!verifyData.saved) {
-              console.warn("Payment verified but order not saved; payment id:", paymentResponse.razorpay_payment_id);
-            }
-
             const newOrder = createOrder({
-              // If saving failed, the Razorpay payment id is the reference our team can trace.
-              orderNumber: verifyData.orderNumber || paymentResponse.razorpay_payment_id,
+              orderNumber: verifyData.orderNumber || orderData.orderNumber,
               items: orderItems,
-              subtotal: cartSubtotal,
-              discount: cartDiscount,
-              shipping: cartShipping,
-              tax: cartTax,
-              total: cartTotal,
-              promoCode: promoCode || undefined,
+              // Totals as saved on the server at create-order.
+              subtotal: orderData.pricing.subtotalMinor / 100,
+              discount: orderData.pricing.discountMinor / 100,
+              shipping: orderData.pricing.shippingMinor / 100,
+              tax: orderData.pricing.taxMinor / 100,
+              total: orderData.pricing.totalMinor / 100,
+              promoCode: coupon?.code || undefined,
               customer: {
                 fullName: formData.fullName,
                 email: formData.email,

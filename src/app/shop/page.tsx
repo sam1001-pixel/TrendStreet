@@ -145,45 +145,92 @@ function ShopContent() {
     inStockOnly;
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-6 sm:space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8">
       {/* Page Header */}
-      <div className="pb-4 sm:pb-6 border-b border-burgundy/15 flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
+      <div className="flex flex-col justify-between gap-3 border-b border-burgundy/15 pb-4 sm:gap-4 sm:pb-6 md:flex-row md:items-end">
         <div>
-          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-crimson block mb-1">
+          <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-crimson sm:text-xs">
             Complete Streetwear Catalog
           </span>
-          <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-espresso">
+          <h1 className="font-serif text-2xl font-bold text-espresso sm:text-3xl md:text-4xl">
             {selectedCategory === "All" ? "The Core Collection" : selectedCategory}
           </h1>
-          <p className="text-[11px] sm:text-xs text-espresso/70 mt-1">
-            Showing {filteredProducts.length} pieces of oversized drops, selvedge denim, boxy cuts & outerwear.
+          <p className="mt-1 text-[11px] text-espresso/70 sm:text-xs">
+            {filteredProducts.length} {filteredProducts.length === 1 ? "piece" : "pieces"}
+            <span className="hidden sm:inline"> of oversized drops, selvedge denim, boxy cuts &amp; outerwear</span>
           </p>
         </div>
 
-        {/* Sort & Mobile Filter Trigger */}
-        <div className="flex items-center space-x-3">
+        {/* Desktop sort (phones use the sticky bar below) */}
+        <div className="hidden items-center rounded-md border border-burgundy/20 bg-white px-3 py-1.5 shadow-xs lg:flex">
+          <ArrowUpDown className="mr-2 h-3.5 w-3.5 text-burgundy/60" />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            aria-label="Sort products"
+            className="cursor-pointer bg-transparent py-1 text-xs font-semibold text-espresso focus:outline-none"
+          >
+            <option value="featured">Sort: Featured</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Highest Rated</option>
+            <option value="newest">New Arrivals</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Phones & tablets: sticky category chips + Filter / Sort bar under the header */}
+      <div className="sticky top-16 sm:top-[76px] z-30 -mx-3 space-y-2 border-b border-burgundy/10 bg-ivory/95 px-3 pb-2.5 pt-2 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
+        <div className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:-mx-6 sm:px-6" role="tablist" aria-label="Categories">
+          {["All", ...ALL_CATEGORIES].map((cat) => {
+            const isSelected = selectedCategory === cat;
+            const count = cat === "All" ? products.length : products.filter((p) => p.category === cat).length;
+            return (
+              <button
+                key={cat}
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => setSelectedCategory(cat)}
+                className={`inline-flex min-h-[36px] flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-xs font-bold transition-colors ${
+                  isSelected ? "bg-espresso text-ivory" : "bg-white text-espresso/75 ring-1 ring-burgundy/15"
+                }`}
+              >
+                {cat === "All" ? "All" : cat}
+                <span className={`text-[10px] ${isSelected ? "text-ivory/70" : "text-espresso/45"}`}>{count}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => setIsMobileFilterOpen(true)}
-            className="lg:hidden flex items-center space-x-2 px-4 py-2.5 bg-white border border-burgundy/20 rounded-md text-xs font-semibold uppercase tracking-wider text-burgundy shadow-xs"
+            className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-burgundy/20 bg-white text-xs font-bold uppercase tracking-wider text-burgundy"
           >
-            <SlidersHorizontal className="w-4 h-4" />
-            <span>Filters</span>
+            <SlidersHorizontal className="h-4 w-4" />
+            Filters
+            {(() => {
+              const n = (selectedSize !== "All" ? 1 : 0) + (searchQuery ? 1 : 0) + (effectiveMax < PRICE_CEILING || minPrice > 0 ? 1 : 0) + (tag ? 1 : 0) + (inStockOnly ? 1 : 0);
+              return n > 0 ? <span className="rounded-full bg-burgundy px-1.5 text-[10px] text-gold">{n}</span> : null;
+            })()}
           </button>
-
-          <div className="relative flex items-center bg-white border border-burgundy/20 rounded-md px-3 py-1.5 shadow-xs">
-            <ArrowUpDown className="w-3.5 h-3.5 text-burgundy/60 mr-2" />
+          <label className="relative flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-burgundy/20 bg-white text-xs font-bold uppercase tracking-wider text-burgundy">
+            <ArrowUpDown className="h-4 w-4" />
+            <span>
+              {{ featured: "Featured", "price-low": "Price ↑", "price-high": "Price ↓", rating: "Top rated", newest: "Newest" }[sortBy] ?? "Sort"}
+            </span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent text-xs font-semibold text-espresso focus:outline-none cursor-pointer py-1"
+              aria-label="Sort products"
+              className="absolute inset-0 cursor-pointer opacity-0"
             >
-              <option value="featured">Sort: Featured</option>
+              <option value="featured">Featured</option>
               <option value="price-low">Price: Low to High</option>
               <option value="price-high">Price: High to Low</option>
               <option value="rating">Highest Rated</option>
               <option value="newest">New Arrivals</option>
             </select>
-          </div>
+          </label>
         </div>
       </div>
 
@@ -347,7 +394,7 @@ function ShopContent() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-8">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-9 lg:grid-cols-2 xl:grid-cols-3">
               {filteredProducts.map((prod, idx) => (
                 <ProductCard key={prod.id} product={prod} priority={idx < 4} />
               ))}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { checkPincodeServiceability } from "@/lib/pincode";
-import { OrderInputError, placeOrder, sendPlacedOrderEmail, DeliveryMethod } from "@/lib/orders";
+import { OrderInputError, placeOrder, sendOrderEmailFromDb, DeliveryMethod } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       payment: { provider: "CASH_ON_DELIVERY" },
     });
 
-    void sendPlacedOrderEmail(order, "Cash on Delivery");
+    void sendOrderEmailFromDb(order.id, "Cash on Delivery");
 
     return NextResponse.json({ success: true, orderNumber: order.orderNumber, pricing: order.pricing });
   } catch (err) {

@@ -31,6 +31,11 @@ export const adminOrderInclude = {
   items: { include: { variant: { include: { product: { include: { images: { orderBy: { sortOrder: "asc" as const }, take: 1 } } } } } } },
 } satisfies Prisma.OrderInclude;
 
+/** Excludes online orders that were never paid (awaiting payment, or released after timing out). */
+export const PLACED_ORDERS_WHERE = {
+  NOT: { payments: { some: { provider: "RAZORPAY", status: { in: ["PENDING", "FAILED"] } } } },
+} satisfies Prisma.OrderWhereInput;
+
 type DbOrder = Prisma.OrderGetPayload<{ include: typeof adminOrderInclude }>;
 
 const deliveryFromShipping = (minor: number): Order["deliveryMethod"] =>

@@ -348,7 +348,7 @@ test("Enterprise Pricing - Lifetime value and order calculations preserve paise 
     { id: "2", name: "Milan Overshirt", unitPriceMinor: 199900, quantity: 1, size: "M", color: "Poplin White" },
   ];
 
-  const pricing = calculateOrderPricing(cart, { promoCode: "TREND10" });
+  const pricing = calculateOrderPricing(cart, { coupon: { code: "TREND10", percent: 10, minSpendMinor: 199900, freeShipping: false } });
   // Subtotal = 2 * 249900 + 199900 = 499800 + 199900 = 699700 paise (₹6,997)
   assert.equal(pricing.subtotalMinor, 699700);
 

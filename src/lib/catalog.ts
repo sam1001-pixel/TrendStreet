@@ -1,7 +1,7 @@
 /**
  * Trend Street — server catalog.
  * The database is the source of truth for product copy, prices, images, variants and stock
- * (all editable in /admin). Ratings and reviews still come from the code catalog by id.
+ * (all editable in /admin). Ratings and reviews come from the code catalog by id (empty until real reviews exist).
  * If the database is unreachable, the code catalog is served so the shop stays browsable.
  */
 import { ProductCategory as DbCategory } from "@prisma/client";
@@ -69,7 +69,7 @@ export function toStoreProduct(p: DbProduct): Product {
     isBestSeller: p.isBestSeller,
     inStock: stockCount > 0,
     stockCount,
-    rating: fallback?.rating ?? 5,
+    rating: fallback?.rating ?? 0,
     reviewsCount: fallback?.reviewsCount ?? 0,
     reviews: fallback?.reviews ?? [],
     tags: fallback?.tags ?? [],

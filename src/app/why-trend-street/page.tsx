@@ -157,8 +157,8 @@ export default function WhyTrendStreetPage() {
           <Link href="/shop" className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-burgundy px-8 text-xs font-bold uppercase tracking-[0.2em] text-ivory hover:bg-crimson sm:w-auto">
             Shop all drops <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link href="/complete-the-fit" className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full border border-burgundy px-8 text-xs font-bold uppercase tracking-[0.2em] text-burgundy hover:bg-burgundy/5 sm:w-auto">
-            Shop a complete fit
+          <Link href="/shop?sort=newest" className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full border border-burgundy px-8 text-xs font-bold uppercase tracking-[0.2em] text-burgundy hover:bg-burgundy/5 sm:w-auto">
+            New arrivals
           </Link>
         </div>
       </section>

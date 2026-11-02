@@ -31,6 +31,7 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { StoreJsonLd } from "@/components/seo/JsonLd";
 import { ScrollReveal } from "@/components/premium/ScrollReveal";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
@@ -51,7 +52,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Trend Street Studio" }],
   creator: "Trend Street",
   publisher: "Trend Street Luxury Apparels Private Limited",
-  metadataBase: new URL("https://trendstreet.com"),
+  metadataBase: new URL(SITE_URL),
   other: {
     "geo.region": "IN-MH",
     "geo.placename": "Mumbai, Bandra West",
@@ -61,28 +62,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://trendstreet.com",
+    url: SITE_URL,
     title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
     description:
       "Contemporary luxury menswear engineering. 520gsm Japanese loopback hoodies, boxy fit architecture, and handcrafted jackets.",
     siteName: "Trend Street",
-    images: [
-      {
-        url: "/trend-street-logo-burgundy.png",
-        width: 1179,
-        height: 779,
-        alt: "Trend Street - The Style Hub",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Trend Street | The Style Hub",
     description: "Contemporary Streetwear & Luxury Menswear: Oversized, Boxy Fit, Jackets.",
     creator: "@trendstreet",
-  },
-  icons: {
-    icon: "/favicon.ico",
   },
 };
 

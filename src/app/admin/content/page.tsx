@@ -29,7 +29,7 @@ export default function AdminContentPage() {
   const [heroSubtitle, setHeroSubtitle] = useState("");
   const [heroBadge, setHeroBadge] = useState("Autumn / Winter 2026 Drops");
   const [heroPrimaryCta, setHeroPrimaryCta] = useState("/shop");
-  const [heroSecondaryCta, setHeroSecondaryCta] = useState("/lookbook");
+  const [heroSecondaryCta, setHeroSecondaryCta] = useState("/shop?sort=newest");
 
   const [marqueeText, setMarqueeText] = useState("HEAVYWEIGHT COMBED COTTON • 520GSM FLEECE • BESPOKE BOXY CUTS • CRAFTED IN MUMBAI");
   const [isSaving, setIsSaving] = useState(false);
@@ -53,7 +53,7 @@ export default function AdminContentPage() {
         setHeroSubtitle(siteSettings.hero.subtitle || "");
         setHeroBadge(siteSettings.hero.badgeText || "Autumn / Winter 2026 Drops");
         setHeroPrimaryCta(siteSettings.hero.primaryBtnLink || "/shop");
-        setHeroSecondaryCta(siteSettings.hero.secondaryBtnLink || "/lookbook");
+        setHeroSecondaryCta(siteSettings.hero.secondaryBtnLink || "/shop?sort=newest");
       }
     }
   }, [siteSettings]);
@@ -266,7 +266,7 @@ export default function AdminContentPage() {
                 type="text"
                 value={heroSecondaryCta}
                 onChange={(e) => setHeroSecondaryCta(e.target.value)}
-                placeholder="/lookbook"
+                placeholder="/shop?sort=newest"
                 className="w-full px-3.5 py-2 rounded-xl bg-espresso/5 border border-espresso/15 text-xs font-mono text-espresso focus:ring-2 focus:ring-gold"
               />
             </div>

@@ -1,258 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { verifyRazorpayWebhookSignature } from "@/lib/razorpay";
+import { confirmRazorpayPayment, sendOrderEmailFromDb } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
 
-const processedEventIds = new Set<string>();
-
-function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
-}
-
 /**
- * Webhook handler for payment providers (Razorpay & Stripe).
- * Enforces cryptographic HMAC-SHA256 signature verification with constant-time comparison
- * and idempotent event processing.
+ * Razorpay webhook. Configure in the Razorpay dashboard with events `payment.captured` and `order.paid`,
+ * and set the same secret in RAZORPAY_WEBHOOK_SECRET.
+ *
+ * Any failure returns a 5xx so Razorpay retries; events are de-duplicated in the database by the
+ * `x-razorpay-event-id` header.
  */
 export async function POST(req: NextRequest) {
+  const rawBody = await req.text();
+  const signature = req.headers.get("x-razorpay-signature");
+
+  if (!signature) {
+    return NextResponse.json({ error: "Missing x-razorpay-signature header." }, { status: 400 });
+  }
+  if (!process.env.RAZORPAY_WEBHOOK_SECRET && !process.env.PAYMENT_WEBHOOK_SECRET) {
+    console.error("[Webhook] RAZORPAY_WEBHOOK_SECRET is not configured.");
+    return NextResponse.json({ error: "Webhook secret is not configured." }, { status: 500 });
+  }
+  if (!verifyRazorpayWebhookSignature({ rawBody, signature })) {
+    console.warn("[Webhook] Signature mismatch.");
+    return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
+  }
+
+  let payload: any;
   try {
-    const rawBody = await req.text();
-    const rawSignature = req.headers.get("x-razorpay-signature") || req.headers.get("stripe-signature");
+    payload = JSON.parse(rawBody);
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON." }, { status: 400 });
+  }
 
-    if (!rawSignature) {
-      console.warn("[Webhook] Missing payment gateway signature header.");
-      return NextResponse.json(
-        { error: "Signature verification failed: Missing signature header." },
-        { status: 400 }
-      );
-    }
+  const eventType: string = payload?.event || "";
+  const paymentEntity = payload?.payload?.payment?.entity;
+  const eventId = req.headers.get("x-razorpay-event-id") || (paymentEntity?.id ? `${eventType}:${paymentEntity.id}` : null);
 
-    // Extract signature hash: supports pure hex (Razorpay) and scheme-tagged format (Stripe v1)
-    let signature = rawSignature.trim();
-    if (rawSignature.includes("v1=")) {
-      const match = rawSignature.match(/v1=([a-f0-9]+)/i);
-      if (match) {
-        signature = match[1];
-      }
-    }
-
-    const webhookSecret = process.env.PAYMENT_WEBHOOK_SECRET || process.env.RAZORPAY_WEBHOOK_SECRET;
-
-    if (!webhookSecret) {
-      if (process.env.NODE_ENV === "production") {
-        console.error("[FATAL SECURITY] PAYMENT_WEBHOOK_SECRET is unset in production environment.");
-        return NextResponse.json(
-          { error: "Payment webhook secret is unconfigured." },
-          { status: 500 }
-        );
-      }
-      console.info("[Webhook] Received payload in non-production mode without configured secret.");
-      return NextResponse.json(
-        { received: true, note: "Webhook received in staging mode. Configure PAYMENT_WEBHOOK_SECRET for production." },
-        { status: 200 }
-      );
-    }
-
-    // Node Web Crypto HMAC verification
-    const encoder = new TextEncoder();
-    const key = await crypto.subtle.importKey(
-      "raw",
-      encoder.encode(webhookSecret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-
-    const expectedSigBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(rawBody));
-    const expectedSigHex = Array.from(new Uint8Array(expectedSigBuffer))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-
-    if (!constantTimeEqual(expectedSigHex, signature)) {
-      console.warn("[Webhook] Cryptographic signature mismatch detected.");
-      return NextResponse.json(
-        { error: "Invalid cryptographic signature." },
-        { status: 401 }
-      );
-    }
-
-    const payload = JSON.parse(rawBody);
-    const eventId = payload.id || payload?.payload?.payment?.entity?.id || null;
-
-    const { prisma } = await import("@/lib/prisma");
-
-    // Idempotency check: in-memory fast-check + database audit log deduplication
+  try {
     if (eventId) {
-      if (processedEventIds.has(eventId)) {
-        console.info(`[Webhook] Duplicate event in memory cache, acknowledged idempotently: ${eventId}`);
-        return NextResponse.json({ success: true, duplicate: true }, { status: 200 });
-      }
+      const seen = await prisma.auditLog.findFirst({
+        where: { action: "PAYMENT_WEBHOOK_PROCESSED", entityId: eventId },
+        select: { id: true },
+      });
+      if (seen) return NextResponse.json({ success: true, duplicate: true });
+    }
 
-      try {
-        const existingAudit = await prisma.auditLog.findFirst({
-          where: { action: "PAYMENT_WEBHOOK_PROCESSED", entityId: eventId },
-          select: { id: true },
-        });
-        if (existingAudit) {
-          processedEventIds.add(eventId);
-          console.info(`[Webhook] Duplicate event in database audit log, acknowledged idempotently: ${eventId}`);
-          return NextResponse.json({ success: true, duplicate: true }, { status: 200 });
-        }
-      } catch (dbCheckErr) {
-        console.warn("[Webhook Audit Check Warning]:", dbCheckErr);
-      }
+    if ((eventType === "payment.captured" || eventType === "order.paid") && paymentEntity?.order_id && paymentEntity?.id) {
+      const result = await confirmRazorpayPayment({
+        gatewayOrderId: paymentEntity.order_id,
+        gatewayPaymentId: paymentEntity.id,
+        paidAmountMinor: Number(paymentEntity.amount),
+        source: "webhook",
+      });
 
-      processedEventIds.add(eventId);
-      if (processedEventIds.size > 10000) {
-        const firstKey = processedEventIds.values().next().value;
-        if (firstKey) processedEventIds.delete(firstKey);
+      if (result.outcome === "not_found") {
+        console.warn(`[Webhook] No saved order for Razorpay order ${paymentEntity.order_id} (payment ${paymentEntity.id}).`);
+      } else if (result.outcome === "confirmed" && result.newlyConfirmed) {
+        void sendOrderEmailFromDb(result.orderId, "Razorpay (UPI / Card / Net Banking)", paymentEntity.id);
       }
     }
 
-    console.info(`[Webhook] Verified event: ${payload.event || payload.type || "unknown"}`);
-
-    // If payment captured/paid, update database status atomically
-    const eventType = payload.event || payload.type || "";
-    if (eventType === "payment.captured" || eventType === "order.paid" || eventType === "payment_intent.succeeded") {
-      try {
-        const { OrderStatus, PaymentStatus } = await import("@prisma/client");
-        const paymentEntity = payload?.payload?.payment?.entity || payload?.data?.object || {};
-        const razorpayOrderId = paymentEntity.order_id || null;
-        const razorpayPaymentId = paymentEntity.id || null;
-
-        if (razorpayOrderId || razorpayPaymentId) {
-          const paymentRecord = await prisma.payment.findFirst({
-            where: {
-              OR: [
-                razorpayOrderId ? { gatewayOrderId: razorpayOrderId } : {},
-                razorpayPaymentId ? { gatewayPaymentId: razorpayPaymentId } : {},
-              ],
-            },
-            include: { order: true },
-          });
-
-          if (paymentRecord) {
-            // If already captured, skip duplicate processing
-            if (paymentRecord.status === PaymentStatus.CAPTURED && paymentRecord.order.status === OrderStatus.CONFIRMED) {
-              console.info(`[Webhook] Payment ${paymentRecord.id} already captured and order confirmed. Acknowledged.`);
-              return NextResponse.json({ success: true, duplicate: true, alreadyCaptured: true }, { status: 200 });
-            }
-
-            // Verify amount from webhook matches expected database amount (in minor units)
-            const webhookAmount = Number(paymentEntity.amount || paymentEntity.amount_captured || 0);
-            const isAmountMatching = webhookAmount === 0 || webhookAmount === paymentRecord.amount;
-
-            if (!isAmountMatching) {
-              console.error(
-                `[Webhook Amount Mismatch Warning] Expected ${paymentRecord.amount}, received ${webhookAmount} for order ${paymentRecord.orderId}`
-              );
-            }
-
-            // Atomic transaction: update payment, order, and log audit event
-            const updatedOrder = await prisma.$transaction(async (tx) => {
-              await tx.payment.update({
-                where: { id: paymentRecord.id },
-                data: {
-                  status: PaymentStatus.CAPTURED,
-                  gatewayPaymentId: razorpayPaymentId || paymentRecord.gatewayPaymentId,
-                },
-              });
-
-              const ord = await tx.order.update({
-                where: { id: paymentRecord.orderId },
-                data: {
-                  // Only confirm if amount matches, otherwise hold as PENDING for manual audit
-                  status: isAmountMatching ? OrderStatus.CONFIRMED : OrderStatus.PENDING,
-                },
-                include: {
-                  user: true,
-                  shippingAddress: true,
-                  items: {
-                    include: {
-                      variant: {
-                        include: {
-                          product: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              });
-
-              if (eventId) {
-                await tx.auditLog.create({
-                  data: {
-                    action: "PAYMENT_WEBHOOK_PROCESSED",
-                    entityType: "Payment",
-                    entityId: eventId,
-                    metadata: {
-                      eventType,
-                      orderId: paymentRecord.orderId,
-                      paymentId: paymentRecord.id,
-                      amountMismatch: !isAmountMatching,
-                    },
-                  },
-                });
-              }
-
-              return ord;
-            });
-
-            console.info(`[Webhook] Successfully processed order ${paymentRecord.orderId} in database.`);
-
-            // Trigger transactional order confirmation email only if matching & confirmed
-            if (isAmountMatching && updatedOrder?.user?.email) {
-              const { sendOrderConfirmationEmail } = await import("@/lib/email");
-              sendOrderConfirmationEmail({
-                orderNumber: updatedOrder.orderNumber,
-                orderId: updatedOrder.id,
-                customerName: updatedOrder.user.name || "Valued Patron",
-                customerEmail: updatedOrder.user.email,
-                items: updatedOrder.items.map((it) => ({
-                  productName: it.variant.product.name,
-                  size: it.variant.size,
-                  color: it.variant.colorName,
-                  quantity: it.quantity,
-                  unitPrice: it.unitPrice / 100,
-                })),
-                subtotal: updatedOrder.subtotal / 100,
-                discount: updatedOrder.discountAmount / 100,
-                shipping: updatedOrder.shippingAmount / 100,
-                tax: updatedOrder.taxAmount / 100,
-                total: updatedOrder.totalAmount / 100,
-                promoCode: updatedOrder.promoCode || undefined,
-                paymentMethod: paymentRecord.provider === "RAZORPAY" ? "Razorpay (UPI / Card)" : "Online Payment",
-                paymentGatewayId: paymentRecord.gatewayPaymentId || undefined,
-                shippingAddress: {
-                  street: updatedOrder.shippingAddress?.street || "Atelier Handover",
-                  apartment: updatedOrder.shippingAddress?.apartment || undefined,
-                  city: updatedOrder.shippingAddress?.city || "Mumbai",
-                  state: updatedOrder.shippingAddress?.state || "Maharashtra",
-                  postalCode: updatedOrder.shippingAddress?.postalCode || "400050",
-                  country: updatedOrder.shippingAddress?.country || "India",
-                },
-                deliveryCourier: updatedOrder.deliveryCourier || "Blue Dart Apex / Delhivery Air",
-              }).catch((emailErr) => {
-                console.warn("[Webhook Resend Background Warning]:", emailErr?.message || emailErr);
-              });
-            }
-          }
-        }
-      } catch (dbErr) {
-        console.warn("[Webhook Database Update Warning]:", dbErr);
-      }
+    if (eventId) {
+      await prisma.auditLog.create({
+        data: {
+          action: "PAYMENT_WEBHOOK_PROCESSED",
+          entityType: "Payment",
+          entityId: eventId,
+          metadata: { eventType, gatewayOrderId: paymentEntity?.order_id ?? null, gatewayPaymentId: paymentEntity?.id ?? null },
+        },
+      });
     }
 
-    return NextResponse.json({ success: true, processed: true }, { status: 200 });
+    return NextResponse.json({ success: true });
   } catch (error) {
+    // 5xx makes Razorpay retry the delivery.
     console.error("[Webhook] Processing failure:", error);
-    return NextResponse.json(
-      { error: "Webhook processing internal error." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook processing failed." }, { status: 500 });
   }
 }

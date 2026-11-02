@@ -32,10 +32,10 @@ export default function BagPage() {
   const [promoMessage, setPromoMessage] = useState<{ success: boolean; text: string } | null>(null);
   const count = cart.reduce((s, i) => s + i.quantity, 0);
 
-  const handleApplyPromo = (e: React.FormEvent) => {
+  const handleApplyPromo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputCode.trim()) return;
-    const res = applyPromoCode(inputCode);
+    const res = await applyPromoCode(inputCode);
     setPromoMessage({ success: res.success, text: res.message });
     if (res.success) setInputCode("");
   };
@@ -56,8 +56,8 @@ export default function BagPage() {
           <Link href="/shop" className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-burgundy px-7 text-xs font-bold uppercase tracking-[0.18em] text-ivory hover:bg-crimson">
             Shop the collection <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link href="/complete-the-fit" className="inline-flex min-h-[48px] items-center justify-center rounded-full px-7 text-xs font-bold uppercase tracking-[0.18em] text-burgundy ring-1 ring-burgundy/30">
-            Shop a full look
+          <Link href="/shop?sort=newest" className="inline-flex min-h-[48px] items-center justify-center rounded-full px-7 text-xs font-bold uppercase tracking-[0.18em] text-burgundy ring-1 ring-burgundy/30">
+            New arrivals
           </Link>
         </div>
         <div className="mx-auto mt-10 max-w-md text-left">
@@ -214,7 +214,7 @@ export default function BagPage() {
               {!promoCode && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {["TREND10", "STREET20"].map((c) => (
-                    <button key={c} type="button" onClick={() => { const r = applyPromoCode(c); setPromoMessage({ success: r.success, text: r.message }); }} className="rounded-full border border-dashed border-burgundy/40 px-2.5 py-1 font-mono text-[10px] font-bold text-burgundy hover:bg-burgundy/5">
+                    <button key={c} type="button" onClick={async () => { const r = await applyPromoCode(c); setPromoMessage({ success: r.success, text: r.message }); }} className="rounded-full border border-dashed border-burgundy/40 px-2.5 py-1 font-mono text-[10px] font-bold text-burgundy hover:bg-burgundy/5">
                       {c}
                     </button>
                   ))}

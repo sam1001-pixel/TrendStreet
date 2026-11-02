@@ -1,3 +1,4 @@
+import { PLACED_ORDERS_WHERE } from "@/lib/admin-orders";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth";
@@ -22,10 +23,11 @@ export async function GET(req: NextRequest) {
     const [users, orders] = await Promise.all([
       prisma.user.findMany({
         where: { role: "CUSTOMER" },
-        include: { addresses: true, orders: { select: { id: true, totalAmount: true, status: true, createdAt: true } } },
+        include: { addresses: true, orders: { where: PLACED_ORDERS_WHERE, select: { id: true, totalAmount: true, status: true, createdAt: true } } },
         orderBy: { createdAt: "desc" },
       }),
       prisma.order.findMany({
+        where: PLACED_ORDERS_WHERE,
         select: {
           id: true,
           orderNumber: true,

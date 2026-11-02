@@ -9,8 +9,8 @@ import { useAdminAuth } from "@/context/AdminAuthContext";
 export default function AdminLoginPage() {
   const { login, isAuthenticated, isLoading } = useAdminAuth();
 
-  const [adminId, setAdminId] = useState("admin@trendstreet.in");
-  const [password, setPassword] = useState("TrendStreetAdmin2026!");
+  const [adminId, setAdminId] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,21 +28,6 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     const res = await login(adminId, password);
-    if (res.success) {
-      window.location.href = "/admin";
-    } else {
-      setError(res.message);
-      setLoading(false);
-    }
-  };
-
-  const handleQuickAdminLogin = async (id = "admin@trendstreet.in", pass = "TrendStreetAdmin2026!") => {
-    setAdminId(id);
-    setPassword(pass);
-    setError(null);
-    setLoading(true);
-
-    const res = await login(id, pass);
     if (res.success) {
       window.location.href = "/admin";
     } else {
@@ -91,7 +76,7 @@ export default function AdminLoginPage() {
                   required
                   value={adminId}
                   onChange={(e) => setAdminId(e.target.value)}
-                  placeholder="admin@trendstreet.in or admin"
+                  placeholder="Admin email"
                   autoComplete="username"
                   autoCapitalize="none"
                   autoCorrect="off"
@@ -163,32 +148,6 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {/* Fast-Track Demo Admin Sign-In & Credentials Card */}
-          <div className="pt-4 border-t border-burgundy/15 space-y-2">
-            <button
-              type="button"
-              onClick={() => handleQuickAdminLogin("admin@trendstreet.in", "TrendStreetAdmin2026!")}
-              disabled={loading}
-              className="w-full py-2.5 px-3 rounded-xl bg-gold/15 hover:bg-gold/25 border border-gold/40 text-espresso text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-60"
-            >
-              <Shield className="w-3.5 h-3.5 text-burgundy" />
-              <span>Instant 1-Click Administrator Sign-In</span>
-            </button>
-
-            <div className="p-2.5 bg-white/70 rounded-xl border border-burgundy/10 text-[11px] text-espresso/70 space-y-1">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-burgundy">Admin ID:</span>
-                <code className="bg-ivory px-1.5 py-0.5 rounded font-mono text-[10px]">admin@trendstreet.in</code>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-burgundy">Password:</span>
-                <code className="bg-ivory px-1.5 py-0.5 rounded font-mono text-[10px]">TrendStreetAdmin2026!</code>
-              </div>
-              <p className="text-[10px] text-espresso/50 italic pt-1">
-                Also accepts alias username <code className="font-mono">admin</code> or <code className="font-mono">sujal</code> with <code className="font-mono">admin</code> or <code className="font-mono">TrendStreetAdmin2026!</code>.
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Back to store */}

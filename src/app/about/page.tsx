@@ -9,8 +9,12 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+import { useStore } from "@/context/StoreContext";
 
 export default function AboutPage() {
+  // Contact details come from the store settings (editable in /admin), so they match the rest of the site.
+  const { siteSettings } = useStore();
+  const contact = siteSettings.contactInfo;
   return (
     <div className="space-y-20 pb-20">
       {/* 1. Header Banner */}
@@ -124,7 +128,7 @@ export default function AboutPage() {
               Private Studio Appointments
             </span>
             <h3 className="font-serif text-3xl font-bold text-ivory">
-              Trend Street Shoreditch Atelier
+              Trend Street Studio
             </h3>
             <p className="text-xs text-ivory/80 max-w-md mx-auto">
               Our studio design team is available for silhouette consultations, chain-stitch hemming appointments, and private collection viewings.
@@ -135,19 +139,19 @@ export default function AboutPage() {
             <div className="space-y-2">
               <MapPin className="w-5 h-5 text-gold mx-auto" />
               <strong className="block text-ivory font-bold">Studio Headquarters</strong>
-              <p className="text-ivory/70">72 Shoreditch High Street<br />Hackney, London E1 6JJ</p>
+              <p className="text-ivory/70">{contact.address}</p>
             </div>
 
             <div className="space-y-2">
               <Phone className="w-5 h-5 text-gold mx-auto" />
               <strong className="block text-ivory font-bold">Studio Concierge Line</strong>
-              <p className="text-ivory/70">+44 20 7946 0912<br />Mon–Sat: 9AM – 7PM GMT</p>
+              <p className="text-ivory/70">{contact.phone}<br />{contact.hours}</p>
             </div>
 
             <div className="space-y-2">
               <Mail className="w-5 h-5 text-gold mx-auto" />
               <strong className="block text-ivory font-bold">Client Inquiries</strong>
-              <p className="text-ivory/70">concierge@trendstreet.com<br />studio@trendstreet.com</p>
+              <p className="text-ivory/70">{contact.email}</p>
             </div>
           </div>
 

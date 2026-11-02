@@ -12,7 +12,7 @@ export const MobileBottomNav: React.FC = () => {
 
   // If inside admin portal, checkout, or product detail pages, do not render bottom nav
   // Product pages have their own sticky bottom CTA bar which would overlap
-  if (pathname.startsWith("/admin") || pathname.startsWith("/checkout") || pathname.startsWith("/product/") || pathname.startsWith("/complete-the-fit") || pathname.startsWith("/login")) {
+  if (pathname.startsWith("/admin") || pathname.startsWith("/checkout") || pathname.startsWith("/product/") || pathname.startsWith("/login")) {
     return null;
   }
 
@@ -29,7 +29,6 @@ export const MobileBottomNav: React.FC = () => {
       icon: Compass,
       isActive:
         pathname === "/shop" ||
-        pathname === "/shop-your-way" ||
         pathname === "/oversized" ||
         pathname === "/boxy-fit" ||
         pathname === "/jackets",

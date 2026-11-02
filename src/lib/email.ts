@@ -136,7 +136,28 @@ export async function isOrderEmailAlreadySent(orderNumber: string, orderId?: str
 /**
  * Generates the luxury HTML email markup for Trend Street.
  */
-export function generateOrderConfirmationHtml(data: OrderEmailData): string {
+/** Escapes text for safe insertion into HTML. */
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Returns a copy of the email data with every string field HTML-escaped (names and addresses are shopper input). */
+function escapeEmailData<T>(value: T): T {
+  if (typeof value === "string") return escapeHtml(value) as unknown as T;
+  if (Array.isArray(value)) return value.map(escapeEmailData) as unknown as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, escapeEmailData(v)])) as T;
+  }
+  return value;
+}
+
+export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
+  const data = escapeEmailData(rawData);
   const formattedTotal = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",

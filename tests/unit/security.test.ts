@@ -65,7 +65,7 @@ test("Negative Security - coupon min spend cannot be bypassed", () => {
     },
   ];
 
-  const result = calculateOrderPricing(itemsBelowMin, { promoCode: "TREND10" });
+  const result = calculateOrderPricing(itemsBelowMin, { coupon: { code: "TREND10", percent: 10, minSpendMinor: 199900, freeShipping: false } });
   assert.equal(result.promoCodeApplied, null, "Promo code must NOT be applied below min spend");
   assert.equal(result.discountMinor, 0);
 });

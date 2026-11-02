@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product, CartItem, Order, UserProfile, OrderStatus, SiteSettings } from "@/types/store";
 import { INITIAL_PRODUCTS } from "@/data/products";
-import { calculateOrderPricing, VALID_PROMO_CODES } from "@/lib/pricing";
+import { calculateOrderPricing, couponIneligibilityReason, ResolvedCoupon } from "@/lib/pricing";
 import { DEMO_ORDERS, DEMO_USER } from "@/data/demo";
 
 interface StoreContextType {
@@ -16,6 +16,8 @@ interface StoreContextType {
   orders: Order[];
   user: UserProfile;
   promoCode: string | null;
+  /** The promo code the shopper entered, as looked up on the server. */
+  coupon: ResolvedCoupon | null;
   discountRate: number;
   isCartOpen: boolean;
   quickViewProduct: Product | null;
@@ -27,7 +29,7 @@ interface StoreContextType {
   clearCart: () => void;
   toggleWishlist: (productId: string) => void;
   isInWishlist: (productId: string) => boolean;
-  applyPromoCode: (code: string) => { success: boolean; message: string };
+  applyPromoCode: (code: string) => Promise<{ success: boolean; message: string }>;
   removePromoCode: () => void;
   createOrder: (
     orderInput: Omit<Order, "id" | "orderNumber" | "createdAt" | "status" | "trackingNumber" | "estimatedDelivery"> & {
@@ -87,8 +89,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
       "Trend Street redefines contemporary Indian menswear through heavyweight drape, architectural boxy fits, Okayama selvedge denim jeans, and handcrafted flight jackets.",
     primaryBtnText: "Explore The Drops",
     primaryBtnLink: "/shop",
-    secondaryBtnText: "View Lookbook",
-    secondaryBtnLink: "/lookbook",
+    secondaryBtnText: "New Arrivals",
+    secondaryBtnLink: "/shop?sort=newest",
     stat1Value: "520gsm",
     stat1Label: "Heavyweight Loopback",
     stat2Value: "14.5oz",
@@ -129,7 +131,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     hangingRail: true,
     dropList: true,
     silhouetteAccordion: true,
-    reviewGallery: true,
+    reviewGallery: false, // sample testimonials — enable once reviews are real
     trustStrip: true,
   },
 };
@@ -227,8 +229,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Only this shopper's own receipts — never demo orders.
   const [orders, setOrders] = useState<Order[]>([]);
   const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
-  const [promoCode, setPromoCode] = useState<string | null>(null);
-  const [discountRate, setDiscountRate] = useState<number>(0);
+  const [coupon, setCoupon] = useState<ResolvedCoupon | null>(null);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
@@ -332,9 +333,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       );
 
       if (existingIndex > -1) {
-        const newCart = [...prevCart];
-        newCart[existingIndex].quantity += quantity;
-        return newCart;
+        return prevCart.map((item, i) => (i === existingIndex ? { ...item, quantity: item.quantity + quantity } : item));
       } else {
         return [...prevCart, { product, selectedSize: size, selectedColor: color, quantity }];
       }
@@ -367,8 +366,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const clearCart = () => {
     setCart([]);
-    setPromoCode(null);
-    setDiscountRate(0);
+    setCoupon(null);
   };
 
   const toggleWishlist = (productId: string) => {
@@ -379,20 +377,39 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const isInWishlist = (productId: string) => wishlist.includes(productId);
 
-  const applyPromoCode = (code: string): { success: boolean; message: string } => {
-    const cleanCode = code.trim().toUpperCase();
-    // Only codes the server honours can be applied, so the bag never promises a discount checkout won't give.
-    const found = VALID_PROMO_CODES[cleanCode];
-    if (found) {
-      const minSpend = found.minSpendMinor / 100;
-      if (cartSubtotal < minSpend) {
-        return { success: false, message: `${cleanCode} needs a bag of ₹${minSpend.toLocaleString("en-IN")} or more.` };
+  const cartPricingItems = () =>
+    cart.map((item) => ({
+      id: item.product.id,
+      name: item.product.name,
+      unitPriceMinor: Math.round(item.product.price * 100),
+      quantity: item.quantity,
+      size: item.selectedSize,
+      color: item.selectedColor,
+    }));
+
+  // Codes are looked up on the server (they live in the database), so none ship in the page source.
+  const applyPromoCode = async (code: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const res = await fetch("/api/checkout/promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success || !data.coupon) {
+        return { success: false, message: data?.message || "Invalid promo code. Please check your spelling or contact us." };
       }
-      setPromoCode(cleanCode);
-      setDiscountRate(found.percent / 100);
-      return { success: true, message: found.percent > 0 ? `${found.description} (${found.percent}% off applied)` : found.description };
+      const found = data.coupon as ResolvedCoupon;
+      setCoupon(found);
+      const items = cartPricingItems();
+      const subtotal = items.reduce((s, i) => s + i.unitPriceMinor * i.quantity, 0);
+      const notYet = couponIneligibilityReason(items, found, subtotal);
+      if (notYet) return { success: true, message: `${notYet} It will apply automatically once your bag qualifies.` };
+      const label = found.description || found.code;
+      return { success: true, message: found.percent > 0 ? `${label} (${found.percent}% off applied)` : label };
+    } catch {
+      return { success: false, message: "Couldn't check that code right now. Please try again." };
     }
-    return { success: false, message: "Invalid promo code. Please check your spelling or contact concierge." };
   };
 
   const updateSiteSettings = (newSettings: Partial<SiteSettings>) => {
@@ -411,8 +428,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const removePromoCode = () => {
-    setPromoCode(null);
-    setDiscountRate(0);
+    setCoupon(null);
   };
 
   const createOrder = (
@@ -500,17 +516,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Calculations
   // Same engine the server uses (src/lib/pricing.ts), so the bag total always matches what checkout charges.
-  const pricing = calculateOrderPricing(
-    cart.map((item) => ({
-      id: item.product.id,
-      name: item.product.name,
-      unitPriceMinor: Math.round(item.product.price * 100),
-      quantity: item.quantity,
-      size: item.selectedSize,
-      color: item.selectedColor,
-    })),
-    { promoCode, deliveryMethod: "standard", currency: "INR" }
-  );
+  const pricing = calculateOrderPricing(cartPricingItems(), { coupon, deliveryMethod: "standard", currency: "INR" });
+  const promoCode = pricing.promoCodeApplied;
+  const discountRate = pricing.discountPercent / 100;
   const cartSubtotal = pricing.subtotalMinor / 100;
   const cartDiscount = pricing.discountMinor / 100;
   const cartShipping = pricing.shippingMinor / 100;
@@ -530,6 +538,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         orders: visibleOrders,
         user: visibleUser,
         promoCode,
+        coupon,
         discountRate,
         isCartOpen,
         quickViewProduct,

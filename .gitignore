@@ -34,3 +34,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# Customer data must never live in the repo (accounts are in Postgres only)
+/data/customers.json
+
+# Uploaded media (use object storage in production)
+/public/uploads/

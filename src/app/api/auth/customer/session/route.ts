@@ -9,12 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    const token =
-      req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value ||
-      req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
-      req.headers.get("x-customer-token") ||
-      undefined;
-    const session = await verifyCustomerToken(token);
+    const session = await verifyCustomerToken(req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value);
 
     if (!session) {
       return NextResponse.json(
@@ -24,6 +19,10 @@ export async function GET(req: NextRequest) {
     }
 
     const customer = await findCustomerById(session.userId);
+    if (!customer) {
+      // The account no longer exists (or lived only in the old file store).
+      return NextResponse.json({ authenticated: false, user: null }, { status: 200 });
+    }
 
     return NextResponse.json(
       {
@@ -31,8 +30,8 @@ export async function GET(req: NextRequest) {
         user: {
           id: session.userId,
           email: session.email,
-          name: customer?.name || session.name,
-          phone: customer?.phone,
+          name: customer.name || session.name,
+          phone: customer.phone,
           role: "CUSTOMER",
         },
       },

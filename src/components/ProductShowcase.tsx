@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/ProductCard";
 import type { Product } from "@/types/store";
@@ -19,8 +19,8 @@ const TABS: Tab[] = [
 ];
 
 /**
- * One product module for the homepage: tabs across the top, a swipeable rail on phones
- * and a 4-up grid on desktop, ending in a "view all" tile.
+ * One product module for the homepage: tabs across the top, a 2 × 2 grid on phones
+ * (with a full-width "view all" button) and a 3–4 column grid on larger screens.
  */
 export function ProductShowcase() {
   const { products } = useStore();
@@ -33,7 +33,7 @@ export function ProductShowcase() {
       <div className="mb-4 flex items-end justify-between gap-4 sm:mb-6">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-crimson">This week</p>
-          <h2 id="showcase-heading" className="mt-1 font-display text-4xl font-black uppercase leading-[0.85] text-espresso sm:text-6xl">
+          <h2 id="showcase-heading" className="mt-1 font-display text-[2.5rem] font-black uppercase leading-[0.85] text-espresso sm:text-6xl">
             The drop list
           </h2>
         </div>
@@ -42,7 +42,11 @@ export function ProductShowcase() {
         </Link>
       </div>
 
-      <div role="tablist" aria-label="Product groups" className="no-scrollbar -mx-3 mb-5 flex gap-2 overflow-x-auto px-3 sm:mx-0 sm:px-0">
+      <div
+        role="tablist"
+        aria-label="Product groups"
+        className="no-scrollbar -mx-3 mb-4 flex snap-x gap-2 overflow-x-auto scroll-px-3 px-3 sm:mx-0 sm:mb-5 sm:px-0"
+      >
         {TABS.map((t) => {
           const count = t.pick(products).filter((p) => p.inStock).length;
           if (!count) return null;
@@ -52,7 +56,7 @@ export function ProductShowcase() {
               role="tab"
               aria-selected={t.id === tabId}
               onClick={() => setTabId(t.id)}
-              className={`inline-flex min-h-[40px] flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-xs font-bold transition-colors ${
+              className={`inline-flex min-h-[40px] flex-shrink-0 snap-start items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-xs font-bold transition-colors sm:px-4 ${
                 t.id === tabId ? "bg-espresso text-ivory" : "bg-white text-espresso/70 ring-1 ring-burgundy/15 hover:text-espresso"
               }`}
             >
@@ -63,23 +67,21 @@ export function ProductShowcase() {
         })}
       </div>
 
-      <ul
-        key={tab.id}
-        className="no-scrollbar -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 sm:overflow-visible sm:px-0 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-14"
-      >
+      {/* Phones: a tidy 2 × 2 grid (no half-cut cards). Tablet/desktop: 3–4 columns, up to 8 pieces. */}
+      <ul key={tab.id} className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-14">
         {items.map((p, i) => (
-          <li key={p.id} className="w-[46%] flex-shrink-0 snap-start sm:w-auto">
+          <li key={p.id} className={i >= 4 ? "hidden sm:block" : undefined}>
             <ProductCard product={p} priority={i < 2} compact />
           </li>
         ))}
-        <li className="w-[46%] flex-shrink-0 snap-start sm:hidden">
-          <Link href={tab.href} className="flex aspect-[3/4] flex-col items-center justify-center gap-2 rounded-2xl bg-burgundy p-4 text-center text-ivory">
-            <ArrowUpRight className="h-8 w-8 text-gold" />
-            <span className="font-display text-2xl font-black uppercase leading-none">View all</span>
-            <span className="text-[11px] text-ivory/70">{tab.label}</span>
-          </Link>
-        </li>
       </ul>
+
+      <Link
+        href={tab.href}
+        className="mt-6 flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-burgundy/25 bg-white text-xs font-bold uppercase tracking-[0.15em] text-burgundy active:bg-ivory sm:hidden"
+      >
+        View all {tab.label.toLowerCase()} <ArrowRight className="h-4 w-4" />
+      </Link>
     </section>
   );
 }

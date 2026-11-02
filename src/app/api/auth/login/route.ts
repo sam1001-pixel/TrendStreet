@@ -1,92 +1,70 @@
 import { NextRequest, NextResponse } from "next/server";
-import { signSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE, validateAdminCredentials, isRequestSecure } from "@/lib/auth";
-import { checkRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";
+import { signSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE, isRequestSecure } from "@/lib/auth";
+import { validateAdminCredentials } from "@/lib/admin-credentials";
+import { checkDistributedRateLimit, getClientIp, resetRateLimit, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
 import { writeAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
+// Across all IPs: caps slow, distributed guessing against the single admin account.
+const ADMIN_LOGIN_GLOBAL = { windowMs: 60 * 60 * 1000, maxRequests: 30 };
+
 export async function POST(req: NextRequest) {
   try {
-    // 1. Enforce brute-force rate limiting (Max 25 attempts per 15 minutes)
     const clientIp = getClientIp(req.headers);
-    const rateLimit = checkRateLimit(`login:${clientIp}`, {
-      windowMs: 15 * 60 * 1000,
-      maxRequests: 25,
-    });
+    const [perIp, global] = await Promise.all([
+      checkDistributedRateLimit(`login:${clientIp}`, RATE_LIMIT_CONFIG.ADMIN_LOGIN),
+      checkDistributedRateLimit("login:all", ADMIN_LOGIN_GLOBAL),
+    ]);
 
-    if (!rateLimit.allowed) {
-      const retryAfterSec = Math.ceil(rateLimit.resetMs / 1000);
+    if (!perIp.allowed || !global.allowed) {
+      const retryAfterSec = Math.ceil((perIp.allowed ? global.resetMs : perIp.resetMs) / 1000);
       return NextResponse.json(
-        {
-          success: false,
-          message: `Too many login attempts. For security reasons, please retry in ${retryAfterSec} seconds.`,
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(retryAfterSec),
-          },
-        }
+        { success: false, message: `Too many login attempts. Please retry in ${retryAfterSec} seconds.` },
+        { status: 429, headers: { "Retry-After": String(retryAfterSec) } }
       );
     }
 
-    const body = await req.json();
-    const { email, password } = body;
+    const body = await req.json().catch(() => ({}));
+    const { email, password } = body ?? {};
 
     if (!email || !password || typeof email !== "string" || typeof password !== "string") {
-      return NextResponse.json(
-        { success: false, message: "Invalid email or password format." },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: "Invalid email or password format." }, { status: 400 });
     }
 
-    const trimmedEmail = email.trim().toLowerCase();
-
-    // Centralized server-side credential validation
     const { isValid, email: validatedEmail } = validateAdminCredentials(email, password);
-    const isAuthenticatedAdmin = isValid;
-    const resolvedEmail = validatedEmail;
 
-    if (isAuthenticatedAdmin) {
-      // Clear rate limit on successful authentication
+    if (isValid) {
       resetRateLimit(`login:${clientIp}`);
-      await writeAudit(req, { action: "ADMIN_LOGIN", entityType: "Session", actorEmail: resolvedEmail });
-      const token = await signSessionToken(resolvedEmail);
+      await writeAudit(req, { action: "ADMIN_LOGIN", entityType: "Session", actorEmail: validatedEmail });
+      const token = await signSessionToken(validatedEmail);
 
+      // The token lives only in the httpOnly cookie — never in the response body.
       const response = NextResponse.json(
-        {
-          success: true,
-          email: resolvedEmail,
-          token,
-          message: "Authentication successful. Administrative session initialized.",
-        },
+        { success: true, email: validatedEmail, message: "Authentication successful." },
         { status: 200 }
       );
-
       response.cookies.set({
         name: SESSION_COOKIE_NAME,
         value: token,
         httpOnly: true,
         secure: isRequestSecure(req),
-        sameSite: "lax",
+        sameSite: "strict",
         path: "/",
         maxAge: SESSION_MAX_AGE,
       });
-
       return response;
     }
 
-    // Generic error message to prevent account enumeration
-    await writeAudit(req, { action: "ADMIN_LOGIN_FAILED", entityType: "Session", actorEmail: null, metadata: { attemptedEmail: trimmedEmail.slice(0, 120) } });
-    return NextResponse.json(
-      { success: false, message: "Invalid administrative credentials." },
-      { status: 401 }
-    );
+    await writeAudit(req, {
+      action: "ADMIN_LOGIN_FAILED",
+      entityType: "Session",
+      actorEmail: null,
+      metadata: { attemptedEmail: email.trim().toLowerCase().slice(0, 120) },
+    });
+    return NextResponse.json({ success: false, message: "Invalid administrative credentials." }, { status: 401 });
   } catch (error) {
     console.error("Auth login error:", error);
-    return NextResponse.json(
-      { success: false, message: "Authentication service error." },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: "Authentication service error." }, { status: 500 });
   }
 }

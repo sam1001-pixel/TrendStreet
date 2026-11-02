@@ -22,7 +22,10 @@ body {
   background-color: var(--color-bone);
   color: var(--color-espresso);
   font-family: var(--font-sans);
+  /* "clip" (not "hidden") stops sideways page scroll without turning <body> into a scroll
+     container, which would break every position: sticky element (header, shop toolbar). */
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Custom Text Selection in Deep Burgundy */

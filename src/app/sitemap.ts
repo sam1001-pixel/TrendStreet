@@ -1,57 +1,38 @@
 import { MetadataRoute } from "next";
-import { INITIAL_PRODUCTS } from "@/data/products";
+import { getCatalog } from "@/lib/catalog";
+import { SITE_URL } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://trendstreet.com";
+// Rebuild hourly so products added in /admin appear without a redeploy.
+export const revalidate = 3600;
 
-  const staticRoutes: MetadataRoute.Sitemap = [
-    ...["/oversized", "/boxy-fit", "/jackets", "/complete-the-fit", "/shop-your-way", "/why-trend-street", "/track"].map(
-      (path) => ({ url: `${baseUrl}${path}`, lastModified: new Date(), changeFrequency: "weekly" as const, priority: 0.8 })
-    ),
-    {
-      url: `${baseUrl}`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/shop`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/lookbook`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/bag`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/saved`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.5,
-    },
+const PAGES: { path: string; priority: number; changeFrequency: "daily" | "weekly" | "monthly" }[] = [
+  { path: "", priority: 1.0, changeFrequency: "daily" },
+  { path: "/shop", priority: 0.9, changeFrequency: "daily" },
+  { path: "/oversized", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/boxy-fit", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/jackets", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/jeans", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/why-trend-street", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/about", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/contact", priority: 0.5, changeFrequency: "monthly" },
+  { path: "/track", priority: 0.4, changeFrequency: "monthly" },
+  { path: "/shipping-policy", priority: 0.3, changeFrequency: "monthly" },
+  { path: "/returns", priority: 0.3, changeFrequency: "monthly" },
+  { path: "/privacy-policy", priority: 0.2, changeFrequency: "monthly" },
+  { path: "/terms", priority: 0.2, changeFrequency: "monthly" },
+];
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { products } = await getCatalog();
+  const now = new Date();
+
+  return [
+    ...PAGES.map((p) => ({ url: `${SITE_URL}${p.path}`, lastModified: now, changeFrequency: p.changeFrequency, priority: p.priority })),
+    ...products.map((product) => ({
+      url: `${SITE_URL}/product/${product.id}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+    })),
   ];
-
-  const productRoutes: MetadataRoute.Sitemap = INITIAL_PRODUCTS.map((product) => ({
-    url: `${baseUrl}/product/${product.id}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly",
-    priority: 0.85,
-  }));
-
-  return [...staticRoutes, ...productRoutes];
 }

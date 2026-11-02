@@ -1,3 +1,4 @@
+import { PLACED_ORDERS_WHERE } from "@/lib/admin-orders";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth";
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
 
     // 2. Query Orders within date range
     const orders = await prisma.order.findMany({
-      where: { createdAt: { gte: startDate } },
+      where: { createdAt: { gte: startDate }, ...PLACED_ORDERS_WHERE },
       include: {
         payments: true,
         items: {

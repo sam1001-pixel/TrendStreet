@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Check, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
+import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { formatPrice } from "@/lib/pricing";
 import type { Product } from "@/types/store";
 
@@ -194,6 +195,8 @@ export function ScrollProductReel() {
   const scrollStart = useRef(0);
   const hasDragged = useRef(false);
 
+  useAutoScroll(trackRef, { interval: 3800 });
+
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -278,7 +281,7 @@ export function ScrollProductReel() {
         </div>
 
         {/* Right Controls: Shop All + Prev/Next slider buttons */}
-        <div className="flex items-center gap-4 sm:gap-6 self-between sm:self-auto">
+        <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start sm:gap-6">
           <Link
             href="/shop"
             className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-white/70 hover:text-gold transition-colors"
@@ -312,7 +315,7 @@ export function ScrollProductReel() {
       <div
         ref={trackRef}
         onMouseDown={handleMouseDown}
-        className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory px-4 sm:px-8 lg:px-12 py-2 cursor-grab active:cursor-grabbing select-none touch-pan-y"
+        className="flex gap-3 sm:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-px-4 sm:scroll-px-8 lg:scroll-px-12 px-4 sm:px-8 lg:px-12 py-2 cursor-grab active:cursor-grabbing select-none touch-manipulation overscroll-x-contain"
         style={{ scrollBehavior: isDragging.current ? "auto" : "smooth" }}
       >
         {items.map((p, i) => (

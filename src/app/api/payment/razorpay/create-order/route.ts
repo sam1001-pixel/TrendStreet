@@ -1,63 +1,98 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRazorpayOrder } from "@/lib/razorpay";
-import { OrderInputError, priceOrder, DeliveryMethod } from "@/lib/orders";
+import {
+  OrderInputError,
+  priceOrder,
+  placeOrder,
+  validateCustomer,
+  generateOrderNumber,
+  releaseStaleRazorpayOrders,
+  DeliveryMethod,
+} from "@/lib/orders";
+import { checkDistributedRateLimit, getClientIp, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 const DELIVERY_METHODS: DeliveryMethod[] = ["standard", "express", "vip_courier"];
 
+/**
+ * Starts an online payment:
+ * 1. prices the bag on the server,
+ * 2. creates the Razorpay order for exactly that amount,
+ * 3. saves our order as PENDING (stock reserved) linked to the Razorpay order id.
+ * After payment, /verify and the webhook only confirm this saved order.
+ */
 export async function POST(req: NextRequest) {
+  const limit = await checkDistributedRateLimit(`pay-create:${getClientIp(req.headers)}`, RATE_LIMIT_CONFIG.PAYMENT_CREATE);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many payment attempts. Please wait a few minutes and try again." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(limit.resetMs / 1000)) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const deliveryMethod: DeliveryMethod = DELIVERY_METHODS.includes(body?.deliveryMethod) ? body.deliveryMethod : "standard";
+    const items = (Array.isArray(body?.items) ? body.items : []).map((it: Record<string, unknown>) => ({
+      productId: String(it.productId ?? it.id ?? ""),
+      size: String(it.selectedSize ?? it.size ?? ""),
+      color: String(it.selectedColor ?? it.color ?? ""),
+      quantity: Number(it.quantity),
+    }));
 
-    // The amount charged is computed from the database catalog. Client-sent prices are ignored.
-    const { pricing } = await priceOrder(
-      (body?.items || []).map((it: any) => ({
-        productId: it.productId || it.id,
-        size: it.selectedSize ?? it.size,
-        color: it.selectedColor ?? it.color,
-        quantity: it.quantity,
-      })),
-      body?.promoCode,
-      deliveryMethod
-    );
-
+    // Fail fast on bad input before talking to Razorpay.
+    validateCustomer(body?.customer);
+    const { pricing } = await priceOrder(items, body?.promoCode, deliveryMethod);
     if (pricing.totalMinor <= 0) {
       return NextResponse.json({ error: "Calculated order total must be greater than zero." }, { status: 400 });
     }
 
-    const receipt = `TS-${Date.now()}`;
-    const { order, keyId, isTestMode } = await createRazorpayOrder({
+    // Opportunistically free stock held by abandoned payments (also runs from the daily cron).
+    void releaseStaleRazorpayOrders(10).catch((e) => console.warn("[Release stale orders]:", e?.message || e));
+
+    const orderNumber = generateOrderNumber();
+    const { order: rzpOrder, keyId, isTestMode } = await createRazorpayOrder({
       amountMinor: pricing.totalMinor,
       currency: "INR",
-      receipt,
-      notes: {
-        receiptNumber: receipt,
-        subtotal: String(pricing.subtotalMinor),
-        promoCode: pricing.promoCodeApplied || "none",
-        discount: String(pricing.discountMinor),
-      },
+      receipt: orderNumber,
+      notes: { orderNumber, promoCode: pricing.promoCodeApplied || "none" },
     });
+
+    const placed = await placeOrder({
+      items,
+      customer: body?.customer,
+      promoCode: body?.promoCode,
+      deliveryMethod,
+      orderNumber,
+      payment: { provider: "RAZORPAY", gatewayOrderId: rzpOrder.id },
+    });
+
+    // Prices can't realistically change between the two calls above, but never open checkout for an
+    // amount different from the order we saved. The unpaid order is released automatically later.
+    if (placed.pricing.totalMinor !== Number(rzpOrder.amount)) {
+      console.error(`[Create order] Price changed during checkout for ${orderNumber}`);
+      return NextResponse.json({ error: "Prices were just updated. Please review your bag and try again." }, { status: 409 });
+    }
 
     return NextResponse.json({
       success: true,
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      receipt,
+      orderId: rzpOrder.id,
+      orderNumber: placed.orderNumber,
+      amount: rzpOrder.amount,
+      currency: rzpOrder.currency,
       keyId,
       isTestMode,
       pricing: {
-        subtotalMinor: pricing.subtotalMinor,
-        discountMinor: pricing.discountMinor,
-        shippingMinor: pricing.shippingMinor,
-        taxMinor: pricing.taxMinor,
-        totalMinor: pricing.totalMinor,
-        isFreeShipping: pricing.isFreeShipping,
+        subtotalMinor: placed.pricing.subtotalMinor,
+        discountMinor: placed.pricing.discountMinor,
+        shippingMinor: placed.pricing.shippingMinor,
+        taxMinor: placed.pricing.taxMinor,
+        totalMinor: placed.pricing.totalMinor,
+        isFreeShipping: placed.pricing.isFreeShipping,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof OrderInputError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

@@ -172,11 +172,8 @@ export function verifyRazorpayWebhookSignature({
     return false;
   }
 
-  const webhookSecret =
-    secret ||
-    process.env.RAZORPAY_WEBHOOK_SECRET ||
-    process.env.PAYMENT_WEBHOOK_SECRET ||
-    process.env.RAZORPAY_KEY_SECRET;
+  // The webhook secret is the one set in the Razorpay dashboard for this webhook — never the API key secret.
+  const webhookSecret = secret || process.env.RAZORPAY_WEBHOOK_SECRET || process.env.PAYMENT_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
     console.error("[Razorpay Webhook Error] Webhook secret is unconfigured.");

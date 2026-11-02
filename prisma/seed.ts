@@ -69,6 +69,22 @@ async function main() {
       active: true,
     },
     {
+      code: "STREET20",
+      discountPercent: 20,
+      description: "20% off seasonal drop orders of ₹3,999 or more",
+      minSpend: 399900,
+      active: true,
+    },
+    {
+      // BUNDLE* codes need 2+ different products in the bag (see src/lib/coupons.ts).
+      code: "BUNDLE15",
+      discountPercent: 15,
+      description: "15% off complete outfits (2 or more different pieces)",
+      minSpend: 0,
+      active: true,
+    },
+    {
+      // 0% = free shipping (see src/lib/coupons.ts).
       code: "FREESHIP",
       discountPercent: 0,
       description: "Complimentary priority express shipping on any order",

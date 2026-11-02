@@ -159,11 +159,14 @@ export async function checkDistributedRateLimit(
  * followed by X-Real-IP and sanitized X-Forwarded-For.
  */
 export function getClientIp(headers: Headers): string {
-  // 1. Cloudflare Enterprise / Pro connecting IP
-  const cfIp = headers.get("cf-connecting-ip");
-  if (cfIp && isValidIp(cfIp)) return cfIp.trim();
+  // 1. Cloudflare connecting IP — only when the site really sits behind Cloudflare.
+  //    Otherwise any client can set this header and get a fresh rate-limit bucket per request.
+  if (process.env.TRUST_CLOUDFLARE_IP === "true") {
+    const cfIp = headers.get("cf-connecting-ip");
+    if (cfIp && isValidIp(cfIp)) return cfIp.trim();
+  }
 
-  // 2. Vercel edge trusted forwarder
+  // 2. Vercel edge trusted forwarder (set by Vercel, not by the client)
   const vercelIp = headers.get("x-vercel-forwarded-for");
   if (vercelIp && isValidIp(vercelIp)) return vercelIp.split(",")[0].trim();
 

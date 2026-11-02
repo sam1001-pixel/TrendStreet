@@ -14,8 +14,6 @@ const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "Oversized", href: "/oversized" },
       { label: "Boxy Fit", href: "/boxy-fit" },
       { label: "Jackets", href: "/jackets" },
-      { label: "Complete the Fit", href: "/complete-the-fit" },
-      { label: "Shop Your Way", href: "/shop-your-way" },
     ],
   },
   {
@@ -23,7 +21,6 @@ const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: "Why Trend Street", href: "/why-trend-street" },
       { label: "Our story", href: "/about" },
-      { label: "Lookbook", href: "/lookbook" },
       { label: "Contact us", href: "/contact" },
     ],
   },

@@ -31,6 +31,7 @@ import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/ProductCard";
 import { formatPrice } from "@/lib/pricing";
 import { checkPincodeServiceability } from "@/lib/pincode";
+import { SITE_URL } from "@/lib/site";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -443,7 +444,7 @@ export default function ProductDetailPage() {
             <span className="font-semibold">Share Silhouette:</span>
             <div className="flex items-center gap-2">
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Check out ${product.name} on Trend Street: https://trendstreet.com/product/${product.id}`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`Check out ${product.name} on Trend Street: ${SITE_URL}/product/${product.id}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-1.5 bg-ivory rounded-md border border-burgundy/15 hover:text-burgundy text-[11px] font-bold"
@@ -452,7 +453,7 @@ export default function ProductDetailPage() {
                 WhatsApp
               </a>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Elevated streetwear: ${product.name} from Trend Street`)}&url=${encodeURIComponent(`https://trendstreet.com/product/${product.id}`)}`}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Elevated streetwear: ${product.name} from Trend Street`)}&url=${encodeURIComponent(`${SITE_URL}/product/${product.id}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-1.5 bg-ivory rounded-md border border-burgundy/15 hover:text-burgundy text-[11px] font-bold"

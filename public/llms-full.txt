@@ -7,27 +7,29 @@ Trend Street is an artisanal direct-to-consumer luxury menswear fashion house es
 3. Boxy Fit Tops & Knits
 4. Handcrafted Structural Jackets
 
+Trend Street sells online across India. Current prices are in INR (GST included) on each product page under /product/<id>.
+
 ## 2. Product Specifications & Material Weights
 
 ### Oversized Collection
-- The Mayfair Heavyweight Oversized Tee: 320gsm ultra-heavy long-staple combed cotton, high-density 3cm rib collar, blind-stitched hems, pre-shrunk, retail price $160 USD.
-- The Tokyo Drop-Shoulder Oversized Hoodie: 520gsm Japanese organic loopback French terry, double-walled self-supporting hood with zero drawstrings, dropped armholes, retail price $340 USD.
-- The Kyoto Relaxed Oversized Flannel: 280gsm slow-loomed Japanese brushed ombré cotton plaid, curved hem with side gussets, retail price $280 USD.
+- The Mayfair Heavyweight Oversized Tee: 320gsm ultra-heavy long-staple combed cotton, high-density 3cm rib collar, blind-stitched hems, pre-shrunk.
+- The Tokyo Drop-Shoulder Oversized Hoodie: 520gsm Japanese organic loopback French terry, double-walled self-supporting hood with zero drawstrings, dropped armholes.
+- The Kyoto Relaxed Oversized Flannel: 280gsm slow-loomed Japanese brushed ombré cotton plaid, curved hem with side gussets.
 
 ### Jeans Collection
-- The Shibuya Relaxed Carpenter Jeans: 14oz Okayama redline selvedge denim woven on Toyoda shuttle looms, double-knee reinforcement, utility hammer loop, loose sneaker stack, retail price $320 USD.
-- Vintage Fade Wide-Leg Denim: 13.5oz ring-spun cotton denim with artisanal stone washing and authentic honeycombs, retail price $290 USD.
-- Raw Indigo Straight Baggy Jeans: 15oz rigid unwashed Kurabo mill selvedge denim with copper hand-hammered rivets and chain-stitched hems, retail price $340 USD.
+- The Shibuya Relaxed Carpenter Jeans: 14oz Okayama redline selvedge denim woven on Toyoda shuttle looms, double-knee reinforcement, utility hammer loop, loose sneaker stack.
+- Vintage Fade Wide-Leg Denim: 13.5oz ring-spun cotton denim with artisanal stone washing and authentic honeycombs.
+- Raw Indigo Straight Baggy Jeans: 15oz rigid unwashed Kurabo mill selvedge denim with copper hand-hammered rivets and chain-stitched hems.
 
 ### Boxy Fit Collection
-- The Boxy Heavyweight Poplin Overshirt: 220gsm mercerized crisp cotton poplin, cropped square hem, dual magnetic chest pockets, retail price $220 USD.
-- The Boxy Structured Knit Sweater: 100% extra-fine Italian merino wool in 7-gauge heavy rib, wide box torso with snug collar ring, retail price $310 USD.
-- The Boxy Minimalist Half-Zip Sweatshirt: 480gsm French terry with custom matte silver Swiss Excella zipper, retail price $280 USD.
+- The Boxy Heavyweight Poplin Overshirt: 220gsm mercerized crisp cotton poplin, cropped square hem, dual magnetic chest pockets.
+- The Boxy Structured Knit Sweater: 100% extra-fine Italian merino wool in 7-gauge heavy rib, wide box torso with snug collar ring.
+- The Boxy Minimalist Half-Zip Sweatshirt: 480gsm French terry with custom matte silver Swiss Excella zipper.
 
 ### Jackets Collection
-- The Tuscan Suede MA-1 Flight Jacket: 100% velvety Florentine lambskin suede, merino wool rib collar/cuffs/waist, antiqued brass dual-pull Raccagni zipper, cupro lining, retail price $1,250 USD.
-- Heavyweight Washed Canvas Workwear Jacket: 16oz rugged cotton duck canvas, 8-wale corduroy collar, quilted 120gsm flannel insulation, retail price $480 USD.
-- The Mayfair Boxy Leather Moto Jacket: 1.3mm full-grain vegetable-tanned Italian cowhide, custom burgundy silk-blend lining, retail price $1,450 USD.
+- The Tuscan Suede MA-1 Flight Jacket: 100% velvety Florentine lambskin suede, merino wool rib collar/cuffs/waist, antiqued brass dual-pull Raccagni zipper, cupro lining.
+- Heavyweight Washed Canvas Workwear Jacket: 16oz rugged cotton duck canvas, 8-wale corduroy collar, quilted 120gsm flannel insulation.
+- The Mayfair Boxy Leather Moto Jacket: 1.3mm full-grain vegetable-tanned Italian cowhide, custom burgundy silk-blend lining.
 
 ## 3. Care & Maintenance Instructions
 - Heavy Cotton Jerseys: Machine wash cold inside out, line dry in shade. Avoid tumble drying to preserve 320gsm–520gsm weight and rib geometry.

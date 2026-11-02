@@ -16,6 +16,10 @@ export type EditableSettings = {
   storefrontSections?: Partial<NonNullable<SiteSettings["storefrontSections"]>>;
 };
 
+/** Pages that were removed from the site; saved links to them fall back to the shop. */
+const REMOVED_PATHS = ["/lookbook", "/shop-your-way", "/complete-the-fit"];
+const liveLink = (href: string) => (REMOVED_PATHS.some((p) => href.startsWith(p)) ? "/shop?sort=newest" : href);
+
 export function settingsFromDb(row: DbSiteSettings | null): EditableSettings {
   if (!row) return {};
   return {
@@ -31,8 +35,8 @@ export function settingsFromDb(row: DbSiteSettings | null): EditableSettings {
       titleLine1: row.heroTitle1,
       titleLine2: row.heroTitle2,
       subtitle: row.heroSubtitle,
-      primaryBtnLink: row.heroPrimaryCta,
-      secondaryBtnLink: row.heroSecondaryCta,
+      primaryBtnLink: liveLink(row.heroPrimaryCta),
+      secondaryBtnLink: liveLink(row.heroSecondaryCta),
     },
     ...(row.marqueeText.length ? { marqueePhrases: row.marqueeText } : {}),
     contactInfo: { phone: row.conciergePhone, email: row.conciergeEmail },

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useRouter } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import { CinematicHero } from "@/components/premium/CinematicHero";
 import { SilhouetteAccordion } from "@/components/premium/SilhouetteAccordion";
@@ -8,15 +9,13 @@ import { ScrollProductReel } from "@/components/premium/ScrollProductReel";
 import { VelocityMarquee } from "@/components/premium/VelocityMarquee";
 import { TrustStrip } from "@/components/premium/TrustStrip";
 import { HangingRail } from "@/components/premium/HangingRail";
-import { WeightTest } from "@/components/premium/WeightTest";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { CustomerReviewGallery } from "@/components/CustomerReviewGallery";
 import { OffcultAssistDrawer } from "@/components/OffcultAssistDrawer";
-import { LiveCourierTrackerModal } from "@/components/LiveCourierTrackerModal";
 
 export default function HomePage() {
   const { siteSettings } = useStore();
-  const [isTrackerOpen, setIsTrackerOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <div className="space-y-14 bg-bone pb-16 text-stone-900 sm:space-y-24 sm:pb-24 md:space-y-28">
@@ -35,18 +34,13 @@ export default function HomePage() {
 
       {siteSettings?.storefrontSections?.hangingRail !== false && <HangingRail />}
 
-      {/* Fabric weight comparison */}
-      {siteSettings?.storefrontSections?.weightTest !== false && <WeightTest />}
-
       {siteSettings?.storefrontSections?.runwayReel !== false && <ScrollProductReel />}
 
-      {siteSettings?.storefrontSections?.reviewGallery !== false && <CustomerReviewGallery />}
+      {/* Sample testimonials: off unless switched on in Admin → Content, once they're real. */}
+      {siteSettings?.storefrontSections?.reviewGallery === true && <CustomerReviewGallery />}
 
-      <OffcultAssistDrawer
-        onOpenTracker={() => setIsTrackerOpen(true)}
-        hideTrigger={isTrackerOpen}
-      />
-      <LiveCourierTrackerModal isOpen={isTrackerOpen} onClose={() => setIsTrackerOpen(false)} />
+      {/* Order tracking goes to the real lookup on /track (the old "live" modal showed fixed sample milestones). */}
+      <OffcultAssistDrawer onOpenTracker={() => router.push("/track")} />
     </div>
   );
 }

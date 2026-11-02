@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { adminOrderInclude, toAdminOrder } from "@/lib/admin-orders";
+import { adminOrderInclude, PLACED_ORDERS_WHERE, toAdminOrder } from "@/lib/admin-orders";
 import { requireAdminSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,14 @@ export async function GET(req: NextRequest) {
   if (!auth.authorized) return auth.response;
 
   try {
-    const rows = await prisma.order.findMany({ include: adminOrderInclude, orderBy: { createdAt: "desc" }, take: 500 });
+    // Online orders that were never paid (awaiting payment, or released after 30 minutes) aren't real
+    // orders yet, so they're kept out of the fulfilment list.
+    const rows = await prisma.order.findMany({
+      where: PLACED_ORDERS_WHERE,
+      include: adminOrderInclude,
+      orderBy: { createdAt: "desc" },
+      take: 500,
+    });
     return NextResponse.json({ orders: rows.map(toAdminOrder) });
   } catch (err) {
     console.error("[Admin orders]:", err);

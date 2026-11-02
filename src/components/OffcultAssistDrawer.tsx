@@ -86,7 +86,7 @@ export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({
       {/* Floating Trigger Pill (Bottom Right) */}
       {!hideTrigger && (
         <div
-          className={`fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 transition-opacity duration-200 ${
+          className={`fixed bottom-[84px] sm:bottom-6 right-3 sm:right-6 z-40 transition-opacity duration-200 ${
             isOpen ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
         >
@@ -96,7 +96,7 @@ export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({
             aria-expanded={isOpen}
             aria-label="Open Fit Concierge"
             title="Fit Concierge"
-            className="flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full bg-espresso text-ivory border border-gold/40 shadow-xl hover:bg-burgundy transition-colors group active:scale-[0.98] motion-reduce:active:scale-100"
+            className="flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-espresso text-ivory border border-gold/40 shadow-xl hover:bg-burgundy transition-colors group active:scale-[0.98] motion-reduce:active:scale-100 sm:h-auto sm:w-auto sm:pl-3 sm:pr-4 sm:py-2.5"
           >
             <span className="relative flex h-5 w-5 items-center justify-center">
               <MessageSquare className="w-4 h-4 text-gold transition-transform group-hover:rotate-6 motion-reduce:transition-none motion-reduce:group-hover:rotate-0" />
@@ -105,7 +105,8 @@ export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-crimson ring-2 ring-espresso" />
               </span>
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider">
+            {/* Label only on larger screens: on phones the round icon keeps it off the content. */}
+            <span className="hidden text-xs font-bold uppercase tracking-wider sm:inline">
               Fit Concierge
             </span>
           </button>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  CustomerStoreUnavailableError,
   findCustomerByEmail,
   verifyCustomerPassword,
   signCustomerToken,
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isPasswordValid = verifyCustomerPassword(password, customer.passwordHash, customer.email);
+    const isPasswordValid = verifyCustomerPassword(password, customer.passwordHash);
     if (!isPasswordValid) {
       return NextResponse.json(
         { success: false, message: "Invalid email or password." },
@@ -72,7 +73,6 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       success: true,
       message: "Welcome back to Trend Street.",
-      token,
       user: {
         id: customer.id,
         email: customer.email,
@@ -94,6 +94,13 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
+    if (error instanceof CustomerStoreUnavailableError) {
+      console.error("[Customer Auth] Store unavailable:", error.message);
+      return NextResponse.json(
+        { success: false, message: "Sign-in is temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
     console.error("[Customer Auth] Login error:", error);
     return NextResponse.json(
       { success: false, message: "Authentication service error. Please try again." },

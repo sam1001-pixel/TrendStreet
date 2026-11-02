@@ -2,7 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    formats: ["image/avif", "image/webp"],
+    // AVIF is off: Next.js 14's image optimizer has an open security advisory for AVIF input/output
+    // (GHSA-2xp9-vwfh-vxw4). Re-enable after upgrading to a patched Next.js release.
+    formats: ["image/webp"],
     remotePatterns: [
       {
         protocol: "https",
@@ -14,6 +16,14 @@ const nextConfig = {
       },
     ],
   },
+  // Removed pages send visitors to the shop (temporary redirects, so they're easy to bring back).
+  async redirects() {
+    return ["/lookbook", "/shop-your-way", "/complete-the-fit"].map((source) => ({
+      source,
+      destination: "/shop",
+      permanent: false,
+    }));
+  },
   // Production Enterprise Security Headers
   async headers() {
     const isHttpsDeployment =
@@ -23,15 +33,17 @@ const nextConfig = {
         process.env.NEXT_PUBLIC_SITE_URL?.startsWith("https://"));
 
     const upgradeDirective = isHttpsDeployment ? "upgrade-insecure-requests;" : "";
+    // 'unsafe-eval' is only needed by the dev server's hot reload, never in production.
+    const devEval = process.env.NODE_ENV === "production" ? "" : "'unsafe-eval'";
 
     const cspHeader = `
       default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://js.stripe.com;
+      script-src 'self' ${devEval} 'unsafe-inline' https://checkout.razorpay.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       img-src 'self' blob: data: https://images.unsplash.com https://plus.unsplash.com;
       font-src 'self' https://fonts.gstatic.com data:;
-      frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://js.stripe.com;
-      connect-src 'self' https://api.razorpay.com https://api.stripe.com;
+      frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com;
+      connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
@@ -65,8 +77,9 @@ const nextConfig = {
         value: "DENY",
       },
       {
+        // Modern guidance: disable the legacy XSS auditor (it can introduce leaks); CSP does this job.
         key: "X-XSS-Protection",
-        value: "1; mode=block",
+        value: "0",
       },
       {
         key: "Referrer-Policy",
@@ -80,7 +93,7 @@ const nextConfig = {
         headers: rootHeaders,
       },
       {
-        source: "/(api/admin/:path*|api/orders/:path*|admin/:path*|checkout|bag|profile|saved)",
+        source: "/(api/admin/:path*|api/orders/:path*|api/auth/:path*|api/payment/:path*|admin/:path*|checkout|bag|profile|saved)",
         headers: [
           {
             key: "Cache-Control",

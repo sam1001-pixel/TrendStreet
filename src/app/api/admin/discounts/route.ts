@@ -43,6 +43,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const code = String(body?.code || "").trim().toUpperCase();
+    if (!/^[A-Z0-9_-]{3,32}$/.test(code)) {
+      return NextResponse.json({ error: "Codes use 3–32 letters, numbers, - or _." }, { status: 400 });
+    }
     const discountPercent = parseInt(body?.discountPercent, 10);
     const description = typeof body?.description === "string" ? body.description.trim() : null;
     const minSpendRupees = parseInt(body?.minSpend, 10) || 0;
@@ -53,8 +56,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Coupon code must be at least 3 characters." }, { status: 400 });
     }
 
-    if (isNaN(discountPercent) || discountPercent <= 0 || discountPercent > 90) {
-      return NextResponse.json({ error: "Discount percent must be between 1% and 90%." }, { status: 400 });
+    // 0% is allowed and means "free shipping" (see src/lib/coupons.ts).
+    if (isNaN(discountPercent) || discountPercent < 0 || discountPercent > 90) {
+      return NextResponse.json({ error: "Discount percent must be between 0% (free shipping) and 90%." }, { status: 400 });
     }
 
     const existing = await prisma.coupon.findUnique({ where: { code } });

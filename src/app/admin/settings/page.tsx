@@ -48,7 +48,7 @@ export default function AdminSettingsPage() {
     hangingRail: true,
     dropList: true,
     silhouetteAccordion: true,
-    reviewGallery: true,
+    reviewGallery: false,
     trustStrip: true,
   };
 
@@ -513,18 +513,6 @@ export default function AdminSettingsPage() {
                   title: "Cinematic Hero & Silhouette Switcher",
                   desc: "Primary storefront entrance with luxury typography, interactive silhouette cards, and live metrics.",
                   tag: "Top of Page",
-                },
-                {
-                  key: "weightTest" as const,
-                  title: "The Weight Test (Fabric Comparison)",
-                  desc: "Side-by-side GSM and textile comparison between Oversized (520gsm), Boxy Fit (320gsm), and Jackets (14oz).",
-                  tag: "Fabric Science",
-                },
-                {
-                  key: "shopByPriceOccasion" as const,
-                  title: "Shop Your Way (Price & Occasion)",
-                  desc: "Curated shopping pathways filtered by budget tiers and dress occasions.",
-                  tag: "Curated Discovery",
                 },
                 {
                   key: "runwayReel" as const,

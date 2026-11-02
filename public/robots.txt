@@ -2,21 +2,32 @@
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /admin/*
+Disallow: /api/
 Disallow: /checkout
-Disallow: /order-confirmation/*
+Disallow: /bag
+Disallow: /saved
+Disallow: /profile
+Disallow: /login
+Disallow: /order-confirmation/
 
 # Explicitly welcome AI Overviews & Search Agents
 User-agent: GPTBot
 Allow: /
+Disallow: /admin
+Disallow: /api/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /admin
+Disallow: /api/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin
+Disallow: /api/
 
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://trendstreet.com/sitemap.xml
+# Keep this in step with NEXT_PUBLIC_SITE_URL
+Sitemap: https://trendstreet.in/sitemap.xml
