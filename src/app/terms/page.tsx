@@ -13,10 +13,10 @@ export default function TermsPage() {
       {/* Back Link */}
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-burgundy hover:text-crimson transition-colors"
+        className="inline-flex min-h-[44px] items-center gap-2 text-xs font-semibold uppercase tracking-wider text-burgundy hover:text-crimson transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Return to Atelier Home</span>
+        <span>Back to home</span>
       </Link>
 
       {/* Header */}
@@ -77,7 +77,7 @@ export default function TermsPage() {
               <strong>Primary Currency:</strong> All prices displayed on Trend Street are denominated in <strong>Indian Rupees (INR / ₹)</strong>.
             </li>
             <li>
-              <strong>Inclusive Taxation:</strong> In accordance with Indian legal requirements, all displayed retail prices are fully inclusive of statutory Goods and Services Tax (12% GST for apparel). A detailed GST tax invoice with HSN classification codes is issued with every shipment.
+              <strong>Inclusive Taxation:</strong> In accordance with Indian legal requirements, all displayed retail prices are fully inclusive of statutory Goods and Services Tax (GST on apparel is 5% for pieces sold at up to ₹2,500 and 18% above). A detailed GST tax invoice with HSN classification codes is issued with every shipment.
             </li>
             <li>
               <strong>Complimentary Shipping Threshold:</strong> Domestic orders of ₹1,999 and above receive complimentary express air courier delivery across India. Orders below ₹1,999 are subject to a nominal courier fee (Standard Surface ₹150; Express Air ₹250).

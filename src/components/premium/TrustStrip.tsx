@@ -2,10 +2,10 @@ import { Truck, RefreshCw, Wallet, ShieldCheck } from "lucide-react";
 
 // Each line mirrors a published policy page — keep in sync with /shipping-policy and /returns.
 const PROMISES = [
-  { icon: Truck, title: "Free shipping over ₹1,999", note: "Blue Dart & Delhivery air" },
-  { icon: RefreshCw, title: "30-day doorstep exchange", note: "Wrong size? We pick it up" },
-  { icon: Wallet, title: "Cash on delivery", note: "On serviceable PIN codes" },
-  { icon: ShieldCheck, title: "Secure Razorpay checkout", note: "UPI, cards, net banking" },
+  { icon: Truck, title: "Free delivery", note: "On orders over ₹1,999" },
+  { icon: RefreshCw, title: "30-day exchange", note: "Doorstep pickup" },
+  { icon: Wallet, title: "Cash on delivery", note: "Serviceable PIN codes" },
+  { icon: ShieldCheck, title: "Secure checkout", note: "UPI · cards · net banking" },
 ];
 
 /** Removes the four objections that stop a first-time buyer. */

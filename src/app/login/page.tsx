@@ -77,7 +77,7 @@ function LoginForm() {
     setLoading(false);
 
     if (res.success) {
-      setSuccessMsg("Atelier account created! Welcome to Trend Street.");
+      setSuccessMsg("Account created — welcome to Trend Street!");
       setTimeout(() => {
         window.location.href = callbackUrl;
       }, 500);
@@ -95,10 +95,10 @@ function LoginForm() {
         </div>
         <div className="pt-2">
           <span className="text-xs uppercase tracking-[0.2em] font-bold text-burgundy flex items-center justify-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-gold" /> Atelier Member Access
+            <User className="w-3.5 h-3.5 text-gold" /> Your account
           </span>
           <p className="text-xs text-espresso/70 mt-1">
-            Access your orders, saved silhouettes, bespoke sizes, and exclusive drops
+            Track orders, save your sizes and wishlist, check out faster
           </p>
         </div>
       </div>
@@ -113,7 +113,7 @@ function LoginForm() {
               setActiveTab("login");
               setError(null);
             }}
-            className={`py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${
+            className={`min-h-[44px] py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${
               activeTab === "login"
                 ? "bg-espresso text-ivory shadow-sm"
                 : "text-espresso/60 hover:text-espresso"
@@ -127,7 +127,7 @@ function LoginForm() {
               setActiveTab("register");
               setError(null);
             }}
-            className={`py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${
+            className={`min-h-[44px] py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${
               activeTab === "register"
                 ? "bg-espresso text-ivory shadow-sm"
                 : "text-espresso/60 hover:text-espresso"
@@ -168,7 +168,7 @@ function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@domain.com"
                   autoComplete="email"
-                  className="w-full bg-ivory/50 pl-10 pr-3 py-2.5 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
+                  className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
               </div>
             </div>
@@ -186,12 +186,12 @@ function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   autoComplete="current-password"
-                  className="w-full bg-ivory/50 pl-10 pr-11 py-2.5 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
+                  className="w-full bg-ivory/50 pl-10 pr-11 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-2.5 p-1 text-espresso/50 hover:text-burgundy transition-colors focus:outline-none"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-xl text-espresso/50 hover:text-burgundy transition-colors focus:outline-none"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -208,7 +208,7 @@ function LoginForm() {
                 <span>Signing In...</span>
               ) : (
                 <>
-                  <span>Sign In To Atelier</span>
+                  <span>Sign in</span>
                   <ArrowRight className="w-4 h-4 text-gold" />
                 </>
               )}
@@ -232,7 +232,7 @@ function LoginForm() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aryan Mehra"
                   autoComplete="name"
-                  className="w-full bg-ivory/50 pl-10 pr-3 py-2.5 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
+                  className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
               </div>
             </div>
@@ -250,7 +250,7 @@ function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@domain.com"
                   autoComplete="email"
-                  className="w-full bg-ivory/50 pl-10 pr-3 py-2.5 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
+                  className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
               </div>
             </div>
@@ -267,7 +267,7 @@ function LoginForm() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98200 00000"
                   autoComplete="tel"
-                  className="w-full bg-ivory/50 pl-10 pr-3 py-2.5 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
+                  className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
               </div>
             </div>
@@ -286,12 +286,12 @@ function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 8 characters"
                   autoComplete="new-password"
-                  className="w-full bg-ivory/50 pl-10 pr-11 py-2.5 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
+                  className="w-full bg-ivory/50 pl-10 pr-11 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-2.5 p-1 text-espresso/50 hover:text-burgundy transition-colors focus:outline-none"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-xl text-espresso/50 hover:text-burgundy transition-colors focus:outline-none"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -308,7 +308,7 @@ function LoginForm() {
                 <span>Creating Account...</span>
               ) : (
                 <>
-                  <span>Create Atelier Account</span>
+                  <span>Create account</span>
                   <ArrowRight className="w-4 h-4 text-gold" />
                 </>
               )}
@@ -322,9 +322,9 @@ function LoginForm() {
       <div className="text-center">
         <Link
           href="/"
-          className="text-xs text-espresso/60 hover:text-burgundy transition-colors inline-flex items-center gap-1 font-medium"
+          className="text-xs text-espresso/60 hover:text-burgundy transition-colors inline-flex min-h-[44px] items-center gap-1 px-3 font-medium"
         >
-          ← Return to Public Storefront
+          ← Back to shop
         </Link>
       </div>
     </div>
@@ -333,11 +333,11 @@ function LoginForm() {
 
 export default function CustomerLoginPage() {
   return (
-    <div className="min-h-screen bg-ivory flex flex-col justify-center items-center px-4 py-12">
+    <div className="min-h-[100dvh] bg-ivory flex flex-col items-center px-4 pt-8 pb-12 sm:justify-center sm:py-12">
       <Suspense
         fallback={
           <div className="w-full max-w-md p-8 rounded-3xl bg-white border border-burgundy/10 text-center text-xs text-espresso/60">
-            Loading authentication portal...
+            Loading…
           </div>
         }
       >

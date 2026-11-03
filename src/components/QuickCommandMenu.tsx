@@ -261,10 +261,10 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
                   </div>
                   <div>
                     <span className="text-xs font-bold text-espresso group-hover:text-crimson block">
-                      Track Live Courier
+                      Track my order
                     </span>
                     <span className="text-[10px] text-espresso/60 block">
-                      Blue Dart & Delhivery Express
+                      Order number + email
                     </span>
                   </div>
                 </div>
@@ -290,10 +290,10 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
                   </div>
                   <div>
                     <span className="text-xs font-bold text-espresso group-hover:text-crimson block">
-                      New Arrivals Drop Radar
+                      New arrivals
                     </span>
                     <span className="text-[10px] text-espresso/60 block">
-                      Explore Latest AW26 Releases
+                      The latest drops
                     </span>
                   </div>
                 </div>
@@ -304,7 +304,7 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
         </div>
 
         {/* Palette Footer Bar */}
-        <div className="px-4 py-2.5 bg-ivory-dark/70 border-t border-burgundy/10 flex items-center justify-between text-[11px] text-espresso/60">
+        <div className="hidden px-4 py-2.5 bg-ivory-dark/70 border-t border-burgundy/10 items-center justify-between text-[11px] text-espresso/60 sm:flex">
           <div className="flex items-center space-x-3">
             <span>Navigation: <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[10px]">↑</kbd> <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[10px]">↓</kbd></span>
             <span>Select: <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[10px]">↵</kbd></span>

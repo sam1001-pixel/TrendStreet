@@ -73,7 +73,7 @@ export const CartDrawer: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCartOpen(false)}
-              className="p-1.5 text-espresso/60 hover:text-burgundy rounded transition-colors"
+              className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-espresso/60 transition-colors hover:bg-burgundy/5 hover:text-burgundy"
               aria-label="Close bag"
             >
               <X className="w-5 h-5" />
@@ -153,7 +153,7 @@ export const CartDrawer: React.FC = () => {
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between">
-                          <h4 className="font-serif text-xs sm:text-sm font-bold text-espresso line-clamp-1">
+                          <h4 className="font-serif text-sm font-bold text-espresso line-clamp-2">
                             {item.product.name}
                           </h4>
                           <button
@@ -161,8 +161,8 @@ export const CartDrawer: React.FC = () => {
                             onClick={() =>
                               removeFromCart(item.product.id, item.selectedSize, item.selectedColor)
                             }
-                            className="text-espresso/40 hover:text-crimson p-1 -mr-1"
-                            aria-label="Remove item"
+                            className="-mr-2 -mt-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-espresso/40 hover:text-crimson"
+                            aria-label={`Remove ${item.product.name}`}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -173,7 +173,7 @@ export const CartDrawer: React.FC = () => {
                       </div>
 
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-ivory-dark">
-                        <div className="flex items-center border border-burgundy/20 rounded bg-ivory">
+                        <div className="flex items-center rounded-lg border border-burgundy/20 bg-ivory">
                           <button
                             type="button"
                             onClick={() =>
@@ -184,12 +184,12 @@ export const CartDrawer: React.FC = () => {
                                 item.quantity - 1
                               )
                             }
-                            className="p-1 hover:text-burgundy text-espresso/70"
-                            aria-label="Decrease quantity"
+                            className="flex h-9 w-9 items-center justify-center text-espresso/70 hover:text-burgundy"
+                            aria-label={item.quantity === 1 ? `Remove ${item.product.name}` : "Decrease quantity"}
                           >
-                            <Minus className="w-3 h-3" />
+                            {item.quantity === 1 ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                           </button>
-                          <span className="px-2 text-xs font-bold text-espresso font-mono">
+                          <span className="w-6 text-center text-sm font-bold tabular-nums text-espresso">
                             {item.quantity}
                           </span>
                           <button
@@ -202,14 +202,15 @@ export const CartDrawer: React.FC = () => {
                                 item.quantity + 1
                               )
                             }
-                            className="p-1 hover:text-burgundy text-espresso/70"
+                            disabled={item.quantity >= 10}
+                            className="flex h-9 w-9 items-center justify-center text-espresso/70 hover:text-burgundy disabled:opacity-30"
                             aria-label="Increase quantity"
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="h-3.5 w-3.5" />
                           </button>
                         </div>
 
-                        <span className="text-xs sm:text-sm font-bold text-burgundy">
+                        <span className="text-sm font-bold text-burgundy">
                           {formatPrice(item.product.price * item.quantity)}
                         </span>
                       </div>
@@ -225,7 +226,7 @@ export const CartDrawer: React.FC = () => {
                         <Sparkles className="w-3 h-3 text-crimson" />
                         <span>Complete Your Fit</span>
                       </span>
-                      <span className="text-[10px] text-espresso/50 font-normal">Coordinating Item</span>
+
                     </div>
                     <div className="flex items-center justify-between gap-2.5">
                       <div className="flex items-center space-x-2.5">
@@ -255,7 +256,7 @@ export const CartDrawer: React.FC = () => {
                             1
                           )
                         }
-                        className="py-1.5 px-3 bg-burgundy hover:bg-crimson text-gold text-[10px] font-bold uppercase tracking-wider rounded transition-colors whitespace-nowrap shadow-sm flex-shrink-0"
+                        className="min-h-[40px] rounded-lg bg-burgundy px-3 text-[11px] font-bold uppercase tracking-wider text-gold shadow-sm transition-colors hover:bg-crimson whitespace-nowrap flex-shrink-0"
                       >
                         + Add ({crossSellProduct.sizes[0] || "M"})
                       </button>
@@ -268,7 +269,7 @@ export const CartDrawer: React.FC = () => {
 
           {/* Drawer Footer Checkout Actions */}
           {cart.length > 0 && (
-            <div className="p-5 sm:p-6 bg-white border-t border-burgundy/15 space-y-3.5">
+            <div className="space-y-3.5 border-t border-burgundy/15 bg-white px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">
               <div className="space-y-1.5 text-xs text-espresso/70">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
@@ -276,18 +277,18 @@ export const CartDrawer: React.FC = () => {
                 </div>
                 {cartDiscount > 0 && (
                   <div className="flex justify-between text-crimson font-medium">
-                    <span>VIP Privilege Discount</span>
+                    <span>Discount</span>
                     <span>-{formatPrice(cartDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span>Blue Dart Apex Priority</span>
+                  <span>Delivery</span>
                   <span className={cartShipping === 0 ? "text-green-800 font-bold" : ""}>
                     {cartShipping === 0 ? "Complimentary" : formatPrice(cartShipping)}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-ivory-dark flex justify-between text-base font-bold text-burgundy">
-                  <span>Estimated Total (Incl. GST)</span>
+                  <span>Total <span className="text-xs font-normal text-espresso/50">incl. GST</span></span>
                   <span>{formatPrice(cartTotal)}</span>
                 </div>
               </div>
@@ -296,7 +297,7 @@ export const CartDrawer: React.FC = () => {
                 <Link
                   href="/bag"
                   onClick={() => setIsCartOpen(false)}
-                  className="py-3 px-4 rounded-lg border border-burgundy text-burgundy hover:bg-burgundy/5 text-xs font-semibold uppercase tracking-wider text-center transition-colors"
+                  className="flex min-h-[48px] items-center justify-center rounded-xl border border-burgundy px-4 text-xs font-bold uppercase tracking-wider text-burgundy transition-colors hover:bg-burgundy/5"
                 >
                   View Bag
                 </Link>
@@ -304,16 +305,16 @@ export const CartDrawer: React.FC = () => {
                 <Link
                   href="/checkout"
                   onClick={() => setIsCartOpen(false)}
-                  className="py-3 px-4 rounded-lg bg-burgundy hover:bg-crimson text-ivory text-xs font-semibold uppercase tracking-wider text-center transition-colors flex items-center justify-center gap-1.5 shadow-md"
+                  className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-burgundy px-4 text-xs font-bold uppercase tracking-wider text-ivory shadow-md transition-colors hover:bg-crimson"
                 >
                   <span>Checkout</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
 
-              <div className="flex items-center justify-center space-x-2 text-[10px] text-espresso/50 pt-1">
+              <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-espresso/55">
                 <ShieldCheck className="w-3.5 h-3.5 text-green-700" />
-                <span>256-Bit SSL Encrypted Luxury Atelier Checkout</span>
+                <span>Secure checkout · UPI, cards, net banking, COD</span>
               </div>
             </div>
           )}

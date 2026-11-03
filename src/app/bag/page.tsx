@@ -136,14 +136,15 @@ export default function BagPage() {
                         <button
                           onClick={() => updateCartQuantity(item.product.id, item.selectedSize, item.selectedColor, item.quantity - 1)}
                           className="flex h-9 w-9 items-center justify-center text-espresso/70 hover:text-burgundy"
-                          aria-label="Decrease quantity"
+                          aria-label={item.quantity === 1 ? `Remove ${item.product.name}` : "Decrease quantity"}
                         >
                           {item.quantity === 1 ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
                         </button>
                         <span className="w-6 text-center text-xs font-bold text-espresso" aria-live="polite">{item.quantity}</span>
                         <button
                           onClick={() => updateCartQuantity(item.product.id, item.selectedSize, item.selectedColor, item.quantity + 1)}
-                          className="flex h-9 w-9 items-center justify-center text-espresso/70 hover:text-burgundy"
+                          disabled={item.quantity >= 10}
+                          className="flex h-9 w-9 items-center justify-center text-espresso/70 hover:text-burgundy disabled:opacity-30"
                           aria-label="Increase quantity"
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -161,7 +162,7 @@ export default function BagPage() {
                           toggleWishlist(item.product.id);
                           removeFromCart(item.product.id, item.selectedSize, item.selectedColor);
                         }}
-                        className="mt-2 inline-flex items-center gap-1 self-start text-[11px] font-semibold text-espresso/60 hover:text-crimson"
+                        className="-mb-2 -ml-1 mt-1 inline-flex min-h-[40px] items-center gap-1.5 self-start px-1 text-xs font-semibold text-espresso/60 hover:text-crimson"
                       >
                         <Heart className="h-3.5 w-3.5" /> Save for later
                       </button>
@@ -172,7 +173,7 @@ export default function BagPage() {
             })}
           </ul>
 
-          <ul className="grid grid-cols-3 gap-2 text-center text-[11px] text-espresso/70">
+          <ul className="grid grid-cols-3 gap-2 text-center text-xs text-espresso/70">
             {[
               [RotateCcw, "30-day exchange"],
               [Wallet, "Cash on delivery"],
@@ -214,7 +215,7 @@ export default function BagPage() {
               {!promoCode && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {["TREND10", "STREET20"].map((c) => (
-                    <button key={c} type="button" onClick={async () => { const r = await applyPromoCode(c); setPromoMessage({ success: r.success, text: r.message }); }} className="rounded-full border border-dashed border-burgundy/40 px-2.5 py-1 font-mono text-[10px] font-bold text-burgundy hover:bg-burgundy/5">
+                    <button key={c} type="button" onClick={async () => { const r = await applyPromoCode(c); setPromoMessage({ success: r.success, text: r.message }); }} className="inline-flex min-h-[36px] items-center rounded-full border border-dashed border-burgundy/40 px-3 font-mono text-xs font-bold text-burgundy hover:bg-burgundy/5">
                       {c}
                     </button>
                   ))}
@@ -226,7 +227,7 @@ export default function BagPage() {
               {promoCode && (
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-burgundy/10 px-3 py-1 text-xs font-bold text-burgundy">
                   {promoCode} applied
-                  <button onClick={removePromoCode} aria-label="Remove promo code" className="text-crimson hover:text-black">
+                  <button onClick={removePromoCode} aria-label="Remove promo code" className="-my-2 -mr-2 flex h-9 w-9 items-center justify-center text-crimson hover:text-black">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -249,7 +250,7 @@ export default function BagPage() {
                 <dd className={cartShipping === 0 ? "font-semibold text-green-800" : ""}>{cartShipping === 0 ? "Free" : formatPrice(cartShipping)}</dd>
               </div>
               <div className="flex justify-between text-xs text-espresso/60">
-                <dt>Includes GST (12%)</dt>
+                <dt>Includes GST</dt>
                 <dd>{formatPrice(cartTax)}</dd>
               </div>
               <div className="flex items-baseline justify-between border-t border-burgundy/15 pt-3">

@@ -160,7 +160,7 @@ export default function OrderConfirmationPage() {
             <span>{order.shipping === 0 ? "Complimentary" : formatPrice(order.shipping)}</span>
           </div>
           <div className="flex justify-between">
-            <span>GST (12% Statutory Tax)</span>
+            <span>Includes GST</span>
             <span>{formatPrice(order.tax)}</span>
           </div>
           <div className="pt-3 border-t border-ivory-dark flex justify-between text-base font-bold text-burgundy">

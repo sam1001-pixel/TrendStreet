@@ -58,11 +58,18 @@ export function ScrollReveal() {
       if (seen.has(el)) return;
       seen.add(el);
       const r = el.getBoundingClientRect();
-      const vw = window.innerWidth;
-      const fullWidth = r.width > vw * 0.6;
-      const fromLeft = fullWidth ? index % 2 === 0 : r.left + r.width / 2 < vw / 2;
-      el.style.setProperty("--reveal-x", fromLeft ? "-64px" : "64px");
-      el.style.setProperty("--reveal-r", fromLeft ? "-2.5deg" : "2.5deg");
+      const vw = document.documentElement.clientWidth;
+      // Phones: rise straight up. A sideways start pushes right-hand cards past the screen edge,
+      // which widens the whole page and drags fixed buttons and popups off-screen.
+      if (vw < 640) {
+        el.style.setProperty("--reveal-x", "0px");
+        el.style.setProperty("--reveal-r", "0deg");
+      } else {
+        const fullWidth = r.width > vw * 0.6;
+        const fromLeft = fullWidth ? index % 2 === 0 : r.left + r.width / 2 < vw / 2;
+        el.style.setProperty("--reveal-x", fromLeft ? "-64px" : "64px");
+        el.style.setProperty("--reveal-r", fromLeft ? "-2.5deg" : "2.5deg");
+      }
       el.classList.add("reveal-pending");
       io.observe(el);
     };

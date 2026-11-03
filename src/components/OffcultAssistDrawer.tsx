@@ -1,13 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  MessageSquare,
-  X,
-  Ruler,
-  Truck,
-  ArrowRight,
-} from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { MessageSquare, X, Ruler, Truck, ArrowRight } from "lucide-react";
+import { useStore } from "@/context/StoreContext";
 
 interface OffcultAssistDrawerProps {
   onOpenTracker?: () => void;
@@ -15,14 +11,21 @@ interface OffcultAssistDrawerProps {
   hideTrigger?: boolean;
 }
 
-export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({
-  onOpenTracker,
-  hideTrigger = false,
-}) => {
+/**
+ * Fit Concierge: size calculator + WhatsApp stylist.
+ * Phones: a full-width bottom sheet over a dimmed backdrop (tap outside or swipe the handle area to close).
+ * Tablet/desktop: a floating card in the bottom-right corner.
+ */
+export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({ onOpenTracker, hideTrigger = false }) => {
+  const { siteSettings } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"quiz" | "concierge">("quiz");
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  // The sheet is rendered straight into <body> so page spacing or transforms can't shift it.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  // Fit Quiz State
   const [heightCm, setHeightCm] = useState(178);
   const [weightKg, setWeightKg] = useState(74);
   const [calculatedResult, setCalculatedResult] = useState<{
@@ -32,17 +35,27 @@ export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({
     jacket: string;
   } | null>(null);
 
-  // Keyboard Escape listener
+  // Escape closes; focus moves into the sheet and back to the button afterwards.
+  // On phones the page behind is locked so swiping the sheet doesn't scroll the homepage.
   useEffect(() => {
     if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
         setIsOpen(false);
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", onKey);
+    closeRef.current?.focus();
+    const isPhone = window.matchMedia("(max-width: 639px)").matches;
+    const prevOverflow = document.body.style.overflow;
+    if (isPhone) document.body.style.overflow = "hidden";
+    const trigger = triggerRef.current;
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      trigger?.focus();
+    };
   }, [isOpen]);
 
   const calculateFit = () => {
@@ -69,227 +82,228 @@ export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({
     }
 
     setCalculatedResult({
-      oversized: `${teeSize} (Dropped Boxy Drape)`,
-      boxyFit: `${teeSize} (Cropped Waistline)`,
-      jeans: `${waistSize} (Generous Ankle Break)`,
-      jacket: `${jacketSize} (Layered Flight Cut)`,
+      oversized: teeSize,
+      boxyFit: teeSize,
+      jeans: waistSize,
+      jacket: jacketSize,
     });
   };
 
-  // Safe Imperial conversion avoiding 5'12"
   const totalInches = Math.round(heightCm / 2.54);
   const feet = Math.floor(totalInches / 12);
   const inches = totalInches % 12;
 
+  // WhatsApp goes to the store's own number (Admin → Settings → contact phone).
+  const phone = siteSettings.contactInfo?.phone || "";
+  const waDigits = phone.replace(/\D/g, "");
+  const waHref = waDigits
+    ? `https://wa.me/${waDigits}?text=${encodeURIComponent("Hello Trend Street, I need help with sizing and fit.")}`
+    : null;
+
+  const tabClass = (active: boolean) =>
+    `min-h-[44px] rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
+      active ? "bg-burgundy text-gold shadow-sm" : "text-espresso/65 active:bg-white/60"
+    }`;
+
   return (
     <>
-      {/* Floating Trigger Pill (Bottom Right) */}
       {!hideTrigger && (
         <div
-          className={`fixed bottom-[84px] sm:bottom-6 right-3 sm:right-6 z-40 transition-opacity duration-200 ${
+          className={`fixed bottom-[calc(72px+env(safe-area-inset-bottom))] right-3 z-40 transition-opacity duration-200 sm:bottom-6 sm:right-6 ${
             isOpen ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
         >
           <button
+            ref={triggerRef}
             type="button"
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => setIsOpen(true)}
             aria-expanded={isOpen}
+            aria-haspopup="dialog"
             aria-label="Open Fit Concierge"
             title="Fit Concierge"
-            className="flex h-12 w-12 items-center justify-center gap-2 rounded-full bg-espresso text-ivory border border-gold/40 shadow-xl hover:bg-burgundy transition-colors group active:scale-[0.98] motion-reduce:active:scale-100 sm:h-auto sm:w-auto sm:pl-3 sm:pr-4 sm:py-2.5"
+            className="group flex h-12 w-12 items-center justify-center gap-2 rounded-full border border-gold/40 bg-espresso text-ivory shadow-xl transition-colors hover:bg-burgundy active:scale-95 motion-reduce:active:scale-100 sm:h-auto sm:w-auto sm:py-2.5 sm:pl-3 sm:pr-4"
           >
             <span className="relative flex h-5 w-5 items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-gold transition-transform group-hover:rotate-6 motion-reduce:transition-none motion-reduce:group-hover:rotate-0" />
-              <span className="pointer-events-none absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-crimson opacity-70 animate-ping motion-reduce:hidden" />
+              <Ruler className="h-[18px] w-[18px] text-gold" />
+              <span className="pointer-events-none absolute -right-1 -top-1 flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-crimson opacity-70 motion-reduce:hidden" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-crimson ring-2 ring-espresso" />
               </span>
             </span>
-            {/* Label only on larger screens: on phones the round icon keeps it off the content. */}
-            <span className="hidden text-xs font-bold uppercase tracking-wider sm:inline">
-              Fit Concierge
-            </span>
+            <span className="hidden text-xs font-bold uppercase tracking-wider sm:inline">Fit Concierge</span>
           </button>
         </div>
       )}
 
-      {/* Slide-Up Concierge Card */}
-      {isOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Fit Concierge Window"
-          className="fixed bottom-24 sm:bottom-20 right-3 sm:right-6 z-50 w-[calc(100vw-24px)] sm:w-96 bg-white rounded-2xl shadow-2xl border border-burgundy/20 overflow-hidden animate-in slide-in-from-bottom-5 duration-200"
-        >
-          {/* Header */}
-          <div className="p-4 bg-espresso text-ivory flex items-center justify-between border-b border-burgundy/30">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-burgundy flex items-center justify-center text-gold">
-                <Ruler className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="font-serif text-sm font-bold">Atelier Concierge</h4>
-                <span className="text-[10px] text-gold font-mono uppercase block">
-                  Bandra West Studio
-                </span>
-              </div>
+      {isOpen && mounted && createPortal(
+        <div className="fixed inset-0 z-[60] sm:pointer-events-none">
+          {/* Backdrop — phones only; tap to close */}
+          <button
+            type="button"
+            aria-label="Close Fit Concierge"
+            tabIndex={-1}
+            onClick={() => setIsOpen(false)}
+            className="absolute inset-0 h-full w-full cursor-default bg-espresso/45 backdrop-blur-[2px] animate-[fadeIn_.2s_ease-out] sm:hidden"
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="concierge-title"
+            className="absolute inset-x-0 bottom-0 flex max-h-[88dvh] flex-col overflow-hidden rounded-t-3xl border-t border-burgundy/20 bg-white shadow-2xl animate-[sheetUp_.28s_cubic-bezier(.22,1,.36,1)] sm:pointer-events-auto sm:inset-x-auto sm:bottom-6 sm:right-6 sm:max-h-[min(640px,calc(100dvh-48px))] sm:w-96 sm:rounded-2xl sm:border"
+          >
+            {/* Grab handle (phones) */}
+            <div className="flex justify-center bg-espresso pt-2 sm:hidden" aria-hidden>
+              <span className="h-1 w-10 rounded-full bg-ivory/30" />
             </div>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="p-1 text-ivory/60 hover:text-gold"
-              aria-label="Close concierge"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
 
-          {/* Tab Navigation */}
-          <div className="grid grid-cols-2 p-1.5 bg-ivory-dark border-b border-burgundy/10 text-xs font-bold uppercase tracking-wider">
-            <button
-              type="button"
-              onClick={() => setActiveTab("quiz")}
-              className={`py-1.5 rounded-md transition-all ${
-                activeTab === "quiz"
-                  ? "bg-burgundy text-gold shadow-sm"
-                  : "text-espresso/60 hover:text-espresso"
-              }`}
-            >
-              Size Calculator
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("concierge")}
-              className={`py-1.5 rounded-md transition-all ${
-                activeTab === "concierge"
-                  ? "bg-burgundy text-gold shadow-sm"
-                  : "text-espresso/60 hover:text-espresso"
-              }`}
-            >
-              Direct Stylist
-            </button>
-          </div>
-
-          {/* Content Body */}
-          <div className="p-4 max-h-[65vh] overflow-y-auto space-y-4">
-            {activeTab === "quiz" ? (
-              <div className="space-y-4">
-                <p className="text-xs text-espresso/70 leading-relaxed">
-                  Enter your body metrics to calculate exact sizing for our 4 silhouettes without guessing.
-                </p>
-
-                {/* Height Slider */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span className="text-espresso/70">Your Height:</span>
-                    <span className="font-mono font-bold text-burgundy">
-                      {heightCm} cm ({feet}&apos;{inches}&quot;)
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={160}
-                    max={200}
-                    value={heightCm}
-                    aria-label="Height in centimeters"
-                    onChange={(e) => {
-                      setHeightCm(Number(e.target.value));
-                      setCalculatedResult(null);
-                    }}
-                    className="w-full accent-burgundy cursor-pointer"
-                  />
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 bg-espresso px-4 pb-3 pt-2 text-ivory sm:pt-3">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-burgundy text-gold">
+                  <Ruler className="h-4 w-4" />
                 </div>
-
-                {/* Weight Slider */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-medium">
-                    <span className="text-espresso/70">Your Weight:</span>
-                    <span className="font-mono font-bold text-burgundy">{weightKg} kg</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={50}
-                    max={110}
-                    value={weightKg}
-                    aria-label="Weight in kilograms"
-                    onChange={(e) => {
-                      setWeightKg(Number(e.target.value));
-                      setCalculatedResult(null);
-                    }}
-                    className="w-full accent-burgundy cursor-pointer"
-                  />
+                <div className="min-w-0">
+                  <h2 id="concierge-title" className="truncate font-serif text-base font-bold leading-tight">
+                    Fit Concierge
+                  </h2>
+                  <span className="block truncate text-[11px] text-ivory/60">Find your size in 10 seconds</span>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={calculateFit}
-                  className="w-full py-2.5 px-4 bg-burgundy hover:bg-crimson text-ivory text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm"
-                >
-                  Calculate My Silhouette Sizes
-                </button>
-
-                {calculatedResult && (
-                  <div className="p-3 rounded-xl bg-ivory border border-burgundy/15 space-y-2 animate-in fade-in duration-300">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-burgundy block">
-                      Recommended Streetwear Specs:
-                    </span>
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div className="p-2 bg-white rounded border border-burgundy/10">
-                        <span className="text-espresso/50 block text-[9px] uppercase">Oversized Tops</span>
-                        <strong className="text-espresso font-mono">{calculatedResult.oversized}</strong>
-                      </div>
-                      <div className="p-2 bg-white rounded border border-burgundy/10">
-                        <span className="text-espresso/50 block text-[9px] uppercase">Boxy Fit</span>
-                        <strong className="text-espresso font-mono">{calculatedResult.boxyFit}</strong>
-                      </div>
-                      <div className="p-2 bg-white rounded border border-burgundy/10">
-                        <span className="text-espresso/50 block text-[9px] uppercase">Selvedge Jeans</span>
-                        <strong className="text-espresso font-mono">{calculatedResult.jeans}</strong>
-                      </div>
-                      <div className="p-2 bg-white rounded border border-burgundy/10">
-                        <span className="text-espresso/50 block text-[9px] uppercase">Outerwear</span>
-                        <strong className="text-espresso font-mono">{calculatedResult.jacket}</strong>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
-            ) : (
-              <div className="space-y-3.5">
-                <p className="text-xs text-espresso/70 leading-relaxed font-light">
-                  Speak directly with a Mumbai atelier stylist for custom sizing, tailoring inseams, or bulk studio curation.
-                </p>
+              <button
+                ref={closeRef}
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="-mr-2 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-ivory/70 hover:bg-white/10 hover:text-gold"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-                <a
-                  href="https://wa.me/919820012345?text=Hello%20Trend%20Street%20Concierge,%20I%20need%20styling%20and%20fit%20advice"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 px-4 bg-green-700 hover:bg-green-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Chat on WhatsApp (+91 98200 12345)</span>
-                </a>
+            {/* Tabs */}
+            <div role="tablist" aria-label="Concierge options" className="grid grid-cols-2 gap-1 border-b border-burgundy/10 bg-ivory-dark p-1.5">
+              <button type="button" role="tab" aria-selected={activeTab === "quiz"} onClick={() => setActiveTab("quiz")} className={tabClass(activeTab === "quiz")}>
+                Size calculator
+              </button>
+              <button type="button" role="tab" aria-selected={activeTab === "concierge"} onClick={() => setActiveTab("concierge")} className={tabClass(activeTab === "concierge")}>
+                Talk to a stylist
+              </button>
+            </div>
 
-                {onOpenTracker && (
+            {/* Body (scrolls inside the sheet) */}
+            <div className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
+              {activeTab === "quiz" ? (
+                <>
+                  <p className="text-sm leading-relaxed text-espresso/70">
+                    Set your height and weight to get your size in all four fits.
+                  </p>
+
+                  <label className="block space-y-2">
+                    <span className="flex items-baseline justify-between text-sm">
+                      <span className="font-medium text-espresso/75">Height</span>
+                      <span className="font-mono font-bold tabular-nums text-burgundy">
+                        {heightCm} cm · {feet}&apos;{inches}&quot;
+                      </span>
+                    </span>
+                    <input
+                      type="range"
+                      min={150}
+                      max={200}
+                      value={heightCm}
+                      onChange={(e) => {
+                        setHeightCm(Number(e.target.value));
+                        setCalculatedResult(null);
+                      }}
+                      className="h-8 w-full cursor-pointer accent-burgundy"
+                    />
+                  </label>
+
+                  <label className="block space-y-2">
+                    <span className="flex items-baseline justify-between text-sm">
+                      <span className="font-medium text-espresso/75">Weight</span>
+                      <span className="font-mono font-bold tabular-nums text-burgundy">{weightKg} kg</span>
+                    </span>
+                    <input
+                      type="range"
+                      min={45}
+                      max={120}
+                      value={weightKg}
+                      onChange={(e) => {
+                        setWeightKg(Number(e.target.value));
+                        setCalculatedResult(null);
+                      }}
+                      className="h-8 w-full cursor-pointer accent-burgundy"
+                    />
+                  </label>
+
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      onOpenTracker();
-                    }}
-                    className="w-full py-2.5 px-4 bg-ivory hover:bg-ivory-dark text-espresso text-xs font-bold uppercase tracking-wider rounded-xl border border-burgundy/20 transition-colors flex items-center justify-between"
+                    onClick={calculateFit}
+                    className="min-h-[48px] w-full rounded-xl bg-burgundy px-4 text-sm font-bold uppercase tracking-wider text-ivory shadow-sm transition-colors hover:bg-crimson active:bg-crimson"
                   >
-                    <span className="flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-burgundy" />
-                      <span>Track Live Blue Dart Delivery</span>
-                    </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-espresso/40" />
+                    Show my sizes
                   </button>
-                )}
-              </div>
-            )}
+
+                  {calculatedResult && (
+                    <div className="space-y-2 rounded-xl border border-burgundy/15 bg-ivory p-3" aria-live="polite">
+                      <span className="block text-[11px] font-bold uppercase tracking-widest text-burgundy">Your sizes</span>
+                      <dl className="grid grid-cols-2 gap-2">
+                        {[
+                          ["Oversized", calculatedResult.oversized],
+                          ["Boxy fit", calculatedResult.boxyFit],
+                          ["Jeans", calculatedResult.jeans],
+                          ["Jackets", calculatedResult.jacket],
+                        ].map(([label, size]) => (
+                          <div key={label} className="rounded-lg border border-burgundy/10 bg-white p-2.5">
+                            <dt className="text-[11px] uppercase tracking-wide text-espresso/55">{label}</dt>
+                            <dd className="font-mono text-lg font-bold text-espresso">{size}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-sm leading-relaxed text-espresso/70">
+                    Chat with our team about sizing, alterations or bulk orders.
+                  </p>
+
+                  {waHref && (
+                    <a
+                      href={waHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-green-700 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-green-800"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Chat on WhatsApp
+                    </a>
+                  )}
+
+                  {onOpenTracker && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false);
+                        onOpenTracker();
+                      }}
+                      className="flex min-h-[48px] w-full items-center justify-between rounded-xl border border-burgundy/20 bg-ivory px-4 text-sm font-bold text-espresso transition-colors hover:bg-ivory-dark"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Truck className="h-4 w-4 text-burgundy" />
+                        Track my order
+                      </span>
+                      <ArrowRight className="h-4 w-4 text-espresso/40" />
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

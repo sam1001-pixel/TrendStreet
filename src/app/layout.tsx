@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans, Big_Shoulders_Display } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -32,6 +32,14 @@ import { StoreJsonLd } from "@/components/seo/JsonLd";
 import { ScrollReveal } from "@/components/premium/ScrollReveal";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { SITE_URL } from "@/lib/site";
+
+// viewport-fit=cover lets env(safe-area-inset-*) work, so bottom bars clear the iPhone home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#F9F6F4",
+};
 
 export const metadata: Metadata = {
   title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",

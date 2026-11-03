@@ -18,14 +18,19 @@
   --color-ink: #0E1626;
 }
 
+/* Nothing may make the page wider than the phone. On <html> this also stops mobile browsers
+   from widening the layout viewport (which pushes fixed buttons and popups off-screen).
+   "clip" (not "hidden") never creates a scroll container, so position: sticky keeps working. */
+html,
+body {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 body {
   background-color: var(--color-bone);
   color: var(--color-espresso);
   font-family: var(--font-sans);
-  /* "clip" (not "hidden") stops sideways page scroll without turning <body> into a scroll
-     container, which would break every position: sticky element (header, shop toolbar). */
-  overflow-x: hidden;
-  overflow-x: clip;
 }
 
 /* Custom Text Selection in Deep Burgundy */
@@ -93,4 +98,27 @@ body {
   background-color: currentColor;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6'%3E%3Cpath d='M22 2 42 22 22 42 2 22Z'/%3E%3Ccircle cx='22' cy='22' r='7'/%3E%3Cpath d='M22 15v14M15 22h14'/%3E%3C/g%3E%3C/svg%3E") 0 0/44px 44px;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6'%3E%3Cpath d='M22 2 42 22 22 42 2 22Z'/%3E%3Ccircle cx='22' cy='22' r='7'/%3E%3Cpath d='M22 15v14M15 22h14'/%3E%3C/g%3E%3C/svg%3E") 0 0/44px 44px;
+}
+
+/* Bottom-sheet / overlay entrances (Fit Concierge and other mobile sheets) */
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[sheetUp"],
+  [class*="animate-[fadeIn"] { animation: none !important; }
+}
+
+/* Phones: inputs under 16px make iOS Safari zoom the page on focus — keep them at 16px. */
+@media (max-width: 767px) {
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
 }

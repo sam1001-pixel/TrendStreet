@@ -9,10 +9,12 @@ interface MagneticButtonProps {
   children: React.ReactNode;
   variant?: "solid" | "ghost";
   className?: string;
+  /** Classes for the outer wrapper (e.g. "w-full sm:w-auto"). */
+  wrapperClassName?: string;
 }
 
 /** CTA that leans toward the cursor — answers the hover, settles on leave. */
-export function MagneticButton({ href, children, variant = "solid", className = "" }: MagneticButtonProps) {
+export function MagneticButton({ href, children, variant = "solid", className = "", wrapperClassName = "" }: MagneticButtonProps) {
   const ref = useRef<HTMLAnchorElement>(null);
   const reduce = useReducedMotion();
   const x = useSpring(useMotionValue(0), { stiffness: 220, damping: 18 });
@@ -35,7 +37,7 @@ export function MagneticButton({ href, children, variant = "solid", className = 
       : "border border-white/40 text-white hover:bg-white/10";
 
   return (
-    <motion.div style={{ x, y }} className="inline-block">
+    <motion.div style={{ x, y }} className={`inline-block ${wrapperClassName}`}>
       <Link
         ref={ref}
         href={href}

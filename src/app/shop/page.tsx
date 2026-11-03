@@ -403,54 +403,77 @@ function ShopContent() {
         </main>
       </div>
 
-      {/* Mobile Filters Modal Drawer */}
+      {/* Mobile filters: bottom sheet with thumb-sized chips */}
       {isMobileFilterOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex justify-end">
-          <div className="bg-ivory w-full max-w-xs h-full p-6 flex flex-col justify-between overflow-y-auto">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
-                <span className="font-serif font-bold text-lg text-espresso">Filters</span>
-                <button onClick={() => setIsMobileFilterOpen(false)} aria-label="Close filters">
-                  <X className="w-5 h-5 text-burgundy" />
-                </button>
-              </div>
+        <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Filters">
+          <button
+            type="button"
+            aria-label="Close filters"
+            onClick={() => setIsMobileFilterOpen(false)}
+            className="absolute inset-0 bg-espresso/60 animate-[fadeIn_0.2s_ease-out]"
+          />
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[88dvh] flex-col rounded-t-3xl bg-ivory shadow-2xl animate-[sheetUp_0.3s_cubic-bezier(0.22,1,0.36,1)]">
+            <div className="flex items-center justify-between border-b border-burgundy/15 px-5 py-3">
+              <span className="font-serif text-lg font-bold text-espresso">Filters</span>
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                aria-label="Close filters"
+                className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-burgundy hover:bg-burgundy/5"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-              {/* Category options */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-burgundy uppercase">Categories</label>
-                <div className="space-y-1">
-                  <button
-                    onClick={() => {
-                      setSelectedCategory("All");
-                      setIsMobileFilterOpen(false);
-                    }}
-                    className={`block w-full text-left py-1 text-xs ${
-                      selectedCategory === "All" ? "font-bold text-crimson" : "text-espresso"
-                    }`}
-                  >
-                    All Menswear
-                  </button>
-                  {ALL_CATEGORIES.map((cat) => (
+            <div className="flex-1 space-y-6 overflow-y-auto overscroll-contain px-5 py-5">
+              {/* Category */}
+              <fieldset className="space-y-2.5">
+                <legend className="text-xs font-bold uppercase tracking-wider text-burgundy">Category</legend>
+                <div className="flex flex-wrap gap-2">
+                  {(["All", ...ALL_CATEGORIES] as const).map((cat) => (
                     <button
                       key={cat}
-                      onClick={() => {
-                        setSelectedCategory(cat);
-                        setIsMobileFilterOpen(false);
-                      }}
-                      className={`block w-full text-left py-1 text-xs ${
-                        selectedCategory === cat ? "font-bold text-crimson" : "text-espresso"
+                      type="button"
+                      aria-pressed={selectedCategory === cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`min-h-[40px] rounded-full border px-4 text-xs font-semibold transition-colors ${
+                        selectedCategory === cat
+                          ? "border-burgundy bg-burgundy text-gold"
+                          : "border-burgundy/20 bg-white text-espresso"
                       }`}
                     >
-                      {cat}
+                      {cat === "All" ? "All" : cat}
                     </button>
                   ))}
                 </div>
-              </div>
+              </fieldset>
 
-              {/* Price slider */}
+              {/* Size */}
+              <fieldset className="space-y-2.5">
+                <legend className="text-xs font-bold uppercase tracking-wider text-burgundy">Size</legend>
+                <div className="grid grid-cols-5 gap-2">
+                  {["All", ...ALL_SIZES].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      aria-pressed={selectedSize === size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`min-h-[44px] rounded-xl border text-xs font-bold transition-colors ${
+                        selectedSize === size
+                          ? "border-burgundy bg-burgundy text-gold"
+                          : "border-burgundy/20 bg-white text-espresso"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              {/* Price */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-bold text-burgundy">
-                  <span>Max Price:</span>
+                  <span className="uppercase tracking-wider">Max price</span>
                   <span>₹{effectiveMax.toLocaleString("en-IN")}</span>
                 </div>
                 <input
@@ -461,23 +484,36 @@ function ShopContent() {
                   value={effectiveMax}
                   aria-label="Maximum price"
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full accent-burgundy"
+                  className="h-8 w-full accent-burgundy"
                 />
               </div>
+
+              {/* In stock */}
+              <label className="flex min-h-[48px] cursor-pointer items-center justify-between rounded-2xl border border-burgundy/15 bg-white px-4 text-sm font-medium text-espresso">
+                <span>In stock only</span>
+                <input
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={(e) => setInStockOnly(e.target.checked)}
+                  className="h-5 w-5 accent-burgundy"
+                />
+              </label>
             </div>
 
-            <div className="pt-6 border-t border-burgundy/15 space-y-2">
+            <div className="grid grid-cols-[auto_1fr] gap-2 border-t border-burgundy/15 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
               <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full py-3 bg-burgundy text-ivory text-xs font-bold uppercase rounded"
+                type="button"
+                onClick={resetFilters}
+                className="min-h-[48px] rounded-full border border-burgundy/25 px-5 text-xs font-bold uppercase tracking-wider text-burgundy"
               >
-                Apply Filters ({filteredProducts.length})
+                Reset
               </button>
               <button
-                onClick={resetFilters}
-                className="w-full py-2 text-center text-xs text-crimson underline"
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="min-h-[48px] rounded-full bg-burgundy text-xs font-bold uppercase tracking-wider text-ivory"
               >
-                Reset All Filters
+                Show {filteredProducts.length} {filteredProducts.length === 1 ? "item" : "items"}
               </button>
             </div>
           </div>

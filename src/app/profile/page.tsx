@@ -104,26 +104,6 @@ function ProfileContent() {
         </div>
       )}
 
-      {/* If guest and not in demo mode, show atelier sign-in invitation banner */}
-      {!isAuthenticated && !isDemo && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-3xl bg-burgundy/10 border border-burgundy/20 p-5 text-espresso shadow-sm">
-          <div className="space-y-1 text-center sm:text-left">
-            <p className="text-xs font-bold uppercase tracking-wider text-burgundy flex items-center justify-center sm:justify-start gap-1.5">
-              <Sparkles className="h-4 w-4 text-gold-dark" /> Trend Street Atelier Privileges
-            </p>
-            <p className="text-xs text-espresso/80">
-              Sign in or create an account to save measurements, unlock express delivery, and sync orders across devices.
-            </p>
-          </div>
-          <Link
-            href="/login?callbackUrl=/profile"
-            className="inline-flex min-h-[42px] items-center gap-2 rounded-full bg-burgundy hover:bg-crimson px-6 text-xs font-bold uppercase tracking-wider text-gold shadow-md transition-all flex-shrink-0"
-          >
-            <LogIn className="h-4 w-4" /> Sign In / Register
-          </Link>
-        </div>
-      )}
-
       {/* Member card */}
       <header className="relative overflow-hidden rounded-3xl bg-burgundy p-5 text-ivory sm:p-8">
         <span aria-hidden className="jaali absolute inset-0 text-ivory opacity-[0.07]" />
@@ -133,7 +113,7 @@ function ProfileContent() {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="font-serif text-2xl font-bold sm:text-3xl">{user.name ? `Hi, ${user.name.split(" ")[0]}` : "Your account"}</h1>
-            <p className="mt-0.5 truncate text-xs text-ivory/70">{user.email || "Add your details once and checkout fills itself in."}</p>
+            <p className={`mt-0.5 text-xs text-ivory/70 ${user.email ? "truncate" : ""}`}>{user.email || (isAuthenticated || isDemo ? "Add your details once and checkout fills itself in." : "Sign in to track orders, save your sizes and check out faster.")}</p>
           </div>
           {isAuthenticated ? (
             <div className="flex flex-col gap-2 sm:items-end">
@@ -156,11 +136,11 @@ function ProfileContent() {
                 href="/login?callbackUrl=/profile"
                 className="min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-full bg-gold px-5 text-xs font-bold uppercase tracking-wider text-espresso hover:bg-gold-light transition-all shadow-md"
               >
-                <LogIn className="h-3.5 w-3.5" /> Sign In / Register
+                <LogIn className="h-3.5 w-3.5" /> Sign in / Create account
               </Link>
               <button
                 onClick={enterDemo}
-                className="inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-ivory/70 hover:text-gold"
+                className="inline-flex min-h-[40px] items-center justify-center gap-1 text-[11px] font-semibold text-ivory/70 hover:text-gold"
               >
                 <Sparkles className="h-3.5 w-3.5" /> Preview a demo account
               </button>

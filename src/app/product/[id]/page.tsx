@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,7 +18,6 @@ import {
   Sparkles,
   ArrowRight,
   Eye,
-  Box,
   Share2,
   Copy,
   CheckCircle2,
@@ -45,7 +44,7 @@ export default function ProductDetailPage() {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [show3DPreview, setShow3DPreview] = useState(false);
+  const [chartUnit, setChartUnit] = useState<"cm" | "in">("cm");
   const [addedAnimation, setAddedAnimation] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -56,6 +55,32 @@ export default function ProductDetailPage() {
 
   // Accordion tabs state
   const [openSection, setOpenSection] = useState<string | null>("details");
+
+  // Swipeable photo gallery (phones) kept in sync with the thumbnails (larger screens).
+  const galleryRef = useRef<HTMLDivElement>(null);
+
+  // The phone add-to-bag bar only appears once the main Add to bag button has scrolled away.
+  const mainCtaRef = useRef<HTMLDivElement>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  useEffect(() => {
+    let frame = 0;
+    const check = () => {
+      frame = 0;
+      const el = mainCtaRef.current;
+      setShowStickyBar(!!el && el.getBoundingClientRect().bottom < 0);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(check);
+    };
+    check();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [product?.id]);
 
   useEffect(() => {
     if (product) {
@@ -114,6 +139,19 @@ export default function ProductDetailPage() {
     }, 400);
   };
 
+  const onGalleryScroll = () => {
+    const el = galleryRef.current;
+    if (!el || !el.clientWidth) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== activeImageIndex) setActiveImageIndex(i);
+  };
+
+  const showImage = (i: number) => {
+    setActiveImageIndex(i);
+    const el = galleryRef.current;
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  };
+
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
   };
@@ -149,95 +187,82 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         {/* LEFT COLUMN: Media Gallery & 3D Interactive WebGL (col-span-7) */}
         <div className="lg:col-span-7 lg:sticky lg:top-24 space-y-4">
-          {/* Main Visual Display */}
-          <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-ivory-dark border border-burgundy/15 shadow-md">
-            {show3DPreview ? (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-espresso text-ivory p-8 text-center space-y-4">
-                <Box className="w-16 h-16 text-gold animate-bounce" />
-                <span className="text-xs font-bold uppercase tracking-widest text-gold">
-                  3D Interactive Streetwear Architecture
-                </span>
-                <p className="text-xs text-ivory/80 max-w-sm leading-relaxed">
-                  360-degree interactive silhouette simulation. Inspect the dropped shoulder volume, calculated drape, and pure {product.fabric} weave.
-                </p>
-                <div className="p-3 bg-burgundy/40 rounded-xl border border-gold/30 text-[11px] text-gold font-semibold">
-                  ✦ Low-Tension Warp Texture & Seam Integrity Verified
+          {/* Photos: swipe on phones, thumbnails on larger screens */}
+          <div className="relative -mx-4 sm:mx-0">
+            <div
+              ref={galleryRef}
+              onScroll={onGalleryScroll}
+              className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-ivory-dark sm:overflow-hidden sm:rounded-2xl sm:border sm:border-burgundy/15 sm:shadow-md"
+              aria-label="Product photos"
+            >
+              {product.images.map((img, idx) => (
+                <div key={img} className="relative aspect-[4/5] w-full flex-shrink-0 snap-center sm:aspect-[3/4]">
+                  <Image
+                    src={img}
+                    alt={idx === 0 ? product.name : `${product.name}, photo ${idx + 1}`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 58vw"
+                    className="object-cover object-center"
+                    priority={idx === 0}
+                  />
                 </div>
-              </div>
-            ) : (
-              <Image
-                src={product.images[activeImageIndex] || product.images[0]}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 58vw"
-                className="w-full h-full object-cover object-center transition-all duration-300"
-                priority
-              />
-            )}
+              ))}
+            </div>
 
             {/* Badges */}
-            <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+            <div className="pointer-events-none absolute left-4 top-4 z-10 flex flex-col items-start gap-2">
               {product.isNew && (
-                <span className="bg-espresso text-ivory text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 rounded shadow-sm">
-                  New Drop
-                </span>
+                <span className="rounded bg-espresso px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-ivory shadow-sm">New drop</span>
               )}
               {product.isBestSeller && (
-                <span className="bg-burgundy text-gold text-[10px] uppercase font-bold tracking-widest px-3 py-1.5 rounded shadow-sm">
-                  Signature Silhouette
-                </span>
+                <span className="rounded bg-burgundy px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-gold shadow-sm">Best seller</span>
               )}
             </div>
 
-            {/* Photography vs 3D Interactive Mode Switcher */}
-            <div className="absolute top-4 right-4 z-10 flex items-center bg-espresso/85 backdrop-blur-md rounded-full p-1 border border-gold/30 shadow-md">
-              <button
-                onClick={() => setShow3DPreview(false)}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  !show3DPreview ? "bg-burgundy text-gold shadow-xs" : "text-ivory/70 hover:text-ivory"
-                }`}
-              >
-                Photography
-              </button>
-              <button
-                onClick={() => setShow3DPreview(true)}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 ${
-                  show3DPreview ? "bg-burgundy text-gold shadow-xs" : "text-ivory/70 hover:text-ivory"
-                }`}
-              >
-                <Box className="w-3 h-3 text-gold" />
-                <span>3D View</span>
-              </button>
-            </div>
+            {product.images.length > 1 && (
+              <>
+                {/* Photo counter + dots (phones) */}
+                <span className="pointer-events-none absolute right-4 top-4 z-10 rounded-full bg-espresso/70 px-2.5 py-1 font-mono text-[11px] font-bold text-ivory backdrop-blur sm:hidden">
+                  {activeImageIndex + 1} / {product.images.length}
+                </span>
+                <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-1.5 sm:hidden" aria-hidden>
+                  {product.images.map((img, idx) => (
+                    <span
+                      key={img}
+                      className={`h-1.5 rounded-full transition-all ${idx === activeImageIndex ? "w-5 bg-white" : "w-1.5 bg-white/55"}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Thumbnail Gallery Strip */}
-          {!show3DPreview && product.images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
+          {/* Thumbnails (tablet and up) */}
+          {product.images.length > 1 && (
+            <div className="hidden grid-cols-4 gap-3 sm:grid">
               {product.images.map((img, idx) => (
                 <button
                   key={img}
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all relative ${
-                    activeImageIndex === idx
-                      ? "border-burgundy ring-2 ring-burgundy/30 shadow-sm scale-[1.02]"
-                      : "border-transparent opacity-70 hover:opacity-100"
+                  onClick={() => showImage(idx)}
+                  className={`relative aspect-[3/4] overflow-hidden rounded-xl border-2 transition-all ${
+                    activeImageIndex === idx ? "border-burgundy ring-2 ring-burgundy/30 shadow-sm" : "border-transparent opacity-70 hover:opacity-100"
                   }`}
-                  aria-label={`View garment image ${idx + 1}`}
+                  aria-label={`Show photo ${idx + 1}`}
+                  aria-current={activeImageIndex === idx}
                 >
-                  <Image src={img} alt={`${product.name} view ${idx + 1}`} fill sizes="25vw" className="w-full h-full object-cover" />
+                  <Image src={img} alt="" fill sizes="15vw" className="object-cover" />
                 </button>
               ))}
             </div>
           )}
 
           {/* Quick Textile Provenance Callout */}
-          <div className="p-4 bg-ivory rounded-xl border border-burgundy/15 flex items-center justify-between text-xs text-espresso/80">
-            <div className="flex items-center gap-2">
+          <div className="p-3.5 bg-ivory rounded-xl border border-burgundy/15 flex items-center justify-between gap-3 text-xs text-espresso/80">
+            <div className="flex min-w-0 items-center gap-2">
               <Layers className="w-4 h-4 text-burgundy flex-shrink-0" />
               <span><strong>Pure Textile:</strong> {product.fabric}</span>
             </div>
-            <span className="text-[11px] font-mono text-gold bg-espresso px-2 py-0.5 rounded font-bold">
+            <span className="flex-shrink-0 text-[11px] font-mono text-gold bg-espresso px-2 py-0.5 rounded font-bold">
               Zero Synthetics
             </span>
           </div>
@@ -286,12 +311,13 @@ export default function ProductDetailPage() {
                 </span>
               )}
               <span className="text-[11px] text-espresso/60 block w-full">
-                Price inclusive of all taxes (GST 12%) • Free delivery on orders over ₹1,999
+                Inclusive of GST • Free delivery over ₹1,999
               </span>
             </div>
           </div>
 
-          {/* VIP Atelier Offer Banner */}
+          {/* Offer banner — only when this piece alone meets the code's ₹1,999 minimum */}
+          {product.price >= 1999 && (
           <div className="p-3.5 bg-burgundy/10 rounded-xl border border-burgundy/25 flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-gold flex-shrink-0" />
@@ -303,6 +329,7 @@ export default function ProductDetailPage() {
               Save 10%
             </span>
           </div>
+          )}
 
           {/* Color Variant Picker */}
           <div className="space-y-2">
@@ -310,14 +337,14 @@ export default function ProductDetailPage() {
               <span>Color: <span className="font-semibold text-burgundy">{selectedColor || product.colors[0]?.name}</span></span>
               <span className="text-[11px] text-espresso/50 font-normal">{product.colors.length} Variants</span>
             </div>
-            <div className="flex items-center space-x-2.5">
+            <div className="flex flex-wrap items-center gap-3">
               {product.colors.map((color) => {
                 const isSelected = (selectedColor || product.colors[0]?.name) === color.name;
                 return (
                   <button
                     key={color.name}
                     onClick={() => setSelectedColor(color.name)}
-                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                    className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
                       isSelected
                         ? "border-burgundy ring-2 ring-burgundy/30 scale-110 shadow-xs"
                         : "border-black/20 hover:scale-105"
@@ -339,7 +366,7 @@ export default function ProductDetailPage() {
               <span>Please select a size.</span>
               <button
                 onClick={() => setIsSizeGuideOpen(true)}
-                className="text-burgundy flex items-center gap-1 hover:underline text-[11px] uppercase tracking-wider font-semibold"
+                className="-my-2 -mr-2 flex min-h-[44px] items-center gap-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-burgundy hover:underline"
               >
                 <Ruler className="w-3.5 h-3.5" />
                 <span>Size Chart</span>
@@ -366,110 +393,113 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Dynamic Stock Scarcity Status */}
-            <p className="text-[11px] text-espresso/60 flex items-center gap-1.5 pt-0.5">
-              <span className="w-2 h-2 rounded-full bg-green-700 animate-pulse" />
-              <span>In Stock — Ready for priority express dispatch</span>
+            <p className="text-xs text-espresso/65 flex items-center gap-1.5 pt-0.5">
+              <span className={`w-2 h-2 rounded-full ${!product.inStock ? "bg-crimson" : product.stockCount < 10 ? "bg-gold" : "bg-green-700"}`} />
+              <span>
+                {!product.inStock
+                  ? "Sold out"
+                  : product.stockCount < 10
+                    ? `Only ${product.stockCount} left — ships within 24 hours`
+                    : "In stock — ships within 24 hours"}
+              </span>
             </p>
           </div>
 
-          {/* Quantity Selector & Main Action Buttons */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center space-x-3">
-              {/* Quantity Stepper */}
-              <div className="flex items-center border border-burgundy/30 rounded-lg bg-white px-2.5 py-2.5 shadow-2xs">
+          {/* Quantity + Add to bag + Save */}
+          <div ref={mainCtaRef} className="space-y-3 pt-2">
+            <div className="flex items-stretch gap-2.5">
+              <div className="flex flex-shrink-0 items-center rounded-xl border border-burgundy/30 bg-white">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="text-espresso/70 hover:text-burgundy font-bold px-2 text-sm"
+                  disabled={quantity <= 1}
+                  className="flex h-12 w-11 items-center justify-center text-lg font-bold text-espresso/70 hover:text-burgundy disabled:opacity-30"
                   aria-label="Decrease quantity"
                 >
-                  -
+                  −
                 </button>
-                <span className="px-2 text-xs font-bold text-espresso">{quantity < 10 ? `0${quantity}` : quantity}</span>
+                <span className="w-6 text-center text-sm font-bold tabular-nums text-espresso" aria-live="polite" aria-label={`Quantity ${quantity}`}>
+                  {quantity}
+                </span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="text-espresso/70 hover:text-burgundy font-bold px-2 text-sm"
+                  onClick={() => setQuantity(Math.min(10, quantity + 1))}
+                  disabled={quantity >= 10}
+                  className="flex h-12 w-11 items-center justify-center text-lg font-bold text-espresso/70 hover:text-burgundy disabled:opacity-30"
                   aria-label="Increase quantity"
                 >
                   +
                 </button>
               </div>
 
-              {/* Primary ADD TO CART / ADD TO BAG */}
               <button
                 onClick={handleAddToCart}
                 disabled={!product.inStock}
-                className={`flex-1 py-3.5 px-6 rounded-lg text-xs font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-lg ${
-                  addedAnimation
-                    ? "bg-green-800 text-white"
-                    : "bg-burgundy hover:bg-crimson text-gold"
+                className={`flex min-h-[48px] min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 text-sm font-bold uppercase tracking-wider shadow-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:tracking-[0.15em] ${
+                  addedAnimation ? "bg-green-800 text-white" : "bg-burgundy text-gold hover:bg-crimson"
                 }`}
               >
                 {addedAnimation ? (
                   <>
-                    <Check className="w-4 h-4" /> Added to Bag
+                    <Check className="h-4 w-4" /> Added
                   </>
                 ) : (
                   <>
-                    <ShoppingBag className="w-4 h-4" /> Add to Bag — {formatPrice(product.price * quantity)}
+                    <ShoppingBag className="h-4 w-4 flex-shrink-0" />
+                    {product.inStock ? "Add to bag" : "Sold out"}
+                    <span className="hidden font-semibold normal-case tracking-normal sm:inline">· {formatPrice(product.price * quantity)}</span>
                   </>
                 )}
               </button>
 
-              {/* Secondary WISHLIST Button */}
               <button
                 onClick={() => toggleWishlist(product.id)}
-                className={`p-3.5 rounded-lg border transition-colors ${
-                  isFavorited
-                    ? "bg-crimson text-ivory border-crimson shadow-xs"
-                    : "bg-white text-espresso border-burgundy/20 hover:text-crimson"
+                className={`flex w-12 flex-shrink-0 items-center justify-center rounded-xl border transition-colors ${
+                  isFavorited ? "border-crimson bg-crimson text-ivory shadow-xs" : "border-burgundy/20 bg-white text-espresso hover:text-crimson"
                 }`}
-                aria-label="Save to Wishlist"
+                aria-label={isFavorited ? "Remove from saved" : "Save for later"}
+                aria-pressed={isFavorited}
               >
-                <Heart className={`w-5 h-5 ${isFavorited ? "fill-current" : ""}`} />
+                <Heart className={`h-5 w-5 ${isFavorited ? "fill-current" : ""}`} />
               </button>
             </div>
 
-            {/* Instant Express Checkout Link */}
-            <Link
-              href="/checkout"
-              onClick={() => addToCart(product, selectedSize || product.sizes[0], selectedColor || product.colors[0]?.name, quantity)}
-              className="w-full block text-center py-3 bg-espresso hover:bg-black text-ivory text-xs font-bold uppercase tracking-[0.18em] rounded-lg transition-colors shadow-md"
-            >
-              Instant Express Checkout
-            </Link>
+            {product.inStock && (
+              <Link
+                href="/checkout"
+                onClick={() => addToCart(product, selectedSize || product.sizes[0], selectedColor || product.colors[0]?.name, quantity)}
+                className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-espresso text-sm font-bold uppercase tracking-[0.15em] text-ivory shadow-md transition-colors hover:bg-black"
+              >
+                Buy it now
+              </Link>
+            )}
           </div>
 
-          {/* Social Share & Copy Link */}
-          <div className="flex items-center justify-between pt-2 pb-2 text-xs text-espresso/70 border-y border-burgundy/10">
-            <span className="font-semibold">Share Silhouette:</span>
-            <div className="flex items-center gap-2">
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Check out ${product.name} on Trend Street: ${SITE_URL}/product/${product.id}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1.5 bg-ivory rounded-md border border-burgundy/15 hover:text-burgundy text-[11px] font-bold"
-                aria-label="Share on WhatsApp"
-              >
-                WhatsApp
-              </a>
-              <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Elevated streetwear: ${product.name} from Trend Street`)}&url=${encodeURIComponent(`${SITE_URL}/product/${product.id}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1.5 bg-ivory rounded-md border border-burgundy/15 hover:text-burgundy text-[11px] font-bold"
-                aria-label="Share on Twitter"
-              >
-                X / Twitter
-              </a>
-              <button
-                onClick={handleShareCopy}
-                className="p-1.5 bg-ivory rounded-md border border-burgundy/15 hover:text-burgundy text-[11px] font-bold flex items-center gap-1"
-                aria-label="Copy link"
-              >
-                {copiedLink ? <Check className="w-3.5 h-3.5 text-green-700" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedLink ? "Copied" : "Copy Link"}</span>
-              </button>
-            </div>
+          {/* Share */}
+          <div className="flex flex-wrap items-center gap-2 border-y border-burgundy/10 py-3 text-xs text-espresso/70">
+            <span className="mr-auto font-semibold">Share</span>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Check out ${product.name} on Trend Street: ${SITE_URL}/product/${product.id}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[40px] items-center rounded-lg border border-burgundy/15 bg-ivory px-3 text-xs font-bold hover:text-burgundy"
+            >
+              WhatsApp
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${product.name} from Trend Street`)}&url=${encodeURIComponent(`${SITE_URL}/product/${product.id}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[40px] items-center rounded-lg border border-burgundy/15 bg-ivory px-3 text-xs font-bold hover:text-burgundy"
+              aria-label="Share on X"
+            >
+              X
+            </a>
+            <button
+              onClick={handleShareCopy}
+              className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-burgundy/15 bg-ivory px-3 text-xs font-bold hover:text-burgundy"
+            >
+              {copiedLink ? <Check className="h-3.5 w-3.5 text-green-700" /> : <Copy className="h-3.5 w-3.5" />}
+              {copiedLink ? "Copied" : "Copy link"}
+            </button>
           </div>
 
           {/* Delivery & Postal Code Checker */}
@@ -479,24 +509,27 @@ export default function ProductDetailPage() {
                 <MapPin className="w-4 h-4 text-burgundy" />
                 <span>Delivery & Shipping Estimate</span>
               </div>
-              <span className="text-[11px] text-espresso/50 font-normal">Global Courier</span>
+              <span className="text-[11px] text-espresso/50 font-normal">Across India</span>
             </div>
 
             <form onSubmit={handleCheckDelivery} className="flex gap-2">
               <input
                 type="text"
-                placeholder="Enter Postal / Pincode"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                aria-label="PIN code"
+                placeholder="6-digit PIN code"
                 value={pincode}
-                onChange={(e) => setPincode(e.target.value)}
-                maxLength={8}
-                className="flex-1 px-3 py-2 text-xs border border-burgundy/20 rounded-md focus:outline-none focus:border-burgundy bg-ivory"
+                onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                maxLength={6}
+                className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-burgundy/20 bg-ivory px-3 text-sm focus:border-burgundy focus:outline-none"
               />
               <button
                 type="submit"
-                disabled={isCheckingPincode || !pincode.trim()}
-                className="px-4 py-2 bg-espresso hover:bg-black text-ivory text-xs font-bold uppercase tracking-wider rounded-md transition-colors disabled:opacity-50"
+                disabled={isCheckingPincode || pincode.length !== 6}
+                className="min-h-[44px] rounded-lg bg-espresso px-4 text-xs font-bold uppercase tracking-wider text-ivory transition-colors hover:bg-black disabled:opacity-50"
               >
-                {isCheckingPincode ? "Checking..." : "CHECK"}
+                {isCheckingPincode ? "Checking…" : "Check"}
               </button>
             </form>
 
@@ -538,12 +571,12 @@ export default function ProductDetailPage() {
           {/* Expandable Accordion Tabs (Details, Fabric, Care) */}
           <div className="pt-2 divide-y divide-burgundy/15 border-t border-burgundy/15">
             {/* Accordion 1: Details & Construction */}
-            <div className="py-3">
+            <div className="py-1">
               <button
                 onClick={() => toggleSection("details")}
-                className="w-full flex items-center justify-between text-xs font-bold uppercase tracking-wider text-espresso text-left"
+                className="w-full min-h-[48px] flex items-center justify-between gap-3 text-xs font-bold uppercase tracking-wider text-espresso text-left"
               >
-                <span>Garment Architecture & Construction</span>
+                <span>Details & fit</span>
                 {openSection === "details" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               {openSection === "details" && (
@@ -556,12 +589,12 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Accordion 2: Fabric & Mill Provenance */}
-            <div className="py-3">
+            <div className="py-1">
               <button
                 onClick={() => toggleSection("fabric")}
-                className="w-full flex items-center justify-between text-xs font-bold uppercase tracking-wider text-espresso text-left"
+                className="w-full min-h-[48px] flex items-center justify-between gap-3 text-xs font-bold uppercase tracking-wider text-espresso text-left"
               >
-                <span>Textile & Loom Provenance</span>
+                <span>Fabric & origin</span>
                 {openSection === "fabric" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               {openSection === "fabric" && (
@@ -575,12 +608,12 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Accordion 3: Garment Care */}
-            <div className="py-3">
+            <div className="py-1">
               <button
                 onClick={() => toggleSection("care")}
-                className="w-full flex items-center justify-between text-xs font-bold uppercase tracking-wider text-espresso text-left"
+                className="w-full min-h-[48px] flex items-center justify-between gap-3 text-xs font-bold uppercase tracking-wider text-espresso text-left"
               >
-                <span>Care & Longevity Protocol</span>
+                <span>Care</span>
                 {openSection === "care" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               {openSection === "care" && (
@@ -595,28 +628,39 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* 3. MOBILE STICKY BOTTOM ACTION BAR (Appears on small screens for 1-tap add to bag) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-burgundy/20 px-4 py-3 flex items-center justify-between gap-3 shadow-2xl">
-        <div className="flex items-center gap-2.5 overflow-hidden">
+      {/* 3. PHONE ADD-TO-BAG BAR — slides up once the main button has scrolled out of view */}
+      <div
+        className={`md:hidden fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-burgundy/20 bg-white/95 px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-2xl backdrop-blur-md transition-transform duration-300 ${
+          showStickyBar ? "translate-y-0" : "pointer-events-none translate-y-full"
+        }`}
+        aria-hidden={!showStickyBar}
+      >
+        <div className="flex min-w-0 items-center gap-2.5">
           <Image
-            src={product.images[0]}
-            alt={product.name}
+            src={product.images[activeImageIndex] || product.images[0]}
+            alt=""
             width={40}
             height={48}
-            className="w-10 h-12 object-cover rounded-md flex-shrink-0 border border-burgundy/15"
+            className="h-12 w-10 flex-shrink-0 rounded-md border border-burgundy/15 object-cover"
           />
-          <div className="truncate">
-            <span className="block text-xs font-bold text-espresso truncate">{product.name}</span>
-            <span className="text-xs font-serif font-bold text-burgundy">{formatPrice(product.price)}</span>
+          <div className="min-w-0">
+            <span className="block truncate text-xs font-bold text-espresso">{product.name}</span>
+            <span className="text-xs text-espresso/60">
+              <strong className="font-serif text-burgundy">{formatPrice(product.price)}</strong> · Size {selectedSize || product.sizes[0]}
+            </span>
           </div>
         </div>
 
         <button
           onClick={handleAddToCart}
-          className="py-2.5 px-5 bg-burgundy hover:bg-crimson text-gold text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center gap-1.5 shadow-md flex-shrink-0"
+          disabled={!product.inStock}
+          tabIndex={showStickyBar ? 0 : -1}
+          className={`flex min-h-[44px] flex-shrink-0 items-center gap-1.5 rounded-xl px-4 text-xs font-bold uppercase tracking-wider shadow-md transition-colors disabled:opacity-50 ${
+            addedAnimation ? "bg-green-800 text-white" : "bg-burgundy text-gold hover:bg-crimson"
+          }`}
         >
-          <ShoppingBag className="w-3.5 h-3.5" />
-          <span>{addedAnimation ? "Added" : "Add to Bag"}</span>
+          {addedAnimation ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
+          <span>{addedAnimation ? "Added" : product.inStock ? "Add to bag" : "Sold out"}</span>
         </button>
       </div>
 
@@ -706,130 +750,103 @@ export default function ProductDetailPage() {
         )}
       </section>
 
-      {/* 6. SIZE CHART MODAL */}
+      {/* 6. SIZE CHART — bottom sheet on phones, centred dialog on larger screens */}
       {isSizeGuideOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/70 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-ivory rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-burgundy/20 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-burgundy/15 pb-4">
-              <div className="flex items-center space-x-2">
-                <Ruler className="w-5 h-5 text-burgundy" />
-                <h3 className="font-serif text-xl font-bold text-espresso">
-                  {product.category} Dimension Guide
+        <div
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-espresso/60 backdrop-blur-[2px] sm:items-center sm:p-4"
+          onClick={(e) => e.target === e.currentTarget && setIsSizeGuideOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="size-guide-title"
+            className="max-h-[88dvh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-t-3xl border border-burgundy/20 bg-ivory px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl animate-[sheetUp_.28s_cubic-bezier(.22,1,.36,1)] sm:rounded-2xl sm:p-8"
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-burgundy/15 pb-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <Ruler className="h-5 w-5 flex-shrink-0 text-burgundy" />
+                <h3 id="size-guide-title" className="truncate font-serif text-lg font-bold text-espresso sm:text-xl">
+                  {product.category} size guide
                 </h3>
               </div>
               <button
                 onClick={() => setIsSizeGuideOpen(false)}
-                className="text-espresso/60 hover:text-burgundy text-lg font-bold"
-                aria-label="Close fit guide"
+                className="-mr-2 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-espresso/60 hover:bg-burgundy/5 hover:text-burgundy"
+                aria-label="Close size guide"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-espresso/80 leading-relaxed">
-              Trend Street garments are engineered with calculated drape and dropped proportions. Choose your standard size for the intended streetwear runway volume, or size down one unit for a closer fit.
-            </p>
-
-            <div className="overflow-x-auto">
-              {product.category === "Jeans" ? (
-                <table className="w-full text-xs text-left border-collapse">
-                  <thead>
-                    <tr className="bg-burgundy text-gold">
-                      <th className="p-2.5">Waist Size</th>
-                      <th className="p-2.5">Waist (in / cm)</th>
-                      <th className="p-2.5">Inseam (in / cm)</th>
-                      <th className="p-2.5">Thigh Width</th>
-                      <th className="p-2.5">Leg Opening / Flare</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-burgundy/15 bg-white">
-                    <tr>
-                      <td className="p-2.5 font-bold">30</td>
-                      <td className="p-2.5">30 in / 76 cm</td>
-                      <td className="p-2.5">32 in / 81 cm</td>
-                      <td className="p-2.5">24 in / 61 cm</td>
-                      <td className="p-2.5">18 in / 46 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">32</td>
-                      <td className="p-2.5">32 in / 81 cm</td>
-                      <td className="p-2.5">32 in / 81 cm</td>
-                      <td className="p-2.5">25 in / 64 cm</td>
-                      <td className="p-2.5">19 in / 48 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">34</td>
-                      <td className="p-2.5">34 in / 86 cm</td>
-                      <td className="p-2.5">34 in / 86 cm</td>
-                      <td className="p-2.5">26 in / 66 cm</td>
-                      <td className="p-2.5">20 in / 51 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">36</td>
-                      <td className="p-2.5">36 in / 91 cm</td>
-                      <td className="p-2.5">34 in / 86 cm</td>
-                      <td className="p-2.5">27 in / 69 cm</td>
-                      <td className="p-2.5">21 in / 53 cm</td>
-                    </tr>
-                  </tbody>
-                </table>
-              ) : (
-                <table className="w-full text-xs text-left border-collapse">
-                  <thead>
-                    <tr className="bg-burgundy text-gold">
-                      <th className="p-2.5">Size</th>
-                      <th className="p-2.5">Chest (in / cm)</th>
-                      <th className="p-2.5">Length (in / cm)</th>
-                      <th className="p-2.5">Shoulder Drop</th>
-                      <th className="p-2.5">Sleeve</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-burgundy/15 bg-white">
-                    <tr>
-                      <td className="p-2.5 font-bold">S</td>
-                      <td className="p-2.5">42 in / 107 cm</td>
-                      <td className="p-2.5">27 in / 68 cm</td>
-                      <td className="p-2.5">+8 cm drop</td>
-                      <td className="p-2.5">33 in / 84 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">M</td>
-                      <td className="p-2.5">45 in / 114 cm</td>
-                      <td className="p-2.5">28 in / 71 cm</td>
-                      <td className="p-2.5">+10 cm drop</td>
-                      <td className="p-2.5">34 in / 86 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">L</td>
-                      <td className="p-2.5">48 in / 122 cm</td>
-                      <td className="p-2.5">29 in / 74 cm</td>
-                      <td className="p-2.5">+12 cm drop</td>
-                      <td className="p-2.5">35 in / 89 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">XL</td>
-                      <td className="p-2.5">51 in / 130 cm</td>
-                      <td className="p-2.5">30 in / 76 cm</td>
-                      <td className="p-2.5">+14 cm drop</td>
-                      <td className="p-2.5">36 in / 91 cm</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold">XXL</td>
-                      <td className="p-2.5">54 in / 137 cm</td>
-                      <td className="p-2.5">31 in / 79 cm</td>
-                      <td className="p-2.5">+16 cm drop</td>
-                      <td className="p-2.5">37 in / 94 cm</td>
-                    </tr>
-                  </tbody>
-                </table>
-              )}
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs leading-relaxed text-espresso/75">
+                Garment measurements. Take your usual size for the intended loose fit, or one size down for closer.
+              </p>
+              <div className="flex flex-shrink-0 rounded-full bg-ivory-dark p-1 text-xs font-bold" role="group" aria-label="Units">
+                {(["cm", "in"] as const).map((u) => (
+                  <button
+                    key={u}
+                    onClick={() => setChartUnit(u)}
+                    aria-pressed={chartUnit === u}
+                    className={`min-h-[36px] min-w-[44px] rounded-full px-3 ${chartUnit === u ? "bg-burgundy text-gold" : "text-espresso/60"}`}
+                  >
+                    {u}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {(() => {
+              const cm = (v: number) => (chartUnit === "cm" ? `${v}` : `${Math.round((v / 2.54) * 2) / 2}`);
+              const isJeans = product.category === "Jeans";
+              const headers = isJeans ? ["Waist", "Waist", "Inseam", "Thigh", "Opening"] : ["Size", "Chest", "Length", "Shoulder drop", "Sleeve"];
+              const rows: (string | number)[][] = isJeans
+                ? [
+                    ["30", 76, 81, 61, 46],
+                    ["32", 81, 81, 64, 48],
+                    ["34", 86, 86, 66, 51],
+                    ["36", 91, 86, 69, 53],
+                  ]
+                : [
+                    ["S", 107, 68, 8, 84],
+                    ["M", 114, 71, 10, 86],
+                    ["L", 122, 74, 12, 89],
+                    ["XL", 130, 76, 14, 91],
+                    ["XXL", 137, 79, 16, 94],
+                  ];
+              return (
+                <table className="w-full border-collapse overflow-hidden rounded-xl text-left text-sm">
+                  <thead>
+                    <tr className="bg-burgundy text-gold">
+                      {headers.map((h, i) => (
+                        <th key={i} className="px-2 py-2.5 text-[11px] font-bold uppercase tracking-wide first:pl-3">
+                          {h}
+                          {i > 0 && <span className="block text-[10px] font-normal normal-case tracking-normal text-gold/70">{chartUnit}</span>}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-burgundy/15 bg-white">
+                    {rows.map((r) => (
+                      <tr key={String(r[0])} className={String(r[0]) === (selectedSize || "") ? "bg-gold/10" : undefined}>
+                        <td className="px-2 py-3 pl-3 font-bold">{r[0]}</td>
+                        {r.slice(1).map((v, k) => (
+                          <td key={k} className="px-2 py-3 tabular-nums">
+                            {!isJeans && k === 2 ? `+${cm(v as number)}` : cm(v as number)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              );
+            })()}
 
             <button
               onClick={() => setIsSizeGuideOpen(false)}
-              className="w-full py-3 bg-burgundy hover:bg-crimson text-ivory text-xs font-bold uppercase tracking-wider rounded-lg transition-colors"
+              className="min-h-[48px] w-full rounded-xl bg-burgundy text-sm font-bold uppercase tracking-wider text-ivory transition-colors hover:bg-crimson"
             >
-              Close Dimension Guide
+              Done
             </button>
           </div>
         </div>

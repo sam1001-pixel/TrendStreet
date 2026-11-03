@@ -285,7 +285,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
                 </tr>
                 <tr>
                   <td style="font-size: 13px; color: #6B6562; padding-bottom: 12px; border-bottom: 1px solid #E8DFD8;">Taxation</td>
-                  <td align="right" style="font-size: 12px; color: #6B6562; padding-bottom: 12px; border-bottom: 1px solid #E8DFD8;">Included (12% GST)</td>
+                  <td align="right" style="font-size: 12px; color: #6B6562; padding-bottom: 12px; border-bottom: 1px solid #E8DFD8;">Included (GST)</td>
                 </tr>
                 <tr>
                   <td style="font-size: 16px; font-weight: bold; color: #1A1615; padding-top: 12px;">Total Paid</td>

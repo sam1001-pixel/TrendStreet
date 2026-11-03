@@ -107,13 +107,14 @@ export function CinematicHero() {
           </motion.p>
         </AnimatePresence>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <MagneticButton href={look.href}>
+        {/* Phones: two equal-width buttons side by side; larger screens: natural width */}
+        <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+          <MagneticButton href={look.href} wrapperClassName="w-full sm:w-auto" className="w-full justify-center px-4 tracking-[0.12em] sm:w-auto sm:px-7 sm:tracking-[0.2em]">
             Shop {look.key}
-            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+            <ArrowRight className="h-4 w-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
           </MagneticButton>
-          <MagneticButton href="/shop" variant="ghost">
-            Full Collection
+          <MagneticButton href="/shop" variant="ghost" wrapperClassName="w-full sm:w-auto" className="w-full justify-center px-4 tracking-[0.12em] sm:w-auto sm:px-7 sm:tracking-[0.2em]">
+            Shop all
           </MagneticButton>
         </div>
 
@@ -134,7 +135,7 @@ export function CinematicHero() {
               className="group min-h-[44px] text-left"
             >
               <span
-                className={`block text-[10px] font-bold uppercase tracking-[0.18em] transition-colors sm:text-xs ${
+                className={`block text-[11px] font-bold uppercase tracking-[0.18em] transition-colors sm:text-xs ${
                   i === active ? "text-gold font-black" : "text-white/50 group-hover:text-white/80"
                 }`}
               >
@@ -148,7 +149,7 @@ export function CinematicHero() {
       {/* Giant kinetic wordmark */}
       <motion.h1
         style={{ y: reduce ? 0 : wordY }}
-        className="pointer-events-none absolute inset-x-0 top-[14%] sm:top-[10%] z-[5] select-none text-center font-display font-black uppercase leading-[0.8] text-white/95 text-[19vw] sm:text-[17vw]"
+        className="pointer-events-none absolute inset-x-0 top-[14%] sm:top-[10%] z-[5] select-none whitespace-nowrap px-4 text-center font-display font-black uppercase leading-[0.8] text-white/95 text-[16.5vw] sm:text-[17vw]"
         aria-label="Trend Street"
       >
         {WORD.map((ch, i) => (

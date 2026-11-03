@@ -13,10 +13,10 @@ export default function ReturnsPolicyPage() {
       {/* Back Link */}
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-burgundy hover:text-crimson transition-colors"
+        className="inline-flex min-h-[44px] items-center gap-2 text-xs font-semibold uppercase tracking-wider text-burgundy hover:text-crimson transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Return to Atelier Home</span>
+        <span>Back to home</span>
       </Link>
 
       {/* Header */}
