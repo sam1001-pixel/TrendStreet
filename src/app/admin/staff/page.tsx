@@ -362,7 +362,7 @@ export default function AdminStaffPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="arjun@trendstreet.in"
+                  placeholder="arjun@offvybe.in"
                   className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
                 />
               </div>

@@ -92,7 +92,7 @@ export function SilhouetteAccordion() {
                     <span className="text-white/30">•</span>
                     <span className="text-white/80 uppercase">Cut</span>
                   </span>
-                  <span className="flex h-8 w-8 sm:h-9 sm:w-9 lg:h-11 lg:w-11 items-center justify-center rounded-full bg-white/95 text-stone-950 shadow-md transition-all duration-300 group-hover:rotate-45 group-hover:bg-gold">
+                  <span className="flex h-8 w-8 sm:h-9 sm:w-9 lg:h-11 lg:w-11 items-center justify-center rounded-full bg-white/95 text-stone-950 shadow-md transition-all duration-300 group-hover:rotate-45 group-hover:bg-gold hover:text-white">
                     <ArrowUpRight className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
                   </span>
                 </div>

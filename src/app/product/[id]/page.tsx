@@ -25,9 +25,12 @@ import {
   Clock,
   Layers,
   ArrowLeft,
+  Play,
 } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductVideo } from "@/components/ProductVideo";
+import { ProductReviews } from "@/components/VideoReviews";
 import { formatPrice } from "@/lib/pricing";
 import { checkPincodeServiceability } from "@/lib/pincode";
 import { SITE_URL } from "@/lib/site";
@@ -160,6 +163,14 @@ export default function ProductDetailPage() {
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
+  // Gallery: cover photo, then any videos, then the rest of the photos.
+  const media: { type: "image" | "video"; url: string }[] = [
+    ...product.images.slice(0, 1).map((url) => ({ type: "image" as const, url })),
+    ...(product.videos || []).map((url) => ({ type: "video" as const, url })),
+    ...product.images.slice(1).map((url) => ({ type: "image" as const, url })),
+  ];
+  const videoCount = product.videos?.length ?? 0;
+
   // Discount calculation
   const discountPercent = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -193,18 +204,22 @@ export default function ProductDetailPage() {
               ref={galleryRef}
               onScroll={onGalleryScroll}
               className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-ivory-dark sm:overflow-hidden sm:rounded-2xl sm:border sm:border-burgundy/15 sm:shadow-md"
-              aria-label="Product photos"
+              aria-label="Product photos and videos"
             >
-              {product.images.map((img, idx) => (
-                <div key={img} className="relative aspect-[4/5] w-full flex-shrink-0 snap-center sm:aspect-[3/4]">
-                  <Image
-                    src={img}
-                    alt={idx === 0 ? product.name : `${product.name}, photo ${idx + 1}`}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 58vw"
-                    className="object-cover object-center"
-                    priority={idx === 0}
-                  />
+              {media.map((m, idx) => (
+                <div key={m.url} className="relative aspect-[4/5] w-full flex-shrink-0 snap-center sm:aspect-[3/4]">
+                  {m.type === "video" ? (
+                    <ProductVideo src={m.url} poster={product.images[0]} active={activeImageIndex === idx} label={`${product.name} video`} />
+                  ) : (
+                    <Image
+                      src={m.url}
+                      alt={idx === 0 ? product.name : `${product.name}, photo ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 58vw"
+                      className="object-cover object-center"
+                      priority={idx === 0}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -219,16 +234,27 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {product.images.length > 1 && (
+            {/* Jump to the video (phones) */}
+            {videoCount > 0 && media[activeImageIndex]?.type !== "video" && (
+              <button
+                type="button"
+                onClick={() => showImage(1)}
+                className="absolute bottom-9 left-4 z-10 flex min-h-[36px] items-center gap-1.5 rounded-full bg-black/65 px-3 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur sm:bottom-4"
+              >
+                <Play className="h-3.5 w-3.5 fill-white" /> Watch video
+              </button>
+            )}
+
+            {media.length > 1 && (
               <>
                 {/* Photo counter + dots (phones) */}
                 <span className="pointer-events-none absolute right-4 top-4 z-10 rounded-full bg-espresso/70 px-2.5 py-1 font-mono text-[11px] font-bold text-ivory backdrop-blur sm:hidden">
-                  {activeImageIndex + 1} / {product.images.length}
+                  {activeImageIndex + 1} / {media.length}
                 </span>
                 <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-1.5 sm:hidden" aria-hidden>
-                  {product.images.map((img, idx) => (
+                  {media.map((m, idx) => (
                     <span
-                      key={img}
+                      key={m.url}
                       className={`h-1.5 rounded-full transition-all ${idx === activeImageIndex ? "w-5 bg-white" : "w-1.5 bg-white/55"}`}
                     />
                   ))}
@@ -238,19 +264,28 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Thumbnails (tablet and up) */}
-          {product.images.length > 1 && (
-            <div className="hidden grid-cols-4 gap-3 sm:grid">
-              {product.images.map((img, idx) => (
+          {media.length > 1 && (
+            <div className="hidden grid-cols-5 gap-3 sm:grid">
+              {media.map((m, idx) => (
                 <button
-                  key={img}
+                  key={m.url}
                   onClick={() => showImage(idx)}
                   className={`relative aspect-[3/4] overflow-hidden rounded-xl border-2 transition-all ${
                     activeImageIndex === idx ? "border-burgundy ring-2 ring-burgundy/30 shadow-sm" : "border-transparent opacity-70 hover:opacity-100"
                   }`}
-                  aria-label={`Show photo ${idx + 1}`}
+                  aria-label={m.type === "video" ? "Play video" : `Show photo ${idx + 1}`}
                   aria-current={activeImageIndex === idx}
                 >
-                  <Image src={img} alt="" fill sizes="15vw" className="object-cover" />
+                  {m.type === "video" ? (
+                    <>
+                      <video src={m.url} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/25">
+                        <Play className="h-6 w-6 fill-white text-white" />
+                      </span>
+                    </>
+                  ) : (
+                    <Image src={m.url} alt="" fill sizes="15vw" className="object-cover" />
+                  )}
                 </button>
               ))}
             </div>
@@ -280,11 +315,11 @@ export default function ProductDetailPage() {
                 {product.category}
               </Link>
               {product.reviewsCount > 0 ? (
-                <div className="flex items-center space-x-1.5 bg-ivory px-2.5 py-1 rounded-full border border-burgundy/15">
+                <a href="#reviews" className="flex min-h-[32px] items-center space-x-1.5 bg-ivory px-2.5 py-1 rounded-full border border-burgundy/15">
                   <Star className="w-3.5 h-3.5 fill-gold text-gold" />
-                  <span className="font-bold text-espresso text-xs">{product.rating}</span>
-                  <span className="text-espresso/50 text-[11px]">({product.reviewsCount} reviews)</span>
-                </div>
+                  <span className="font-bold text-espresso text-xs">{product.rating.toFixed(1)}</span>
+                  <span className="text-espresso/50 text-[11px] underline">({product.reviewsCount} reviews)</span>
+                </a>
               ) : (
                 <span className="rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-gold-dark">New drop</span>
               )}
@@ -477,7 +512,7 @@ export default function ProductDetailPage() {
           <div className="flex flex-wrap items-center gap-2 border-y border-burgundy/10 py-3 text-xs text-espresso/70">
             <span className="mr-auto font-semibold">Share</span>
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(`Check out ${product.name} on Trend Street: ${SITE_URL}/product/${product.id}`)}`}
+              href={`https://wa.me/?text=${encodeURIComponent(`Check out ${product.name} on OFFVYBE: ${SITE_URL}/product/${product.id}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[40px] items-center rounded-lg border border-burgundy/15 bg-ivory px-3 text-xs font-bold hover:text-burgundy"
@@ -485,7 +520,7 @@ export default function ProductDetailPage() {
               WhatsApp
             </a>
             <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${product.name} from Trend Street`)}&url=${encodeURIComponent(`${SITE_URL}/product/${product.id}`)}`}
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${product.name} from OFFVYBE`)}&url=${encodeURIComponent(`${SITE_URL}/product/${product.id}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[40px] items-center rounded-lg border border-burgundy/15 bg-ivory px-3 text-xs font-bold hover:text-burgundy"
@@ -637,7 +672,7 @@ export default function ProductDetailPage() {
       >
         <div className="flex min-w-0 items-center gap-2.5">
           <Image
-            src={product.images[activeImageIndex] || product.images[0]}
+            src={media[activeImageIndex]?.type === "image" ? media[activeImageIndex].url : product.images[0]}
             alt=""
             width={40}
             height={48}
@@ -693,62 +728,10 @@ export default function ProductDetailPage() {
         </section>
       )}
 
-      {/* 5. VERIFIED CUSTOMER REVIEWS & FIT RATING */}
-      <section className="bg-white rounded-2xl border border-burgundy/15 p-6 sm:p-10 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-burgundy/10 gap-4">
-          <div>
-            <h3 className="font-serif text-xl sm:text-2xl font-bold text-espresso">
-              Client Feedback & Fit Verification
-            </h3>
-            <p className="text-xs text-espresso/60 mt-0.5">
-              Certified reviews from verified Trend Street collectors.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <span className="block font-serif text-2xl font-bold text-espresso">
-                {product.reviewsCount > 0 ? `${product.rating} / 5.0` : "No reviews yet"}
-              </span>
-            </div>
-            <div className="p-3 bg-burgundy/10 text-burgundy rounded-xl">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-          </div>
-        </div>
-
-        {/* Existing Reviews */}
-        {product.reviews && product.reviews.length > 0 ? (
-          <div className="space-y-4">
-            {product.reviews.map((rev) => (
-              <div key={rev.id} className="p-4 bg-ivory rounded-xl border border-burgundy/10 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-espresso">{rev.author}</span>
-                    {rev.verified && (
-                      <span className="text-[10px] text-green-800 bg-green-100 px-2 py-0.5 rounded font-semibold">
-                        Verified Buyer
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[11px] text-espresso/50">{rev.date}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {[...Array(rev.rating)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-gold text-gold" />
-                  ))}
-                </div>
-                <h4 className="font-semibold text-xs text-espresso">{rev.title}</h4>
-                <p className="text-xs text-espresso/75 leading-relaxed">{rev.comment}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-xs text-espresso/60 italic">
-            This limited silhouette drop has just been released. Be the first to submit client feedback following delivery.
-          </p>
-        )}
-      </section>
+      {/* 5. REVIEWS (video + written), managed in Admin → Reviews */}
+      <div id="reviews" className="scroll-mt-24">
+        <ProductReviews reviews={product.reviews || []} rating={product.rating} productName={product.name} />
+      </div>
 
       {/* 6. SIZE CHART — bottom sheet on phones, centred dialog on larger screens */}
       {isSizeGuideOpen && (

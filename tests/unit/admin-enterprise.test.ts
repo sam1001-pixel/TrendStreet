@@ -35,8 +35,8 @@ test("CSV Security - escapes formula injection triggers (=, +, -, @, \\t, \\r)",
   assert.equal(escapeCsvCell("   =1+1"), "\"\'   =1+1\"");
 
   // Non-dangerous strings remain normal (without leading single-quote)
-  assert.equal(escapeCsvCell("Trend Street Oversized Hoodie"), "\"Trend Street Oversized Hoodie\"");
-  assert.equal(escapeCsvCell("admin@trendstreet.in"), "\"admin@trendstreet.in\"");
+  assert.equal(escapeCsvCell("OFFVYBE Oversized Hoodie"), "\"OFFVYBE Oversized Hoodie\"");
+  assert.equal(escapeCsvCell("admin@offvybe.in"), "\"admin@offvybe.in\"");
   assert.equal(escapeCsvCell(249900), "\"249900\"");
 
   // Null and undefined
@@ -66,7 +66,7 @@ test("CSV Security - generateSafeCsv formats rows and headers with formula prote
 
 test("CSV Security - getSafeExportFilename produces sanitized timestamped filename", () => {
   const filename = getSafeExportFilename("Patron Ledger & Spend");
-  assert.ok(filename.startsWith("trendstreet-patron-ledger---spend-"));
+  assert.ok(filename.startsWith("offvybe-patron-ledger---spend-"));
   assert.ok(filename.endsWith(".csv"));
 });
 
@@ -303,7 +303,7 @@ test("Stock Ledger - records balanceBefore and balanceAfter accurately on positi
     changeQty: 10,
     reason: "RESTOCK",
     notes: "Supplier consignment lot #4092",
-    performedBy: "admin@trendstreet.in",
+    performedBy: "admin@offvybe.in",
   });
 
   assert.equal(result.inventory.quantity, 25);
@@ -311,7 +311,7 @@ test("Stock Ledger - records balanceBefore and balanceAfter accurately on positi
   assert.equal(createdMovement.balanceAfter, 25);
   assert.equal(createdMovement.changeQty, 10);
   assert.equal(createdMovement.reason, "RESTOCK");
-  assert.equal(createdMovement.performedBy, "admin@trendstreet.in");
+  assert.equal(createdMovement.performedBy, "admin@offvybe.in");
 });
 
 // ---------------------------------------------------------------------------

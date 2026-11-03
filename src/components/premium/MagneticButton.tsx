@@ -33,7 +33,7 @@ export function MagneticButton({ href, children, variant = "solid", className = 
 
   const styles =
     variant === "solid"
-      ? "bg-white text-stone-950 hover:bg-gold"
+      ? "bg-white text-stone-950 hover:bg-gold hover:text-white"
       : "border border-white/40 text-white hover:bg-white/10";
 
   return (

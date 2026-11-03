@@ -9,7 +9,7 @@ import {
 } from "../../src/lib/email";
 
 test("maskEmailForLogs - redacts email addresses to prevent PII exposure in logs", () => {
-  assert.equal(maskEmailForLogs("aarav.sharma@trendstreet.in"), "a***a@trendstreet.in");
+  assert.equal(maskEmailForLogs("aarav.sharma@offvybe.in"), "a***a@offvybe.in");
   assert.equal(maskEmailForLogs("sujal@domain.com"), "s***l@domain.com");
   assert.equal(maskEmailForLogs("ab@xyz.com"), "a***@xyz.com");
   assert.equal(maskEmailForLogs("invalid-email"), "***@***");
@@ -22,19 +22,19 @@ test("getVerifiedSenderAddress - resolves configured sender with fallback", () =
 
   try {
     // 1. Explicit RESEND_FROM_EMAIL
-    process.env.RESEND_FROM_EMAIL = "Trend Street Atelier <orders@trendstreet.in>";
-    process.env.EMAIL_FROM = "fallback@trendstreet.in";
-    assert.equal(getVerifiedSenderAddress(), "Trend Street Atelier <orders@trendstreet.in>");
+    process.env.RESEND_FROM_EMAIL = "OFFVYBE <orders@offvybe.in>";
+    process.env.EMAIL_FROM = "fallback@offvybe.in";
+    assert.equal(getVerifiedSenderAddress(), "OFFVYBE <orders@offvybe.in>");
 
     // 2. EMAIL_FROM fallback
     delete process.env.RESEND_FROM_EMAIL;
-    process.env.EMAIL_FROM = "orders@trendstreet.in";
-    assert.equal(getVerifiedSenderAddress(), "orders@trendstreet.in");
+    process.env.EMAIL_FROM = "orders@offvybe.in";
+    assert.equal(getVerifiedSenderAddress(), "orders@offvybe.in");
 
     // 3. Default fallback
     delete process.env.RESEND_FROM_EMAIL;
     delete process.env.EMAIL_FROM;
-    assert.equal(getVerifiedSenderAddress(), "Trend Street <onboarding@resend.dev>");
+    assert.equal(getVerifiedSenderAddress(), "OFFVYBE <onboarding@resend.dev>");
   } finally {
     process.env.RESEND_FROM_EMAIL = origResendFrom;
     process.env.EMAIL_FROM = origEmailFrom;
@@ -45,7 +45,7 @@ test("generateOrderConfirmationHtml - builds luxury email markup with order deta
   const sampleData: OrderEmailData = {
     orderNumber: "TS-2026-9901",
     customerName: "Aarav Sharma",
-    customerEmail: "aarav.sharma@trendstreet.in",
+    customerEmail: "aarav.sharma@offvybe.in",
     items: [
       {
         productName: "The Mayfair Velvet Flight Jacket",
@@ -76,7 +76,7 @@ test("generateOrderConfirmationHtml - builds luxury email markup with order deta
   const html = generateOrderConfirmationHtml(sampleData);
 
   // Assertions for luxury branding and order context
-  assert.match(html, /TREND STREET/);
+  assert.match(html, /OFFVYBE/);
   assert.match(html, /MUMBAI ATELIER/);
   assert.match(html, /TS-2026-9901/);
   assert.match(html, /The Mayfair Velvet Flight Jacket/);

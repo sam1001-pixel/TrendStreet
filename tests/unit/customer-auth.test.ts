@@ -33,7 +33,7 @@ test("customer-auth - hashes password and verifies correctly", () => {
 test("customer-auth - signs and verifies valid customer session tokens", async () => {
   const customer = {
     id: "cust_test_123",
-    email: "shopper@trendstreet.in",
+    email: "shopper@offvybe.in",
     name: "Kabir Malhotra",
   };
 
@@ -52,7 +52,7 @@ test("customer-auth - signs and verifies valid customer session tokens", async (
 test("customer-auth - rejects tampered customer session tokens", async () => {
   const customer = {
     id: "cust_test_456",
-    email: "victim@trendstreet.in",
+    email: "victim@offvybe.in",
     name: "Victim User",
   };
 
@@ -103,9 +103,9 @@ test("customer-auth - account lookups fail loudly without a database instead of 
   const saved = process.env.DATABASE_URL;
   delete process.env.DATABASE_URL;
   try {
-    await assert.rejects(() => findCustomerByEmail("customer@trendstreet.in"));
+    await assert.rejects(() => findCustomerByEmail("customer@offvybe.in"));
     await assert.rejects(() =>
-      createCustomerUser({ email: "x@trendstreet.test", name: "X", password: "CustomPassword2026!" })
+      createCustomerUser({ email: "x@offvybe.test", name: "X", password: "CustomPassword2026!" })
     );
   } finally {
     if (saved !== undefined) process.env.DATABASE_URL = saved;

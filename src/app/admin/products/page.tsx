@@ -15,24 +15,23 @@ import {
   RotateCcw,
   AlertTriangle,
   Package,
+  Eye,
+  EyeOff,
+  Film,
 } from "lucide-react";
 import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { Product, ProductCategory } from "@/types/store";
-import { ImageGalleryUpload } from "@/components/admin/ImageGalleryUpload";
+import { MediaUploader } from "@/components/admin/MediaUploader";
 
-const CATEGORIES: ProductCategory[] = [
-  "Oversized",
-  "Boxy Fit",
-  "Jackets",
-];
+const CATEGORIES: ProductCategory[] = ["Oversized", "Jeans", "Boxy Fit", "Jackets"];
 
 export default function AdminProductsPage() {
   const { products, addProduct, updateProduct, deleteProduct, loading, error, notice, clearError } = useAdminData({ products: true });
 
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState("All");
-  const [stockFilter, setStockFilter] = useState<"All" | "InStock" | "LowStock" | "OutOfStock">("All");
+  const [stockFilter, setStockFilter] = useState<"All" | "InStock" | "LowStock" | "OutOfStock" | "Hidden">("All");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
@@ -57,10 +56,11 @@ export default function AdminProductsPage() {
     details: "520gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders\nDouble-needle reinforced seams",
     fabric: "520gsm Japanese Loopback Terry",
     careInstructions: "Machine wash cold inside out\nAir dry flat",
-    images: ["https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop"],
+    images: [] as string[],
+    videos: [] as string[],
     sizes: "S, M, L, XL",
-    colorName: "Deep Burgundy",
-    colorHex: "#4A1216",
+    colorName: "Black",
+    colorHex: "#0A0A0A",
     featured: true,
     inStock: true,
     stockCount: 15,
@@ -74,6 +74,7 @@ export default function AdminProductsPage() {
     if (stockFilter === "InStock" && (!p.inStock || p.stockCount === 0)) return false;
     if (stockFilter === "LowStock" && (p.stockCount <= 0 || p.stockCount > 5)) return false;
     if (stockFilter === "OutOfStock" && p.inStock && p.stockCount > 0) return false;
+    if (stockFilter === "Hidden" && !p.archived) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
       return (
@@ -97,7 +98,8 @@ export default function AdminProductsPage() {
       details: newForm.details.split("\n").filter(Boolean),
       fabric: newForm.fabric,
       careInstructions: newForm.careInstructions.split("\n").filter(Boolean),
-      images: newForm.images && newForm.images.length > 0 ? newForm.images : ["https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop"],
+      images: newForm.images,
+      videos: newForm.videos,
       sizes: newForm.sizes.split(",").map((s) => s.trim()),
       colors: [{ name: newForm.colorName, hex: newForm.colorHex }],
       featured: newForm.featured,
@@ -118,10 +120,11 @@ export default function AdminProductsPage() {
       details: "520gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders",
       fabric: "520gsm Japanese Loopback Terry",
       careInstructions: "Machine wash cold inside out\nAir dry flat",
-      images: ["https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop"],
+      images: [] as string[],
+    videos: [] as string[],
       sizes: "S, M, L, XL",
-      colorName: "Deep Burgundy",
-      colorHex: "#4A1216",
+      colorName: "Black",
+      colorHex: "#0A0A0A",
       featured: true,
       inStock: true,
       stockCount: 15,
@@ -136,10 +139,12 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to remove "${name}" from the atelier catalog?`)) {
+    if (confirm(`Delete "${name}" permanently?\n\nProducts that have been ordered can't be deleted — hide them from the shop instead.`)) {
       deleteProduct(id);
     }
   };
+
+  const hiddenCount = products.filter((p) => p.archived).length;
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
@@ -169,7 +174,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Inventory Health Summary Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <button
           onClick={() => setStockFilter("All")}
           className={`p-3.5 rounded-xl border text-left transition-all ${
@@ -220,6 +225,20 @@ export default function AdminProductsPage() {
         >
           <span className="text-[10px] uppercase font-bold tracking-wider block opacity-70">Out of Stock</span>
           <span className="text-2xl font-serif font-bold block mt-0.5">{outOfStockCount}</span>
+        </button>
+
+        <button
+          onClick={() => setStockFilter("Hidden")}
+          className={`p-3.5 rounded-xl border text-left transition-all ${
+            stockFilter === "Hidden"
+              ? "bg-stone-700 text-white border-stone-700 shadow-xs"
+              : "bg-white text-stone-700 border-stone-200 hover:border-stone-400"
+          }`}
+        >
+          <span className="text-[10px] uppercase font-bold tracking-wider block opacity-70 flex items-center gap-1">
+            <EyeOff className="w-3 h-3" /> Hidden from shop
+          </span>
+          <span className="text-2xl font-serif font-bold block mt-0.5">{hiddenCount}</span>
         </button>
       </div>
 
@@ -309,6 +328,19 @@ export default function AdminProductsPage() {
                             <ExternalLink className="w-3 h-3 opacity-40 flex-shrink-0" />
                           </Link>
                           <span className="text-[11px] text-espresso/60 block truncate">{p.subtitle}</span>
+                          <span className="mt-0.5 flex flex-wrap gap-1">
+                            {p.archived && (
+                              <span className="rounded bg-stone-700 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">Hidden</span>
+                            )}
+                            {(p.videos?.length ?? 0) > 0 && (
+                              <span className="inline-flex items-center gap-0.5 rounded bg-crimson/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-crimson">
+                                <Film className="h-2.5 w-2.5" /> {p.videos!.length} video{p.videos!.length > 1 ? "s" : ""}
+                              </span>
+                            )}
+                            {p.reviewsCount > 0 && (
+                              <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-stone-700">{p.reviewsCount} reviews</span>
+                            )}
+                          </span>
                           <span className="text-[10px] text-stone-400 font-mono block">{p.fabric}</span>
                         </div>
                       </div>
@@ -407,6 +439,14 @@ export default function AdminProductsPage() {
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => updateProduct({ ...p, archived: !p.archived })}
+                        className="p-1.5 text-espresso hover:bg-stone-100 rounded-lg transition-colors"
+                        title={p.archived ? "Show in shop again" : "Hide from shop (keeps it for order history)"}
+                        aria-label={p.archived ? "Show in shop" : "Hide from shop"}
+                      >
+                        {p.archived ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                      <button
                         onClick={() => handleDelete(p.id, p.name)}
                         className="p-1.5 text-crimson hover:bg-crimson/10 rounded-lg transition-colors"
                         title="Delete Product"
@@ -428,7 +468,7 @@ export default function AdminProductsPage() {
           <div className="bg-ivory rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
               <h3 className="font-serif text-xl font-bold text-espresso">
-                Add New Garment to Trend Street Atelier
+                Add New Garment to OFFVYBE
               </h3>
               <button onClick={() => setIsAddModalOpen(false)} className="text-espresso/60 hover:text-burgundy">
                 <X className="w-5 h-5" />
@@ -519,11 +559,21 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <ImageGalleryUpload
-                    images={newForm.images}
-                    onChange={(imgs) => setNewForm({ ...newForm, images: imgs })}
-                    label="Garment Gallery Imagery"
-                    helperText="Upload photos from device gallery, choose atelier presets, or paste image URL."
+                  <MediaUploader
+                    kind="image"
+                    value={newForm.images}
+                    onChange={(imgs) => setNewForm((f) => ({ ...f, images: imgs }))}
+                    label="Photos (first one is the cover)"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <MediaUploader
+                    kind="video"
+                    max={6}
+                    value={newForm.videos}
+                    onChange={(vids) => setNewForm((f) => ({ ...f, videos: vids }))}
+                    label="Videos (optional)"
                   />
                 </div>
 
@@ -681,11 +731,21 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <ImageGalleryUpload
-                    images={editingProduct.images || []}
-                    onChange={(imgs) => setEditingProduct({ ...editingProduct, images: imgs })}
-                    label="Garment Gallery Imagery"
-                    helperText="Upload photos from device gallery, choose atelier presets, or paste image URL."
+                  <MediaUploader
+                    kind="image"
+                    value={editingProduct.images || []}
+                    onChange={(imgs) => setEditingProduct((p) => (p ? { ...p, images: imgs } : p))}
+                    label="Photos (first one is the cover)"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <MediaUploader
+                    kind="video"
+                    max={6}
+                    value={editingProduct.videos || []}
+                    onChange={(vids) => setEditingProduct((p) => (p ? { ...p, videos: vids } : p))}
+                    label="Videos (optional)"
                   />
                 </div>
 

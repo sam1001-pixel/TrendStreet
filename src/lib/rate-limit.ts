@@ -1,5 +1,5 @@
 /**
- * TREND STREET — DISTRIBUTED & IN-MEMORY HYBRID RATE LIMITER
+ * OFFVYBE — DISTRIBUTED & IN-MEMORY HYBRID RATE LIMITER
  *
  * Provides defense-in-depth protection against brute-force, scraping, and resource-exhaustion attacks.
  * Architecture:

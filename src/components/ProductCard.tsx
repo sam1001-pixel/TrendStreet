@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Eye, Star, Plus, Check } from "lucide-react";
+import { Heart, Eye, Star, Plus, Check, Play } from "lucide-react";
 import { Product } from "@/types/store";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
@@ -81,6 +81,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
           ) : product.isNew ? (
             <span className="rounded-full bg-espresso px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ivory">New</span>
           ) : null}
+          {(product.videos?.length ?? 0) > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur">
+              <Play className="h-2.5 w-2.5 fill-white" /> Video
+            </span>
+          )}
           <span className="hidden rounded-full bg-white/90 px-2 py-0.5 font-mono text-[9px] font-bold text-espresso backdrop-blur sm:inline-block">
             {fabricBadge(product)}
           </span>

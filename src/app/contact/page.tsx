@@ -52,7 +52,7 @@ export default function ContactPage() {
       <div className="space-y-3 pb-8 border-b border-burgundy/15">
         <div className="flex items-center space-x-2 text-crimson text-xs font-bold uppercase tracking-[0.2em]">
           <Sparkles className="w-4 h-4" />
-          <span>Atelier Concierge & Customer Care</span>
+          <span>Customer care</span>
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl font-bold text-espresso">
           Contact Us & Statutory Grievance Redressal
@@ -72,18 +72,18 @@ export default function ContactPage() {
               <span>Flagship Atelier & Studio</span>
             </h3>
             <p className="text-espresso/80 leading-relaxed">
-              <strong>Trend Street Luxury Apparels Private Limited</strong><br />
+              <strong>OFFVYBE</strong><br />
               Plot 42, Waterfield Road, Pali Hill,<br />
               Bandra West, Mumbai, Maharashtra 400050, India
             </p>
             <div className="pt-2 border-t border-ivory-dark space-y-2 text-espresso/75">
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-gold flex-shrink-0" />
-                <span>+91 98200 12345 (Concierge & WhatsApp)</span>
+                <span>+91 98200 12345 (Calls & WhatsApp)</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-gold flex-shrink-0" />
-                <span>concierge@trendstreet.in</span>
+                <span>concierge@offvybe.in</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Clock className="w-4 h-4 text-gold flex-shrink-0" />
@@ -104,7 +104,7 @@ export default function ContactPage() {
             <div className="p-3 bg-white rounded-xl border border-burgundy/10 space-y-1 text-espresso/85">
               <p><strong>Name:</strong> Rohan Kulkarni</p>
               <p><strong>Designation:</strong> Head of Legal & Grievance Redressal</p>
-              <p><strong>Direct Email:</strong> <a href="mailto:grievance@trendstreet.in" className="text-burgundy underline font-semibold">grievance@trendstreet.in</a></p>
+              <p><strong>Direct Email:</strong> <a href="mailto:grievance@offvybe.in" className="text-burgundy underline font-semibold">grievance@offvybe.in</a></p>
               <p><strong>Response Timeline:</strong> Acknowledged within 24 hours; resolved within 15 working days.</p>
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function ContactPage() {
                 </div>
                 <h4 className="font-serif text-lg font-bold text-green-900">Inquiry Transmitted</h4>
                 <p className="text-xs text-green-800/80 max-w-sm mx-auto">
-                  Thank you for contacting the Trend Street Concierge. A dedicated sartorial specialist has received your note and will be in touch shortly.
+                  Thanks for contacting OFFVYBE. Our support team has received your note and will be in touch shortly.
                 </p>
                 <button
                   type="button"

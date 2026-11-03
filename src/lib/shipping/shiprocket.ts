@@ -1,5 +1,5 @@
 /**
- * TREND STREET — SHIPROCKET LOGISTICS ADAPTER
+ * OFFVYBE — SHIPROCKET LOGISTICS ADAPTER
  *
  * Implements the ShippingProvider interface for Shiprocket India API.
  * Features:
@@ -156,7 +156,7 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
         const payload = {
           order_id: params.orderNumber,
           order_date: params.orderDate.toISOString().slice(0, 19).replace("T", " "),
-          pickup_location: params.pickupLocationId || "Trend Street Atelier Bandra",
+          pickup_location: params.pickupLocationId || "OFFVYBE Bandra",
           billing_customer_name: params.customerName,
           billing_last_name: "",
           billing_address: params.deliveryAddress.street,
@@ -218,7 +218,7 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
       orderId: params.orderNumber,
       courierName: "Blue Dart Apex Express",
       awbCode: `AWB${params.deliveryAddress.postalCode}${Math.floor(1000 + Math.random() * 9000)}`,
-      labelUrl: `https://trendstreet.in/api/mock/labels/${params.orderNumber}.pdf`,
+      labelUrl: `https://offvybe.in/api/mock/labels/${params.orderNumber}.pdf`,
       isMock: true,
       message: "Shipment booked in Sandbox Mock Mode.",
     };

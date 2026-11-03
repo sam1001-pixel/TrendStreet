@@ -17,9 +17,9 @@ const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
     ],
   },
   {
-    title: "Trend Street",
+    title: "OFFVYBE",
     links: [
-      { label: "Why Trend Street", href: "/why-trend-street" },
+      { label: "Why OFFVYBE", href: "/why-offvybe" },
       { label: "Our story", href: "/about" },
       { label: "Contact us", href: "/contact" },
     ],
@@ -54,7 +54,7 @@ export const Footer: React.FC = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const phone = siteSettings.contactInfo?.phone || "+91 98200 12345";
-  const mail = siteSettings.contactInfo?.email || "concierge@trendstreet.in";
+  const mail = siteSettings.contactInfo?.email || "concierge@offvybe.in";
 
   return (
     <footer className="border-t border-burgundy/40 bg-espresso pb-24 text-ivory md:pb-10">
@@ -108,7 +108,7 @@ export const Footer: React.FC = () => {
                     className="h-12 w-full rounded-xl border border-white/15 bg-white/5 pl-10 pr-3 text-sm text-ivory placeholder:text-ivory/40 focus:border-gold focus:outline-none"
                   />
                 </div>
-                <button type="submit" aria-label="Subscribe" className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gold text-espresso hover:bg-gold-light">
+                <button type="submit" aria-label="Subscribe" className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gold text-white hover:bg-gold-light">
                   <ArrowRight className="h-5 w-5" />
                 </button>
               </form>
@@ -164,7 +164,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom bar */}
         <div className="flex flex-col-reverse items-center gap-5 border-t border-white/10 pt-6 text-[11px] text-ivory/55 md:flex-row md:justify-between">
-          <p className="text-center">© {new Date().getFullYear()} Trend Street Luxury Apparels Private Limited</p>
+          <p className="text-center">© {new Date().getFullYear()} OFFVYBE</p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             <Link href="/privacy-policy" className="hover:text-gold">Privacy</Link>
             <Link href="/terms" className="hover:text-gold">Terms</Link>
@@ -173,7 +173,7 @@ export const Footer: React.FC = () => {
           </div>
           <div className="flex items-center gap-3">
             {SOCIAL.map(({ href, label, icon: Icon }) => (
-              <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-ivory transition-colors hover:bg-gold hover:text-espresso">
+              <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-ivory transition-colors hover:bg-gold hover:text-white">
                 <Icon className="h-4 w-4" />
               </a>
             ))}

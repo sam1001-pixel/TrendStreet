@@ -21,6 +21,8 @@ import {
   ExternalLink,
   LogOut,
   Shield,
+  MessageSquareQuote,
+  Images,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAdminAuth } from "@/context/AdminAuthContext";
@@ -36,6 +38,8 @@ export const ADMIN_NAV_ITEMS = [
   { label: "Overview", href: "/admin", icon: LayoutDashboard, badge: null },
   { label: "Orders", href: "/admin/orders", icon: Package, badge: "Live" },
   { label: "Products", href: "/admin/products", icon: Shirt, badge: null },
+  { label: "Reviews", href: "/admin/reviews", icon: MessageSquareQuote, badge: "Video" },
+  { label: "Media Library", href: "/admin/media", icon: Images, badge: null },
   { label: "Inventory", href: "/admin/inventory", icon: Boxes, badge: "Stock" },
   { label: "Customers", href: "/admin/customers", icon: Users, badge: null },
   { label: "Discounts & Coupons", href: "/admin/discounts", icon: Tag, badge: null },
@@ -156,7 +160,7 @@ export function AdminSidebar({
                   {adminName || "Atelier Admin"}
                 </span>
                 <span className="text-[10px] text-gold font-mono truncate block">
-                  {adminEmail || "admin@trendstreet.in"}
+                  {adminEmail || "admin@offvybe.in"}
                 </span>
               </div>
             </div>

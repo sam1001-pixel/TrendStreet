@@ -27,7 +27,7 @@ const LOOKS = [
   },
 ] as const;
 
-const WORD = "TREND STREET".split("");
+const WORD = "OFFVYBE".split("");
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function CinematicHero() {
@@ -68,7 +68,7 @@ export function CinematicHero() {
           >
             <Image
               src={look.image}
-              alt={`${look.key} silhouette by Trend Street`}
+              alt={`${look.key} silhouette by OFFVYBE`}
               fill
               priority
               sizes="100vw"
@@ -149,14 +149,14 @@ export function CinematicHero() {
       {/* Giant kinetic wordmark */}
       <motion.h1
         style={{ y: reduce ? 0 : wordY }}
-        className="pointer-events-none absolute inset-x-0 top-[14%] sm:top-[10%] z-[5] select-none whitespace-nowrap px-4 text-center font-display font-black uppercase leading-[0.8] text-white/95 text-[16.5vw] sm:text-[17vw]"
-        aria-label="Trend Street"
+        className="pointer-events-none absolute inset-x-0 top-[14%] sm:top-[10%] z-[5] select-none whitespace-nowrap px-4 text-center font-display font-black uppercase leading-[0.8] text-white/95 text-[21vw] sm:text-[19vw]"
+        aria-label="OFFVYBE"
       >
         {WORD.map((ch, i) => (
           <motion.span
             key={i}
             aria-hidden
-            className="inline-block"
+            className={`inline-block ${i === 3 ? "text-gold" : ""}`}
             initial={reduce ? false : { y: "110%", opacity: 0 }}
             animate={{ y: "0%", opacity: 1 }}
             transition={{ delay: 0.05 + i * 0.045, duration: 0.8, ease: EASE }}

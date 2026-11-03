@@ -116,7 +116,7 @@ function SavedContent() {
     const url = `${window.location.origin}/saved?items=${wishlist.join(",")}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "My Trend Street wishlist", url });
+        await navigator.share({ title: "My OFFVYBE wishlist", url });
         return;
       }
       await navigator.clipboard.writeText(url);

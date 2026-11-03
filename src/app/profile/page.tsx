@@ -108,7 +108,7 @@ function ProfileContent() {
       <header className="relative overflow-hidden rounded-3xl bg-burgundy p-5 text-ivory sm:p-8">
         <span aria-hidden className="jaali absolute inset-0 text-ivory opacity-[0.07]" />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gold font-serif text-2xl font-bold text-espresso">
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gold font-serif text-2xl font-bold text-white">
             {user.name ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() : <User className="h-7 w-7" />}
           </div>
           <div className="min-w-0 flex-1">
@@ -134,7 +134,7 @@ function ProfileContent() {
             <div className="flex flex-col gap-2 sm:items-end">
               <Link
                 href="/login?callbackUrl=/profile"
-                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-full bg-gold px-5 text-xs font-bold uppercase tracking-wider text-espresso hover:bg-gold-light transition-all shadow-md"
+                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 rounded-full bg-gold px-5 text-xs font-bold uppercase tracking-wider text-white hover:bg-gold-light transition-all shadow-md"
               >
                 <LogIn className="h-3.5 w-3.5" /> Sign in / Create account
               </Link>

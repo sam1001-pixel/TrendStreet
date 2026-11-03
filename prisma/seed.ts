@@ -3,13 +3,13 @@ import { PrismaClient, ProductCategory, Role } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Starting Trend Street database seed on Supabase PostgreSQL...");
+  console.log("Starting OFFVYBE database seed on Supabase PostgreSQL...");
 
   // 1. Seed or update Site Settings
   await prisma.siteSettings.upsert({
     where: { id: "global" },
     update: {
-      storeName: "Trend Street",
+      storeName: "OFFVYBE",
       storeTagline: "Architectural Luxury Streetwear",
       announcementText: "COMPLIMENTARY BLUE DART AIR DELIVERY ACROSS INDIA ON ALL ORDERS OVER ₹1,999",
       announcementActive: true,
@@ -18,11 +18,11 @@ async function main() {
       heroSubtitle: "Engineered in Mumbai from heavyweight Okayama selvedge denim, 520gsm French Terry, and custom-loomed luxury textiles.",
       heroBadge: "Atelier Collection 2026",
       conciergePhone: "+91 98200 12345",
-      conciergeEmail: "concierge@trendstreet.in",
+      conciergeEmail: "concierge@offvybe.in",
     },
     create: {
       id: "global",
-      storeName: "Trend Street",
+      storeName: "OFFVYBE",
       storeTagline: "Architectural Luxury Streetwear",
       announcementText: "COMPLIMENTARY BLUE DART AIR DELIVERY ACROSS INDIA ON ALL ORDERS OVER ₹1,999",
       announcementActive: true,
@@ -31,7 +31,7 @@ async function main() {
       heroSubtitle: "Engineered in Mumbai from heavyweight Okayama selvedge denim, 520gsm French Terry, and custom-loomed luxury textiles.",
       heroBadge: "Atelier Collection 2026",
       conciergePhone: "+91 98200 12345",
-      conciergeEmail: "concierge@trendstreet.in",
+      conciergeEmail: "concierge@offvybe.in",
     },
   });
   console.log("✓ Site settings seeded.");
@@ -266,7 +266,7 @@ async function main() {
       details: [
         "700gsm double-faced wool-cashmere blend",
         "Full Bemberg cupro lining for friction-free layering",
-        "Horn buttons etched with Trend Street monogram",
+        "Horn buttons etched with OFFVYBE monogram",
         "Internal chest passport pocket with brass RiRi zipper",
       ],
       basePrice: 1199900, // ₹11,999

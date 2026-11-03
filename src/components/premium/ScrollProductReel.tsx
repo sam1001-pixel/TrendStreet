@@ -85,7 +85,7 @@ function RunwayCard({
 
           <div className="flex flex-col items-end gap-1">
             {off > 0 && (
-              <span className="rounded bg-gold px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-stone-950 shadow-sm">
+              <span className="rounded bg-gold px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
                 −{off}%
               </span>
             )}
@@ -114,7 +114,7 @@ function RunwayCard({
                   <button
                     key={s}
                     onClick={(e) => add(e, s)}
-                    className="min-h-[32px] min-w-[32px] flex-1 rounded-lg border border-white/20 text-[11px] font-bold text-white transition-all hover:bg-gold hover:text-stone-950 hover:border-gold"
+                    className="min-h-[32px] min-w-[32px] flex-1 rounded-lg border border-white/20 text-[11px] font-bold text-white transition-all hover:bg-gold hover:text-white hover:border-gold"
                   >
                     {s}
                   </button>
@@ -142,7 +142,7 @@ function RunwayCard({
                 className={`flex min-h-[36px] w-full items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold uppercase tracking-[0.14em] backdrop-blur-md transition-all duration-200 shadow-md ${
                   added
                     ? "bg-emerald-600 text-white"
-                    : "bg-white/95 text-stone-950 hover:bg-gold hover:shadow-lg active:scale-95"
+                    : "bg-white/95 text-stone-950 hover:bg-gold hover:text-white hover:shadow-lg active:scale-95"
                 }`}
               >
                 {added ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
@@ -295,7 +295,7 @@ export function ScrollProductReel() {
               onClick={() => slide("left")}
               disabled={!canScrollLeft}
               aria-label="Previous cards"
-              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/20 bg-stone-900/80 text-white transition-all hover:bg-gold hover:text-stone-950 hover:border-gold disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-stone-900/80 disabled:hover:text-white disabled:hover:border-white/20"
+              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/20 bg-stone-900/80 text-white transition-all hover:bg-gold hover:text-white hover:border-gold disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-stone-900/80 disabled:hover:text-white disabled:hover:border-white/20"
             >
               <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
@@ -303,7 +303,7 @@ export function ScrollProductReel() {
               onClick={() => slide("right")}
               disabled={!canScrollRight}
               aria-label="Next cards"
-              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/20 bg-stone-900/80 text-white transition-all hover:bg-gold hover:text-stone-950 hover:border-gold disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-stone-900/80 disabled:hover:text-white disabled:hover:border-white/20"
+              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/20 bg-stone-900/80 text-white transition-all hover:bg-gold hover:text-white hover:border-gold disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:bg-stone-900/80 disabled:hover:text-white disabled:hover:border-white/20"
             >
               <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>

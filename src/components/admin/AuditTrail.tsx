@@ -26,6 +26,10 @@ const ACTIONS = [
   "PRODUCT_DELETE",
   "SETTINGS_CHANGE",
   "ORDER_CONFIRMATION_EMAIL_SENT",
+  "REVIEW_CREATE",
+  "REVIEW_EDIT",
+  "REVIEW_DELETE",
+  "MEDIA_DELETE",
 ];
 
 const csvCell = (v: unknown) => {

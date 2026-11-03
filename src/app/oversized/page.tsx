@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CategoryLanding, type CategoryConfig } from "@/components/CategoryLanding";
 
 export const metadata: Metadata = {
-  title: "Oversized Tees & Hoodies | Trend Street",
+  title: "Oversized Tees & Hoodies | OFFVYBE",
   description: "Heavyweight oversized tees and hoodies in 320–520gsm cotton with dropped shoulders. Free delivery over ₹1,999.",
   alternates: { canonical: "/oversized" },
 };

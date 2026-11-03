@@ -41,7 +41,7 @@ test("Negative Security - timingSafeEqualStr resists timing discrepancies", () =
 });
 
 test("Negative Security - tampered session token fails verification", async () => {
-  const validToken = await signSessionToken("admin@trendstreet.in");
+  const validToken = await signSessionToken("admin@offvybe.in");
   const [payload, sig] = validToken.split(".");
 
   // Tamper signature by flipping characters
@@ -72,7 +72,7 @@ test("Negative Security - coupon min spend cannot be bypassed", () => {
 
 test("Negative Security - PII email masking prevents sensitive leak in logs", () => {
   assert.equal(maskEmailForLogs("rohan.kulkarni@mumbai.in"), "r***i@mumbai.in");
-  assert.equal(maskEmailForLogs("customer@trendstreet.in"), "c***r@trendstreet.in");
+  assert.equal(maskEmailForLogs("customer@offvybe.in"), "c***r@offvybe.in");
   assert.equal(maskEmailForLogs("ab@xyz.com"), "a***@xyz.com");
   assert.equal(maskEmailForLogs(""), "***@***");
 });

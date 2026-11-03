@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CategoryLanding, type CategoryConfig } from "@/components/CategoryLanding";
 
 export const metadata: Metadata = {
-  title: "Suede Bombers, Canvas & Leather Jackets | Trend Street",
+  title: "Suede Bombers, Canvas & Leather Jackets | OFFVYBE",
   description: "Suede MA-1 bombers, duck canvas chore coats, field jackets and full-grain leather moto jackets.",
   alternates: { canonical: "/jackets" },
 };

@@ -10,7 +10,7 @@ export const StoreJsonLd: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "OnlineStore",
     name: SITE_NAME,
-    alternateName: "The Style Hub",
+    alternateName: "Wear Your Own Vibe",
     description:
       "Indian menswear label for oversized tees and hoodies, boxy fit shirts, denim and jackets, shipped across India.",
     url: SITE_URL,

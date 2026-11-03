@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Truck, Package, Clock, ShieldCheck, MapPin, ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "Shipping & Logistics Policy | Trend Street Atelier",
-  description: "Trend Street shipping timelines, courier partners (Blue Dart Apex & Delhivery Air), and domestic delivery coverage across India.",
+  title: "Shipping & Logistics Policy | OFFVYBE",
+  description: "OFFVYBE shipping timelines, courier partners (Blue Dart Apex & Delhivery Air), and domestic delivery coverage across India.",
 };
 
 export default function ShippingPolicyPage() {
@@ -32,7 +32,7 @@ export default function ShippingPolicyPage() {
           Effective Date: January 1, 2026 • Dispatched from Mumbai Atelier
         </p>
         <p className="text-xs text-espresso/80 leading-relaxed">
-          At Trend Street, every garment is handled as an architectural piece. From fabric steam-finishing to hardware protection,
+          At OFFVYBE, every garment is handled as an architectural piece. From fabric steam-finishing to hardware protection,
           our logistics chain guarantees white-glove doorstep delivery across 19,000+ Indian postal PIN codes.
         </p>
       </div>
@@ -145,10 +145,10 @@ export default function ShippingPolicyPage() {
             Need to Amend a Delivery Address?
           </h3>
           <p className="text-xs text-espresso/75">
-            If you need to adjust your delivery address or contact number, please contact our Bandra West Concierge within 4 hours of placing your order:
+            If you need to adjust your delivery address or contact number, please contact our support team within 4 hours of placing your order:
           </p>
           <div className="pt-1 flex flex-wrap gap-4 text-xs font-semibold text-burgundy">
-            <span>Email: <a href="mailto:concierge@trendstreet.in" className="underline">concierge@trendstreet.in</a></span>
+            <span>Email: <a href="mailto:concierge@offvybe.in" className="underline">concierge@offvybe.in</a></span>
             <span>WhatsApp / Phone: +91 98200 12345</span>
           </div>
         </section>

@@ -1,13 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Product, CartItem, Order, UserProfile, OrderStatus, SiteSettings } from "@/types/store";
+import { Product, CartItem, Order, UserProfile, OrderStatus, SiteSettings, Review } from "@/types/store";
 import { INITIAL_PRODUCTS } from "@/data/products";
 import { calculateOrderPricing, couponIneligibilityReason, ResolvedCoupon } from "@/lib/pricing";
 import { DEMO_ORDERS, DEMO_USER } from "@/data/demo";
 
 interface StoreContextType {
   products: Product[];
+  /** Published reviews with a video, for the homepage reel. */
+  videoReviews: Review[];
   siteSettings: SiteSettings;
   updateSiteSettings: (settings: Partial<SiteSettings>) => void;
   resetSiteSettings: () => void;
@@ -73,8 +75,8 @@ const DEFAULT_USER: UserProfile = {
 };
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  storeName: "Trend Street",
-  storeTagline: "The Style Hub",
+  storeName: "OFFVYBE",
+  storeTagline: "Wear Your Own Vibe",
   topAnnouncement: {
     enabled: true,
     text: "Autumn / Winter 2026 Drops Live • Complimentary Express Courier Across India on Orders Above ₹1,999 • All-Inclusive GST",
@@ -86,7 +88,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     titleLine1: "Oversized Silhouettes.",
     titleLine2: "Modern Distinction.",
     subtitle:
-      "Trend Street redefines contemporary Indian menswear through heavyweight drape, architectural boxy fits, Okayama selvedge denim jeans, and handcrafted flight jackets.",
+      "OFFVYBE redefines contemporary Indian menswear through heavyweight drape, architectural boxy fits, Okayama selvedge denim jeans, and handcrafted flight jackets.",
     primaryBtnText: "Explore The Drops",
     primaryBtnLink: "/shop",
     secondaryBtnText: "New Arrivals",
@@ -119,7 +121,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     { code: "FREESHIP", discountPercent: 0, description: "Complimentary priority courier delivery across India." },
   ],
   contactInfo: {
-    email: "concierge@trendstreet.in",
+    email: "concierge@offvybe.in",
     phone: "+91 98200 12345",
     address: "Atelier 4, Pali Hill Road, Bandra West, Mumbai 400050, India",
     hours: "Monday – Saturday: 10:00 AM – 8:00 PM IST",
@@ -131,7 +133,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     hangingRail: true,
     dropList: true,
     silhouetteAccordion: true,
-    reviewGallery: false, // sample testimonials — enable once reviews are real
+    videoReviews: true, // "Worn by you" reel — shows once Admin → Reviews has published reviews with videos
     trustStrip: true,
   },
 };
@@ -170,7 +172,7 @@ const INITIAL_ORDERS: Order[] = [
     promoCode: "TREND10",
     customer: {
       fullName: "Aarav Sharma",
-      email: "aarav.sharma@trendstreet.in",
+      email: "aarav.sharma@offvybe.in",
       phone: "+91 98200 12345",
       address: "Flat 402, Sea Green Apartments, Bandra West",
       city: "Mumbai",
@@ -205,7 +207,7 @@ const INITIAL_ORDERS: Order[] = [
     total: 8999,
     customer: {
       fullName: "Aarav Sharma",
-      email: "aarav.sharma@trendstreet.in",
+      email: "aarav.sharma@offvybe.in",
       phone: "+91 98200 12345",
       address: "Flat 402, Sea Green Apartments, Bandra West",
       city: "Mumbai",
@@ -221,8 +223,14 @@ const INITIAL_ORDERS: Order[] = [
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+export const StoreProvider: React.FC<{
+  children: React.ReactNode;
+  /** Catalog rendered on the server (database, or the sample catalog only when the database is down). */
+  initialProducts?: Product[];
+  initialVideoReviews?: Review[];
+}> = ({ children, initialProducts, initialVideoReviews }) => {
+  const [products, setProducts] = useState<Product[]>(initialProducts ?? INITIAL_PRODUCTS);
+  const [videoReviews, setVideoReviews] = useState<Review[]>(initialVideoReviews ?? []);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -265,7 +273,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (storedUser) {
         const parsed = JSON.parse(storedUser) as UserProfile;
         // Older builds stored a sample profile ("Aarav Sharma") in every browser; discard it.
-        const isSample = parsed?.email === "aarav.sharma@trendstreet.in";
+        const isSample = parsed?.email === "aarav.sharma@offvybe.in";
         if (!isSample) setUser({ ...DEFAULT_USER, ...parsed, measurements: { ...DEFAULT_USER.measurements, ...(parsed.measurements || {}) } });
       }
     } catch (e) {
@@ -280,9 +288,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let cancelled = false;
     fetch("/api/storefront")
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((data: { products: Product[]; settings: Partial<SiteSettings> }) => {
+      .then((data: { products: Product[]; videoReviews?: Review[]; source?: string; settings: Partial<SiteSettings> }) => {
         if (cancelled) return;
-        if (Array.isArray(data.products) && data.products.length) {
+        if (Array.isArray(data.videoReviews)) setVideoReviews(data.videoReviews);
+        // An empty list from the database is real (everything deleted or hidden) — don't fall back to samples.
+        if (Array.isArray(data.products) && (data.products.length || data.source === "database")) {
           setProducts(data.products);
           // Re-price bag items against the latest catalog.
           setCart((prev) =>
@@ -471,11 +481,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       reviews: [
         {
           id: `rev-${Date.now()}`,
-          author: "Trend Street Atelier",
+          author: "OFFVYBE",
           rating: 5,
           date: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
           title: "Craftsmanship Certified",
-          comment: "Inspected and certified by Trend Street Atelier.",
+          comment: "Inspected and certified by OFFVYBE.",
           verified: true,
         },
       ],
@@ -530,6 +540,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <StoreContext.Provider
       value={{
         products,
+        videoReviews,
         siteSettings,
         updateSiteSettings,
         resetSiteSettings,

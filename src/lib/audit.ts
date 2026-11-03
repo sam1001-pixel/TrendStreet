@@ -22,7 +22,11 @@ export type AuditAction =
   | "COUPON_CREATE"
   | "COUPON_UPDATE"
   | "COUPON_DELETE"
-  | "STAFF_INVITE";
+  | "STAFF_INVITE"
+  | "MEDIA_DELETE"
+  | "REVIEW_CREATE"
+  | "REVIEW_EDIT"
+  | "REVIEW_DELETE";
 
 /** Email of the signed-in admin for this request, or null. */
 export async function getAdminEmail(req: NextRequest): Promise<string | null> {

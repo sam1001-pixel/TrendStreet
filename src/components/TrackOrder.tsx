@@ -150,7 +150,7 @@ export function TrackOrder() {
               className="h-12 w-full rounded-xl border border-white/15 bg-white/5 px-4 text-sm text-ivory placeholder:text-ivory/30 focus:border-gold focus:outline-none"
             />
           </div>
-          <button disabled={busy} className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-gold text-xs font-bold uppercase tracking-[0.18em] text-espresso hover:bg-gold-light disabled:opacity-60">
+          <button disabled={busy} className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-gold text-xs font-bold uppercase tracking-[0.18em] text-white hover:bg-gold-light disabled:opacity-60">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             {busy ? "Searching…" : "Track order"}
           </button>
@@ -212,7 +212,7 @@ export function TrackOrder() {
           >
             <header className="flex flex-wrap items-start justify-between gap-3 bg-burgundy p-5 text-ivory sm:p-6">
               <div>
-                {result.isSample && <span className="mb-1 inline-block rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold uppercase text-espresso">Sample order</span>}
+                {result.isSample && <span className="mb-1 inline-block rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold uppercase text-white">Sample order</span>}
                 <p className="font-mono text-sm font-bold">{result.orderNumber}</p>
                 <p className="text-xs text-ivory/70">Placed {fmtDate(result.createdAt)}</p>
               </div>

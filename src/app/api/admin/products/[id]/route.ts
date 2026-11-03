@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCatalog } from "@/lib/catalog";
+import { getCatalog, refreshStorefront } from "@/lib/catalog";
 import { writeAudit } from "@/lib/audit";
 import { ProductInputError, saveProduct, validateProduct } from "@/lib/admin-products";
 import { requireAdminSession } from "@/lib/auth";
@@ -14,7 +14,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   if (!auth.authorized) return auth.response;
 
   try {
-    const before = (await getCatalog()).products.find((p) => p.id === params.id);
+    const before = (await getCatalog({ includeArchived: true })).products.find((p) => p.id === params.id);
     if (!before) return NextResponse.json({ error: "Product not found." }, { status: 404 });
 
     const clean = validateProduct(await req.json());
@@ -22,14 +22,15 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 
     // Record only what changed, so the audit trail stays readable.
     const changed: Record<string, { from: unknown; to: unknown }> = {};
-    for (const key of ["name", "price", "originalPrice", "stockCount", "inStock", "featured", "sizes", "images"] as const) {
+    for (const key of ["name", "price", "originalPrice", "stockCount", "inStock", "featured", "sizes", "images", "videos", "archived"] as const) {
       const from = before[key];
       const to = clean[key];
       if (JSON.stringify(from) !== JSON.stringify(to)) changed[key] = { from, to };
     }
+    refreshStorefront();
     await writeAudit(req, { action: "PRODUCT_EDIT", entityType: "Product", entityId: params.id, metadata: { name: clean.name, changed } });
 
-    const { products } = await getCatalog();
+    const { products } = await getCatalog({ includeArchived: true });
     return NextResponse.json({ product: products.find((p) => p.id === params.id) });
   } catch (err) {
     if (err instanceof ProductInputError) return NextResponse.json({ error: err.message }, { status: 400 });
@@ -49,12 +50,13 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     const sold = await prisma.orderItem.count({ where: { variant: { productId: params.id } } });
     if (sold > 0) {
       return NextResponse.json(
-        { error: "This product has been ordered before, so it can't be deleted. Mark it Out of Stock instead." },
+        { error: "This product has been ordered before, so it can't be deleted (order history and GST invoices need it). Use ‘Hide from shop’ instead." },
         { status: 409 }
       );
     }
 
     await prisma.product.delete({ where: { id: params.id } });
+    refreshStorefront();
     await writeAudit(req, { action: "PRODUCT_DELETE", entityType: "Product", entityId: params.id, metadata: { name: product.name } });
     return NextResponse.json({ success: true });
   } catch (err) {

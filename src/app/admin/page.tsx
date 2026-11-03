@@ -30,7 +30,7 @@ import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { formatPrice } from "@/lib/pricing";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { OrderStatus, Product } from "@/types/store";
-import { ImageGalleryUpload } from "@/components/admin/ImageGalleryUpload";
+import { MediaUploader } from "@/components/admin/MediaUploader";
 
 export default function AdminDashboardPage() {
   const {
@@ -85,7 +85,7 @@ export default function AdminDashboardPage() {
     hangingRail: true,
     dropList: true,
     silhouetteAccordion: true,
-    reviewGallery: false,
+    videoReviews: true,
     trustStrip: true,
   };
 
@@ -529,7 +529,7 @@ export default function AdminDashboardPage() {
               { key: "hangingRail" as const, name: "Fresh off the Rail" },
               { key: "dropList" as const, name: "The Drop List" },
               { key: "silhouetteAccordion" as const, name: "Three Cuts Accordion" },
-              { key: "reviewGallery" as const, name: "Reviews Gallery" },
+              { key: "videoReviews" as const, name: "Video Reviews Reel" },
               { key: "trustStrip" as const, name: "Promises Trust Strip" },
             ].map((sec) => {
               const isVisible = storefrontSections[sec.key];
@@ -583,15 +583,10 @@ export default function AdminDashboardPage() {
           </div>
 
           <p className="text-xs text-espresso/70">
-            Upload garment photography directly from device photo gallery, mobile camera, or pick atelier presets.
+            Upload photos from your phone or computer. Find everything you upload under Media library.
           </p>
 
-          <ImageGalleryUpload
-            images={galleryImages}
-            onChange={setGalleryImages}
-            label="Live Media Sandbox"
-            helperText="Uploaded assets are immediately stored and ready for garment listings."
-          />
+          <MediaUploader kind="image" value={galleryImages} onChange={setGalleryImages} label="Quick upload" />
         </div>
       </div>
 
@@ -731,7 +726,7 @@ export default function AdminDashboardPage() {
 
         <Link
           href="/admin/access-register"
-          className="py-3 px-6 bg-gold hover:bg-gold-light text-espresso text-xs font-bold uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg flex items-center gap-2 whitespace-nowrap"
+          className="py-3 px-6 bg-gold hover:bg-gold-light text-white text-xs font-bold uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg flex items-center gap-2 whitespace-nowrap"
         >
           <span>Open Access Register ({accessRegister.length} Systems)</span>
           <ArrowRight className="w-4 h-4" />

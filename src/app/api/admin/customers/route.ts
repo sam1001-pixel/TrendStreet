@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
 
     // Ingest guest orders
     for (const o of orders) {
-      const email = (o.user?.email || o.shippingAddress?.fullName?.toLowerCase().replace(/\s+/g, ".") + "@guest.trendstreet.in").toLowerCase();
+      const email = (o.user?.email || o.shippingAddress?.fullName?.toLowerCase().replace(/\s+/g, ".") + "@guest.offvybe.in").toLowerCase();
       if (!customerMap.has(email)) {
         const isLive = o.status !== "CANCELLED";
         customerMap.set(email, {

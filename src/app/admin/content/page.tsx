@@ -15,7 +15,7 @@ import {
   Sliders,
 } from "lucide-react";
 import { useAdminData } from "@/hooks/useAdminData";
-import { ImageGalleryUpload } from "@/components/admin/ImageGalleryUpload";
+import { MediaUploader } from "@/components/admin/MediaUploader";
 
 export default function AdminContentPage() {
   const { siteSettings, updateSiteSettings, loading, error, notice, clearError } = useAdminData();
@@ -304,14 +304,10 @@ export default function AdminContentPage() {
             </h3>
           </div>
           <p className="text-xs text-espresso/60">
-            Upload campaign photos directly from your device gallery, mobile camera, or pick from luxury presets.
+            Upload campaign photos from your phone or computer.
           </p>
 
-          <ImageGalleryUpload
-            images={uploadedGalleryImages}
-            onChange={(imgs) => setUploadedGalleryImages(imgs)}
-            maxImages={8}
-          />
+          <MediaUploader kind="image" value={uploadedGalleryImages} onChange={(imgs) => setUploadedGalleryImages(imgs)} max={8} />
         </div>
 
         {/* Bottom Save Bar */}

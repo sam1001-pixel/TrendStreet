@@ -1,5 +1,5 @@
 /**
- * Trend Street — CSV Formula Injection (CWE-1236) Defense Utility.
+ * OFFVYBE — CSV Formula Injection (CWE-1236) Defense Utility.
  * Neutralizes spreadsheet calculation operators (=, +, -, @, tab, CR)
  * to protect administrators opening customer/order/inventory CSV exports
  * in Microsoft Excel, Apple Numbers, or Google Sheets.
@@ -45,10 +45,10 @@ export function generateSafeCsv(headers: string[], rows: unknown[][]): string {
 }
 
 /**
- * Formats a download filename with date string, e.g. "trendstreet-inventory-2026-10-26.csv".
+ * Formats a download filename with date string, e.g. "offvybe-inventory-2026-10-26.csv".
  */
 export function getSafeExportFilename(prefix: string): string {
   const dateStr = new Date().toISOString().slice(0, 10);
   const cleanPrefix = prefix.toLowerCase().replace(/[^a-z0-9_-]/g, "-");
-  return `trendstreet-${cleanPrefix}-${dateStr}.csv`;
+  return `offvybe-${cleanPrefix}-${dateStr}.csv`;
 }

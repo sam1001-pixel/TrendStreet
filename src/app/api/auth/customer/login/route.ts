@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      message: "Welcome back to Trend Street.",
+      message: "Welcome back to OFFVYBE.",
       user: {
         id: customer.id,
         email: customer.email,

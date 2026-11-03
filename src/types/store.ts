@@ -12,6 +12,12 @@ export interface Review {
   title: string;
   comment: string;
   verified: boolean;
+  /** Optional review video (MP4/WEBM) and its cover image. */
+  videoUrl?: string;
+  posterUrl?: string;
+  city?: string;
+  productId?: string;
+  productName?: string;
 }
 
 export interface Product {
@@ -26,6 +32,10 @@ export interface Product {
   fabric: string;
   careInstructions: string[];
   images: string[];
+  /** Product videos, shown in the gallery after the photos. */
+  videos?: string[];
+  /** Hidden from the shop (admin only). */
+  archived?: boolean;
   sizes: string[];
   colors: { name: string; hex: string }[];
   featured?: boolean;
@@ -188,7 +198,7 @@ export interface SiteSettings {
     hangingRail?: boolean;
     dropList?: boolean;
     silhouetteAccordion?: boolean;
-    reviewGallery?: boolean;
+    videoReviews?: boolean;
     trustStrip?: boolean;
   };
 }

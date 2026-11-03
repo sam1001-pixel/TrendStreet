@@ -48,7 +48,7 @@ export default function AdminSettingsPage() {
     hangingRail: true,
     dropList: true,
     silhouetteAccordion: true,
-    reviewGallery: false,
+    videoReviews: true,
     trustStrip: true,
   };
 
@@ -73,7 +73,7 @@ export default function AdminSettingsPage() {
         hangingRail: enabled,
         dropList: enabled,
         silhouetteAccordion: enabled,
-        reviewGallery: enabled,
+        videoReviews: enabled,
         trustStrip: enabled,
       },
     });
@@ -91,7 +91,7 @@ export default function AdminSettingsPage() {
   const handleReset = () => {
     if (
       window.confirm(
-        "Are you sure you want to restore the default settings for Trend Street? All custom hero headlines, announcement bar, and promotional codes will be reset."
+        "Are you sure you want to restore the default settings for OFFVYBE? All custom hero headlines, announcement bar, and promotional codes will be reset."
       )
     ) {
       void resetSiteSettings();
@@ -207,7 +207,7 @@ export default function AdminSettingsPage() {
           { id: "categories", label: "Category Taglines", icon: Layers },
           { id: "marquee", label: "Marquee Ticker", icon: Tag },
           { id: "promos", label: "Promo Codes", icon: Percent },
-          { id: "contact", label: "Concierge & Atelier", icon: Phone },
+          { id: "contact", label: "Contact details", icon: Phone },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -539,15 +539,15 @@ export default function AdminSettingsPage() {
                   tag: "Design Architecture",
                 },
                 {
-                  key: "reviewGallery" as const,
-                  title: "Customer Reviews Gallery",
-                  desc: "Compact buyer review widgets featuring verified ratings, styling notes, and customer feedback.",
+                  key: "videoReviews" as const,
+                  title: "Video Reviews Reel (“Worn by you”)",
+                  desc: "Customer video reviews from Admin → Reviews that are marked Homepage. Hidden automatically when there are none.",
                   tag: "Social Proof",
                 },
                 {
                   key: "trustStrip" as const,
                   title: "Promises & Atelier Guarantees",
-                  desc: "3-point luxury assurance strip (Ethical Craftsmanship, Express Dispatch, Concierge Support).",
+                  desc: "3-point luxury assurance strip (Ethical Craftsmanship, Express Dispatch, Customer Support).",
                   tag: "Brand Assurance",
                 },
               ].map((section) => {
@@ -971,22 +971,22 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        {/* Tab 6: Concierge & Atelier Contact */}
+        {/* Tab 6: Contact details */}
         {activeTab === "contact" && (
           <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
             <div className="border-b border-burgundy/10 pb-3">
               <h2 className="font-serif text-lg font-bold text-espresso">
-                Store Concierge & Atelier Details
+                Store contact details
               </h2>
               <p className="text-xs text-espresso/60">
-                Updates client concierge contact numbers, support email, operating hours, and flagship showroom address in the footer.
+                Updates customer contact numbers, support email, operating hours, and flagship showroom address in the footer.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Concierge Support Email
+                  Support email
                 </label>
                 <input
                   type="email"
@@ -1006,7 +1006,7 @@ export default function AdminSettingsPage() {
 
               <div>
                 <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Concierge Phone Line
+                  Support phone (calls & WhatsApp)
                 </label>
                 <input
                   type="text"

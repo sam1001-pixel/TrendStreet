@@ -1,5 +1,5 @@
 /**
- * Trend Street — server-side order placement.
+ * OFFVYBE — server-side order placement.
  *
  * One path for every order: prices are recomputed from the database catalog, coupons come from the
  * database, and the order, its line items and the stock reservation are written in one transaction.

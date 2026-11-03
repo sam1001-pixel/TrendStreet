@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-serif: 'Montserrat', Arial, sans-serif;
   --font-display: 'Big Shoulders Display', Impact, sans-serif;
   --ease-out-luxe: cubic-bezier(0.22, 1, 0.36, 1);
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   
-  /* Trend Street Brand Design System Tokens */
-  --color-burgundy: #1F3A6B;
-  --color-crimson: #A8432F;
-  --color-espresso: #1A1712;
-  --color-ivory: #F6EFE3;
-  --color-gold: #E3A33B;
-  --color-bone: #F6EFE3;
-  --color-ink: #0E1626;
+  /* OFFVYBE brand tokens */
+  --color-burgundy: #0A0A0A;
+  --color-crimson: #B30015;
+  --color-espresso: #0A0A0A;
+  --color-ivory: #F5F5F5;
+  --color-gold: #E3122B;
+  --color-bone: #F5F5F5;
+  --color-ink: #000000;
 }
 
 /* Nothing may make the page wider than the phone. On <html> this also stops mobile browsers
@@ -28,6 +28,8 @@ body {
 }
 
 body {
+  /* next/font sets --font-sans on <body>; headings ("serif" utility) use the same Montserrat family. */
+  --font-serif: var(--font-sans);
   background-color: var(--color-bone);
   color: var(--color-espresso);
   font-family: var(--font-sans);
@@ -35,8 +37,8 @@ body {
 
 /* Custom Text Selection in Deep Burgundy */
 ::selection {
-  background-color: #1F3A6B;
-  color: #F6EFE3;
+  background-color: #B30015;
+  color: #FFFFFF;
 }
 
 /* Universal Scrollbar Line Removal - Seamless fluid scrolling without visible scroll lines */

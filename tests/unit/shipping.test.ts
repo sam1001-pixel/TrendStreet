@@ -61,7 +61,7 @@ test("Shipping Adapter - createShipment books shipment with valid AWB in sandbox
     orderNumber: "TS-TEST-SHIP-01",
     orderDate: new Date(),
     customerName: "Aarav Mehta",
-    customerEmail: "aarav@trendstreet.in",
+    customerEmail: "aarav@offvybe.in",
     customerPhone: "9820011223",
     deliveryAddress: {
       street: "12 Linking Road",

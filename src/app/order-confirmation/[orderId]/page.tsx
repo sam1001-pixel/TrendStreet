@@ -32,7 +32,7 @@ export default function OrderConfirmationPage() {
         </div>
         <h1 className="font-serif text-3xl font-bold text-espresso">Order Record Not Found</h1>
         <p className="text-espresso/70 text-sm max-w-md mx-auto">
-          We could not locate an active order associated with this reference. If you recently placed an order, please review your client profile or contact our studio concierge.
+          We could not locate an active order associated with this reference. If you recently placed an order, please review your client profile or contact our support team.
         </p>
         <div className="flex items-center justify-center gap-4 pt-2">
           <Link

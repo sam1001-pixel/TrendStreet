@@ -30,4 +30,4 @@ User-agent: Google-Extended
 Allow: /
 
 # Keep this in step with NEXT_PUBLIC_SITE_URL
-Sitemap: https://trendstreet.in/sitemap.xml
+Sitemap: https://offvybe.in/sitemap.xml

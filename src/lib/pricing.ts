@@ -1,5 +1,5 @@
 /**
- * Trend Street — Server-Authoritative Pricing & Checkout Calculation Engine
+ * OFFVYBE — Server-Authoritative Pricing & Checkout Calculation Engine
  * All monetary calculations are performed in integer minor units (paise)
  * to prevent floating-point rounding errors.
  *

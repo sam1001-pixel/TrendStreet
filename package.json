@@ -11,10 +11,12 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"tests/unit/*.test.ts\"",
     "test:integrations": "tsx scripts/test-integrations.ts",
-    "hash-password": "tsx scripts/hash-password.ts"
+    "hash-password": "tsx scripts/hash-password.ts",
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@vercel/blob": "2.8.2",
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.17",
     "lenis": "^1.3.27",

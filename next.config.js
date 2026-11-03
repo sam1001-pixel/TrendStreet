@@ -14,15 +14,23 @@ const nextConfig = {
         protocol: "https",
         hostname: "plus.unsplash.com",
       },
+      // Admin uploads (Vercel Blob)
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
     ],
   },
   // Removed pages send visitors to the shop (temporary redirects, so they're easy to bring back).
   async redirects() {
-    return ["/lookbook", "/shop-your-way", "/complete-the-fit"].map((source) => ({
-      source,
-      destination: "/shop",
-      permanent: false,
-    }));
+    return [
+      ...["/lookbook", "/shop-your-way", "/complete-the-fit"].map((source) => ({
+        source,
+        destination: "/shop",
+        permanent: false,
+      })),
+      { source: "/why-trend-street", destination: "/why-offvybe", permanent: true },
+    ];
   },
   // Production Enterprise Security Headers
   async headers() {
@@ -40,10 +48,11 @@ const nextConfig = {
       default-src 'self';
       script-src 'self' ${devEval} 'unsafe-inline' https://checkout.razorpay.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      img-src 'self' blob: data: https://images.unsplash.com https://plus.unsplash.com;
+      img-src 'self' blob: data: https://images.unsplash.com https://plus.unsplash.com https://*.public.blob.vercel-storage.com;
+      media-src 'self' blob: https://*.public.blob.vercel-storage.com;
       font-src 'self' https://fonts.gstatic.com data:;
       frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com;
-      connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com;
+      connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.com https://*.blob.vercel-storage.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';

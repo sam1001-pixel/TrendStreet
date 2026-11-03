@@ -245,10 +245,10 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
             </div>
           </div>
 
-          {/* Quick Concierge & Self-Service Shortcuts */}
+          {/* Quick Help & self-service Shortcuts */}
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/50 block px-2 mb-2">
-              Concierge & Self-Service
+              Help & self-service
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
@@ -309,7 +309,7 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
             <span>Navigation: <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[10px]">↑</kbd> <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[10px]">↓</kbd></span>
             <span>Select: <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[10px]">↵</kbd></span>
           </div>
-          <span className="font-mono text-burgundy font-semibold">Trend Street Atelier</span>
+          <span className="font-mono text-burgundy font-semibold">OFFVYBE</span>
         </div>
       </div>
     </div>

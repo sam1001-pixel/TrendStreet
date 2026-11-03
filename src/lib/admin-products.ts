@@ -24,7 +24,11 @@ export function validateProduct(p: Partial<Product>) {
   if (originalPrice !== undefined && !(originalPrice >= price)) throw new ProductInputError("Original price must be at least the selling price.");
   const rawImages = Array.isArray(p.images) ? p.images.map((x) => (typeof x === "string" ? x.trim() : "")).filter(Boolean) : [];
   const images = rawImages.filter((u) => /^(https:\/\/|\/(?![\/\\])|data:image\/)/.test(u)).slice(0, 12);
-  if (!images.length) throw new ProductInputError("Add at least one image URL or upload from gallery.");
+  if (!images.length) throw new ProductInputError("Add at least one photo.");
+  const videos = (Array.isArray(p.videos) ? p.videos : [])
+    .map((x) => (typeof x === "string" ? x.trim() : ""))
+    .filter((u) => /^(https:\/\/|\/(?![\/\\]))/.test(u))
+    .slice(0, 6);
   const sizes = Array.from(new Set(list(p.sizes, 12)));
   if (!sizes.length) throw new ProductInputError("Add at least one size.");
   const colors = (Array.isArray(p.colors) ? p.colors : [])
@@ -44,6 +48,8 @@ export function validateProduct(p: Partial<Product>) {
     price,
     originalPrice,
     images,
+    videos,
+    archived: !!p.archived,
     sizes,
     colors,
     featured: !!p.featured,
@@ -70,6 +76,8 @@ export async function saveProduct(tx: Prisma.TransactionClient, id: string, p: C
     featured: p.featured,
     isNew: p.isNew,
     isBestSeller: p.isBestSeller,
+    videos: p.videos,
+    archived: p.archived,
   };
 
   if (isNew) {

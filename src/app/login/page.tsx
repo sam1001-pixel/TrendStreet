@@ -77,7 +77,7 @@ function LoginForm() {
     setLoading(false);
 
     if (res.success) {
-      setSuccessMsg("Account created — welcome to Trend Street!");
+      setSuccessMsg("Account created — welcome to OFFVYBE!");
       setTimeout(() => {
         window.location.href = callbackUrl;
       }, 500);

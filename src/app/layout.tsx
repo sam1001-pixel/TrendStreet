@@ -1,16 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Plus_Jakarta_Sans, Big_Shoulders_Display } from "next/font/google";
+import { Montserrat, Big_Shoulders_Display } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
-const serif = Playfair_Display({
+// OFFVYBE typography: Montserrat (ExtraBold / Medium per the brand sheet) for text and headings.
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
-const sans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
   variable: "--font-sans",
   display: "swap",
 });
@@ -31,20 +28,22 @@ import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { StoreJsonLd } from "@/components/seo/JsonLd";
 import { ScrollReveal } from "@/components/premium/ScrollReveal";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { HideOnAdmin } from "@/components/HideOnAdmin";
 import { SITE_URL } from "@/lib/site";
+import { getCachedStorefront } from "@/lib/catalog";
 
 // viewport-fit=cover lets env(safe-area-inset-*) work, so bottom bars clear the iPhone home indicator.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#F9F6F4",
+  themeColor: "#0A0A0A",
 };
 
 export const metadata: Metadata = {
-  title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
+  title: "OFFVYBE | Wear Your Own Vibe — Oversized, Boxy Fit & Jackets",
   description:
-    "Trend Street is the definitive contemporary luxury menswear house. Specializing in 520gsm loopback oversized hoodies, boxy fit knits, and handcrafted flight jackets.",
+    "OFFVYBE is the definitive contemporary luxury menswear house. Specializing in 520gsm loopback oversized hoodies, boxy fit knits, and handcrafted flight jackets.",
   keywords: [
     "trend street",
     "oversized hoodie",
@@ -55,11 +54,11 @@ export const metadata: Metadata = {
     "suede bomber jacket",
     "mens streetwear luxury",
     "menswear",
-    "the style hub",
+    "wear your own vibe",
   ],
-  authors: [{ name: "Trend Street Studio" }],
-  creator: "Trend Street",
-  publisher: "Trend Street Luxury Apparels Private Limited",
+  authors: [{ name: "OFFVYBE Studio" }],
+  creator: "OFFVYBE",
+  publisher: "OFFVYBE",
   metadataBase: new URL(SITE_URL),
   other: {
     "geo.region": "IN-MH",
@@ -71,40 +70,48 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: SITE_URL,
-    title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
+    title: "OFFVYBE | Wear Your Own Vibe — Oversized, Boxy Fit & Jackets",
     description:
       "Contemporary luxury menswear engineering. 520gsm Japanese loopback hoodies, boxy fit architecture, and handcrafted jackets.",
-    siteName: "Trend Street",
+    siteName: "OFFVYBE",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Trend Street | The Style Hub",
+    title: "OFFVYBE | Wear Your Own Vibe",
     description: "Contemporary Streetwear & Luxury Menswear: Oversized, Boxy Fit, Jackets.",
-    creator: "@trendstreet",
+    creator: "@offvybe",
   },
 };
 
-export default function RootLayout({
+// Re-render pages with the latest catalog at most once a minute (admin saves refresh it immediately).
+export const revalidate = 60;
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { products, videoReviews } = await getCachedStorefront();
   return (
     <html lang="en">
       <head>
         <StoreJsonLd />
       </head>
-      <body className={`${sans.variable} ${serif.variable} ${display.variable} min-h-screen flex flex-col bg-ivory text-espresso antialiased`}>
+      <body className={`${montserrat.variable} ${display.variable} min-h-screen flex flex-col bg-ivory text-espresso antialiased`}>
         <SmoothScroll />
         <AdminAuthProvider>
-          <StoreProvider>
+          <StoreProvider initialProducts={products} initialVideoReviews={videoReviews}>
             <UserAuthProvider>
-              <Header />
+              <HideOnAdmin>
+                <Header />
+              </HideOnAdmin>
               <main className="flex-1">{children}</main>
               <ScrollReveal />
-              <Footer />
-              <CartDrawer />
-              <QuickViewModal />
+              <HideOnAdmin>
+                <Footer />
+                <CartDrawer />
+                <QuickViewModal />
+              </HideOnAdmin>
               <MobileBottomNav />
             </UserAuthProvider>
           </StoreProvider>

@@ -4,7 +4,7 @@ import { signSessionToken, verifySessionToken } from "../../src/lib/auth";
 import { validateAdminCredentials } from "../../src/lib/admin-credentials";
 
 test("auth - signs and verifies valid session tokens", async () => {
-  const email = "concierge@trendstreet.com";
+  const email = "concierge@offvybe.com";
   const token = await signSessionToken(email);
 
   assert.equal(typeof token, "string");
@@ -17,7 +17,7 @@ test("auth - signs and verifies valid session tokens", async () => {
 });
 
 test("auth - rejects tampered tokens", async () => {
-  const token = await signSessionToken("admin@trendstreet.com");
+  const token = await signSessionToken("admin@offvybe.com");
   const [b64Payload, signature] = token.split(".");
 
   // Modify payload
@@ -63,7 +63,7 @@ test("auth - validateAdminCredentials enforces strict case-sensitivity on passwo
 test("auth - validateAdminCredentials has no built-in usernames or passwords", () => {
   for (const [id, pass] of [
     ["admin", "admin"],
-    ["admin@trendstreet.in", "TrendStreetAdmin2026!"],
+    ["admin@offvybe.in", "TrendStreetAdmin2026!"],
     ["root", "password"],
     ["demo", "123456"],
     [TEST_EMAIL, "admin"],

@@ -109,16 +109,46 @@ model Product {
   featured         Boolean         @default(false)
   isNew            Boolean         @default(false)
   isBestSeller     Boolean         @default(false)
+  /// Product videos (MP4/WEBM URLs) shown in the product page gallery after the photos.
+  videos           String[]        @default([])
+  /// Hidden from the shop (kept for order history). Admins can bring it back any time.
+  archived         Boolean         @default(false)
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
   variants         ProductVariant[]
   images           ProductImage[]
   wishlistItems    WishlistItem[]
+  reviews          Review[]
 
   @@index([category])
   @@index([featured])
   @@map("products")
+}
+
+/// Customer reviews managed in Admin → Reviews. A review can carry a video (shown in the homepage reel and on the product page).
+model Review {
+  id         String   @id @default(cuid())
+  productId  String?
+  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  author     String
+  city       String?
+  rating     Int      @default(5)
+  title      String?
+  comment    String   @db.Text
+  videoUrl   String?
+  posterUrl  String?
+  verified   Boolean  @default(true)
+  published  Boolean  @default(true)
+  /// Show in the homepage video reviews reel.
+  featured   Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([productId])
+  @@index([published, featured])
+  @@map("reviews")
 }
 
 model ProductImage {
@@ -311,8 +341,8 @@ model Coupon {
 
 model SiteSettings {
   id                 String   @id @default("global")
-  storeName          String   @default("Trend Street")
-  storeTagline       String   @default("The Style Hub")
+  storeName          String   @default("OFFVYBE")
+  storeTagline       String   @default("Wear Your Own Vibe")
   announcementText   String?
   announcementLink   String?
   announcementActive Boolean  @default(true)
@@ -324,7 +354,7 @@ model SiteSettings {
   heroSecondaryCta   String   @default("/lookbook")
   marqueeText        String[]
   conciergePhone     String   @default("+91 98200 12345")
-  conciergeEmail     String   @default("concierge@trendstreet.in")
+  conciergeEmail     String   @default("concierge@offvybe.in")
   storefrontSections Json?
   updatedAt          DateTime @updatedAt
 

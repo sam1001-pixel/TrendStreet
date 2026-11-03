@@ -429,7 +429,7 @@ export default function AdminOrdersPage() {
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-burgundy/15">
               <div>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-burgundy">Trend Street Dispatch Manifest</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-burgundy">OFFVYBE Dispatch Manifest</span>
                 <h3 className="font-serif text-xl font-bold text-espresso">
                   Packing Slip #{activeSlipOrder.orderNumber}
                 </h3>

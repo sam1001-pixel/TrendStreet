@@ -109,7 +109,7 @@ export default function AdminInventoryPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `trendstreet-inventory-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `offvybe-inventory-${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();

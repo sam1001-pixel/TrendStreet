@@ -7,10 +7,10 @@ import { TrustStrip } from "@/components/premium/TrustStrip";
 import { CountUp } from "@/components/premium/CountUp";
 
 export const metadata: Metadata = {
-  title: "Why Trend Street | Three Core Silhouettes, Made Heavy",
+  title: "Why OFFVYBE | Three Core Silhouettes, Made Heavy",
   description:
-    "Why Trend Street makes only three things — oversized, boxy fit and jackets — in heavyweight fabric built to last. Our mills, our process and our promises.",
-  alternates: { canonical: "/why-trend-street" },
+    "Why OFFVYBE makes only three things — oversized, boxy fit and jackets — in heavyweight fabric built to last. Our mills, our process and our promises.",
+  alternates: { canonical: "/why-offvybe" },
 };
 
 const PILLARS = [
@@ -52,7 +52,7 @@ const STATS = [
   { value: 30, suffix: " days", label: "Doorstep exchange window" },
 ];
 
-export default function WhyTrendStreetPage() {
+export default function WhyOffvybePage() {
   return (
     <div className="space-y-16 pb-16 sm:space-y-24 sm:pb-24">
       {/* Hero */}
@@ -67,7 +67,7 @@ export default function WhyTrendStreetPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-espresso via-espresso/60 to-transparent" />
         <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-24 sm:px-8 sm:pb-20 sm:pt-36">
-          <p className="font-mono text-xs uppercase tracking-[0.25em] text-gold">Why Trend Street</p>
+          <p className="font-mono text-xs uppercase tracking-[0.25em] text-gold">Why OFFVYBE</p>
           <h1 className="mt-3 font-display text-5xl font-black uppercase leading-[0.85] sm:text-7xl lg:text-8xl">
             Three things.
             <br />
@@ -84,7 +84,7 @@ export default function WhyTrendStreetPage() {
       <ManifestoReveal />
 
       {/* Numbers */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-8" aria-label="Trend Street in numbers">
+      <section className="mx-auto max-w-6xl px-4 sm:px-8" aria-label="OFFVYBE in numbers">
         <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-burgundy/15 bg-burgundy/15 lg:grid-cols-4">
           {STATS.map((s) => (
             <div key={s.label} className="bg-ivory-light p-5 sm:p-8">
@@ -133,7 +133,7 @@ export default function WhyTrendStreetPage() {
           <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-5 lg:gap-4">
             {PROCESS.map(({ icon: Icon, title, line }, i) => (
               <li key={title} className="relative flex gap-4 lg:block">
-                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gold text-espresso">
+                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gold text-white">
                   <Icon className="h-5 w-5" />
                 </span>
                 <span className="lg:mt-4 lg:block">
