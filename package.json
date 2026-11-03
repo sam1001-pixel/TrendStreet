@@ -12,7 +12,7 @@
     "test": "node --import tsx --test \"tests/unit/*.test.ts\"",
     "test:integrations": "tsx scripts/test-integrations.ts",
     "hash-password": "tsx scripts/hash-password.ts",
-    "db:push": "prisma db push"
+    "db:push": "node scripts/db-push.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
