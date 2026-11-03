@@ -10,31 +10,57 @@ import { TrustStrip } from "@/components/premium/TrustStrip";
 import { HangingRail } from "@/components/premium/HangingRail";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { VideoReviewsReel } from "@/components/VideoReviews";
+import { CategoryStories } from "@/components/home/CategoryStories";
+import { FlatPriceBanner } from "@/components/home/FlatPriceBanner";
+import { CategoryRails } from "@/components/home/CategoryRails";
+import { RecentlyViewed } from "@/components/home/RecentlyViewed";
+import { NextDropCountdown } from "@/components/home/NextDropCountdown";
 
+/**
+ * Homepage, ordered for phones: get to products fast (category shortcuts → product grid),
+ * then the price hook, then the full range by fit, then brand story and social proof.
+ * Every section can be switched off in Admin → Settings → Storefront sections.
+ */
 export default function HomePage() {
   const { siteSettings, videoReviews } = useStore();
+  const on = (key: keyof NonNullable<typeof siteSettings.storefrontSections>) => siteSettings?.storefrontSections?.[key] !== false;
 
   return (
-    <div className="space-y-14 bg-bone pb-16 text-stone-900 sm:space-y-24 sm:pb-24 md:space-y-28">
-      {siteSettings?.storefrontSections?.hero !== false && <CinematicHero />}
+    <div className="space-y-12 bg-bone pb-16 text-stone-900 sm:space-y-24 sm:pb-24 md:space-y-28">
+      {on("hero") && <CinematicHero />}
 
       <div className="!mt-0">
         <VelocityMarquee phrases={siteSettings.marqueePhrases} />
       </div>
 
-      {siteSettings?.storefrontSections?.trustStrip !== false && <TrustStrip />}
+      {on("categoryStories") && (
+        <div className="!mt-5 sm:!mt-10">
+          <CategoryStories />
+        </div>
+      )}
+
+      {/* Countdown to the next drop — only when a date is set in Admin → Settings → Next drop */}
+      {on("nextDrop") && <NextDropCountdown />}
 
       {/* Products first: what's new and what sells */}
-      {siteSettings?.storefrontSections?.dropList !== false && <ProductShowcase />}
+      {on("dropList") && <ProductShowcase />}
+
+      {on("trustStrip") && <TrustStrip />}
+
+      {on("priceBanner") && <FlatPriceBanner />}
+
+      {on("categoryRails") && <CategoryRails />}
+
+      {on("recentlyViewed") && <RecentlyViewed />}
 
       {/* Customer video reviews (Admin → Reviews, marked Homepage). Renders nothing until there are some. */}
-      {siteSettings?.storefrontSections?.videoReviews !== false && <VideoReviewsReel reviews={videoReviews} />}
+      {on("videoReviews") && <VideoReviewsReel reviews={videoReviews} />}
 
-      {siteSettings?.storefrontSections?.silhouetteAccordion !== false && <SilhouetteAccordion />}
+      {on("silhouetteAccordion") && <SilhouetteAccordion />}
 
-      {siteSettings?.storefrontSections?.hangingRail !== false && <HangingRail />}
+      {on("hangingRail") && <HangingRail />}
 
-      {siteSettings?.storefrontSections?.runwayReel !== false && <ScrollProductReel />}
+      {on("runwayReel") && <ScrollProductReel />}
     </div>
   );
 }

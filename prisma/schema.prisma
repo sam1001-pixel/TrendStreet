@@ -120,6 +120,7 @@ model Product {
   images           ProductImage[]
   wishlistItems    WishlistItem[]
   reviews          Review[]
+  stockAlerts      StockAlert[]
 
   @@index([category])
   @@index([featured])
@@ -356,9 +357,33 @@ model SiteSettings {
   conciergePhone     String   @default("+91 98200 12345")
   conciergeEmail     String   @default("concierge@offvybe.in")
   storefrontSections Json?
+  /// Next drop countdown on the homepage (hidden when empty or in the past).
+  nextDropAt         DateTime?
+  nextDropTitle      String?
   updatedAt          DateTime @updatedAt
 
   @@map("site_settings")
+}
+
+enum AlertKind {
+  RESTOCK // "Notify me" on a sold-out product (optionally one size)
+  DROP    // "Remind me" for the next drop
+}
+
+/// Shoppers who asked to hear when something is back in stock, or when the next drop goes live.
+model StockAlert {
+  id         String    @id @default(cuid())
+  kind       AlertKind @default(RESTOCK)
+  productId  String?
+  product    Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size       String?
+  email      String?
+  phone      String?
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([kind, productId, notifiedAt])
+  @@map("stock_alerts")
 }
 
 // ----------------------------------------------------

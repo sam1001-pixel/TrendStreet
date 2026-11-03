@@ -30,7 +30,7 @@ export function ScrollReveal() {
           return Math.abs(ra.top - rb.top) > 40 ? ra.top - rb.top : ra.left - rb.left;
         })
         .forEach((el, i) => {
-          const delay = Math.min(i, 6) * 80;
+          const delay = Math.min(i, 6) * (window.innerWidth < 640 ? 45 : 80);
           el.style.setProperty("--reveal-delay", `${delay}ms`);
           el.classList.add("reveal-in");
           // Hand transitions back to the card's own hover styles once the entrance is done.
@@ -51,7 +51,8 @@ export function ScrollReveal() {
           requestAnimationFrame(flush);
         }
       },
-      { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
+      // Start a little before the card reaches the screen so it is already settling as it appears.
+      { rootMargin: "0px 0px 5% 0px", threshold: 0.01 }
     );
 
     const prime = (el: HTMLElement, index: number) => {

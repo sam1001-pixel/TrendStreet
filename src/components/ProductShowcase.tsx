@@ -12,14 +12,15 @@ type Tab = { id: string; label: string; href: string; pick: (all: Product[]) => 
 const TABS: Tab[] = [
   { id: "new", label: "New in", href: "/shop?sort=newest", pick: (a) => a.filter((p) => p.isNew) },
   { id: "best", label: "Best sellers", href: "/shop", pick: (a) => a.filter((p) => p.isBestSeller) },
-  { id: "value", label: "Under ₹2,999", href: "/shop?budget=u2k", pick: (a) => a.filter((p) => p.price < 3000).sort((x, y) => x.price - y.price) },
+  { id: "trending", label: "Trending", href: "/shop", pick: (a) => a.filter((p) => p.featured) },
   { id: "Oversized", label: "Oversized", href: "/oversized", pick: (a) => a.filter((p) => p.category === "Oversized") },
+  { id: "Jeans", label: "Jeans", href: "/shop?category=Jeans", pick: (a) => a.filter((p) => p.category === "Jeans") },
   { id: "Boxy Fit", label: "Boxy Fit", href: "/boxy-fit", pick: (a) => a.filter((p) => p.category === "Boxy Fit") },
   { id: "Jackets", label: "Jackets", href: "/jackets", pick: (a) => a.filter((p) => p.category === "Jackets") },
 ];
 
 /**
- * One product module for the homepage: tabs across the top, a 2 × 2 grid on phones
+ * One product module for the homepage: tabs across the top, a 2 × 3 grid on phones
  * (with a full-width "view all" button) and a 3–4 column grid on larger screens.
  */
 export function ProductShowcase() {
@@ -56,22 +57,22 @@ export function ProductShowcase() {
               role="tab"
               aria-selected={t.id === tabId}
               onClick={() => setTabId(t.id)}
-              className={`inline-flex min-h-[40px] flex-shrink-0 snap-start items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-xs font-bold transition-colors sm:px-4 ${
+              className={`inline-flex min-h-[44px] flex-shrink-0 snap-start items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-xs font-bold transition-colors sm:px-4 ${
                 t.id === tabId ? "bg-espresso text-ivory" : "bg-white text-espresso/70 ring-1 ring-burgundy/15 hover:text-espresso"
               }`}
             >
               {t.label}
-              <span className={`rounded-full px-1.5 text-[10px] ${t.id === tabId ? "bg-white/15" : "bg-ivory-dark"}`}>{count}</span>
+              <span className={`rounded-full px-1.5 text-[11px] ${t.id === tabId ? "bg-white/15" : "bg-ivory-dark"}`}>{count}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Phones: a tidy 2 × 2 grid (no half-cut cards). Tablet/desktop: 3–4 columns, up to 8 pieces. */}
+      {/* Phones: a tidy 2 × 3 grid (no half-cut cards). Tablet/desktop: 3–4 columns, up to 8 pieces. */}
       <ul key={tab.id} className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-14">
         {items.map((p, i) => (
-          <li key={p.id} className={i >= 4 ? "hidden sm:block" : undefined}>
-            <ProductCard product={p} priority={i < 2} compact />
+          <li key={p.id} className={i >= 6 ? "hidden sm:block" : undefined}>
+            <ProductCard product={p} priority={false} compact />
           </li>
         ))}
       </ul>

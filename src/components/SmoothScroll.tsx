@@ -5,34 +5,37 @@ import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 
 /**
- * Global Lenis Inertial Smooth Scrolling Provider.
- * Delivers editorial, frictionless, luxury momentum scrolling across all viewports.
+ * Lenis inertial wheel scrolling for mouse / trackpad users.
+ *
+ * - Phones and tablets keep the browser's own touch scrolling, which is already smooth and
+ *   GPU-driven. Running Lenis there only added a JavaScript loop on every frame (battery + jank).
+ * - Drawers, modals and anything marked `data-lenis-prevent` scroll natively, so a wheel over
+ *   the bag or quick view scrolls that panel instead of the page behind it.
  */
 export function SmoothScroll() {
   const pathname = usePathname();
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    // Respect system reduced-motion preference
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const touchFirst = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    if (reduceMotion || touchFirst) return;
 
     const lenis = new Lenis({
       autoRaf: true,
-      duration: 1.15,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Luxury exponential decay
+      duration: 1.05,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 0.95,
-      touchMultiplier: 1.2,
+      wheelMultiplier: 1,
       infinite: false,
+      prevent: (node: HTMLElement) =>
+        !!node.closest?.('[role="dialog"], [aria-modal="true"], [data-lenis-prevent], textarea, select'),
     });
 
     lenisRef.current = lenis;
-
-    // Expose lenis instance globally for dialog locks & programmatic navigation
+    // Exposed so overlays can pause it (see lib/scroll-lock.ts).
     (window as unknown as { lenis?: Lenis }).lenis = lenis;
 
     return () => {
@@ -42,11 +45,9 @@ export function SmoothScroll() {
     };
   }, []);
 
-  // Reset scroll position on route change
+  // New page → start at the top (Lenis keeps its own scroll position otherwise).
   useEffect(() => {
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true });
-    }
+    lenisRef.current?.scrollTo(0, { immediate: true });
   }, [pathname]);
 
   return null;

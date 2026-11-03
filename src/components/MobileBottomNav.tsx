@@ -74,12 +74,12 @@ export const MobileBottomNav: React.FC = () => {
               <div className="relative">
                 <Icon className={`w-5 h-5 ${item.isActive ? "stroke-[2.5]" : "stroke-[1.75]"}`} />
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-crimson text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-in zoom-in-50 duration-200">
+                  <span className="absolute -top-1.5 -right-2 bg-crimson text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs animate-in zoom-in-50 duration-200">
                     {item.badge > 9 ? "9+" : item.badge}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] tracking-tight mt-0.5 font-medium">{item.label}</span>
+              <span className="text-[11px] tracking-tight mt-0.5 font-medium">{item.label}</span>
               {item.isActive && (
                 <span className="w-1.5 h-1.5 rounded-full bg-crimson absolute bottom-0.5" />
               )}

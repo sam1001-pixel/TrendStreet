@@ -52,7 +52,7 @@ export default function ShippingPolicyPage() {
             <div className="p-4 bg-white rounded-2xl border border-burgundy/15 shadow-xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-burgundy">Metro Hubs</span>
-                <span className="text-[10px] bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded">2–3 Days</span>
+                <span className="text-[11px] bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded">2–3 Days</span>
               </div>
               <p className="text-xs text-espresso/70">
                 Mumbai, Delhi NCR, Bengaluru, Hyderabad, Chennai, Kolkata, and Pune.
@@ -63,7 +63,7 @@ export default function ShippingPolicyPage() {
             <div className="p-4 bg-white rounded-2xl border border-burgundy/15 shadow-xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-burgundy">Tier 1 & 2 Cities</span>
-                <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">3–4 Days</span>
+                <span className="text-[11px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">3–4 Days</span>
               </div>
               <p className="text-xs text-espresso/70">
                 Ahmedabad, Chandigarh, Jaipur, Lucknow, Kochi, Surat, Nagpur, and Indore.
@@ -74,7 +74,7 @@ export default function ShippingPolicyPage() {
             <div className="p-4 bg-white rounded-2xl border border-burgundy/15 shadow-xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-burgundy">Rest of India</span>
-                <span className="text-[10px] bg-gold/30 text-espresso font-bold px-2 py-0.5 rounded">4–6 Days</span>
+                <span className="text-[11px] bg-gold/30 text-espresso font-bold px-2 py-0.5 rounded">4–6 Days</span>
               </div>
               <p className="text-xs text-espresso/70">
                 Regional hubs, state interiors, and northeastern territories.

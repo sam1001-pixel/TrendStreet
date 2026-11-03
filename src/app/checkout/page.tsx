@@ -107,7 +107,8 @@ export default function CheckoutPage() {
     state: user.savedAddresses[0]?.state || "",
     postalCode: user.savedAddresses[0]?.postalCode || "",
     country: "India",
-    deliveryMethod: "express" as "standard" | "express" | "vip_courier",
+    // Standard is the default: it is what the bag drawer quotes, so the total doesn't jump at checkout.
+    deliveryMethod: "standard" as "standard" | "express" | "vip_courier",
     paymentMethod: "upi" as "card" | "upi" | "netbanking" | "cod",
     upiApp: "gpay" as "gpay" | "phonepe" | "paytm" | "bhim" | "custom",
     upiId: "",
@@ -514,7 +515,7 @@ export default function CheckoutPage() {
                   onClick={() => setStep(n)}
                   aria-current={current ? "step" : undefined}
                   className={`flex min-h-[40px] w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 transition-colors sm:w-auto ${
-                    current ? "bg-burgundy font-bold text-gold" : done ? "bg-burgundy/10 text-burgundy" : "bg-ivory-dark text-espresso/50"
+                    current ? "bg-burgundy font-bold text-gold" : done ? "bg-burgundy/10 text-burgundy" : "bg-ivory-dark text-espresso/60"
                   }`}
                 >
                   <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${current ? "bg-gold/20" : done ? "bg-burgundy text-ivory" : "bg-white/70"}`}>
@@ -534,7 +535,7 @@ export default function CheckoutPage() {
         className="flex min-h-[48px] items-center justify-between rounded-xl border border-burgundy/15 bg-white px-4 text-sm lg:hidden"
       >
         <span className="text-espresso/70">
-          {cart.reduce((s, i) => s + i.quantity, 0)} items · <span className="text-burgundy underline underline-offset-2">View summary</span>
+          {(() => { const n = cart.reduce((s, i) => s + i.quantity, 0); return `${n} ${n === 1 ? "item" : "items"}`; })()} · <span className="text-burgundy underline underline-offset-2">View summary</span>
         </span>
         <span className="font-bold text-burgundy">{formatPrice(cartTotal)}</span>
       </a>
@@ -557,7 +558,7 @@ export default function CheckoutPage() {
                   <MapPin className="w-5 h-5 text-burgundy" />
                   <span>Delivery address</span>
                 </h2>
-                <span className="text-[11px] text-espresso/50">India only</span>
+                <span className="text-[11px] text-espresso/60">India only</span>
               </div>
 
               {step1Error && (
@@ -802,7 +803,7 @@ export default function CheckoutPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm text-espresso">Express</span>
-                        <span className="bg-gold text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                        <span className="bg-gold text-white text-[11px] font-bold px-2 py-0.5 rounded uppercase">
                           Recommended
                         </span>
                       </div>
@@ -812,7 +813,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <span className="flex-shrink-0 text-sm font-bold text-green-800">
-                    {cartSubtotal >= 1999 ? "Free" : formatPrice(250)}
+                    {pricing.isFreeShipping ? "Free" : formatPrice(250)}
                   </span>
                 </label>
 
@@ -841,7 +842,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <span className="flex-shrink-0 text-sm font-bold text-green-800">
-                    {cartSubtotal >= 1999 ? "Free" : formatPrice(150)}
+                    {pricing.isFreeShipping ? "Free" : formatPrice(150)}
                   </span>
                 </label>
               </div>

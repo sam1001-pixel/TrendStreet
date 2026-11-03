@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -34,6 +34,10 @@ import { ProductReviews } from "@/components/VideoReviews";
 import { formatPrice } from "@/lib/pricing";
 import { checkPincodeServiceability } from "@/lib/pincode";
 import { SITE_URL } from "@/lib/site";
+import { lockScroll } from "@/lib/scroll-lock";
+import { rememberViewed } from "@/lib/recently-viewed";
+import { useSwipeToClose } from "@/hooks/useSwipeToClose";
+import { AlertSignup } from "@/components/AlertSignup";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -65,6 +69,11 @@ export default function ProductDetailPage() {
   // The phone add-to-bag bar only appears once the main Add to bag button has scrolled away.
   const mainCtaRef = useRef<HTMLDivElement>(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const sizeRef = useRef<HTMLDivElement>(null);
+  const sizeSheetRef = useRef<HTMLDivElement>(null);
+  const closeSizeGuide = useCallback(() => setIsSizeGuideOpen(false), []);
+  useSwipeToClose(sizeSheetRef, { direction: "down", onClose: closeSizeGuide, enabled: isSizeGuideOpen });
+  const [sizeError, setSizeError] = useState(false);
   useEffect(() => {
     let frame = 0;
     const check = () => {
@@ -85,9 +94,27 @@ export default function ProductDetailPage() {
     };
   }, [product?.id]);
 
+  // Remember this piece for the "Recently viewed" row on the homepage.
+  useEffect(() => {
+    if (product?.id) rememberViewed(product.id);
+  }, [product?.id]);
+
+  // Size chart sheet: lock the page behind it.
+  useEffect(() => {
+    if (!isSizeGuideOpen) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsSizeGuideOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isSizeGuideOpen]);
+
   useEffect(() => {
     if (product) {
-      if (product.sizes?.length && !selectedSize) {
+      // Only one size (e.g. free size)? Pick it. Otherwise the shopper chooses — a pre-picked size causes wrong-size orders.
+      if (product.sizes?.length === 1 && !selectedSize) {
         setSelectedSize(product.sizes[0]);
       }
       if (product.colors?.length && !selectedColor) {
@@ -117,8 +144,17 @@ export default function ProductDetailPage() {
 
   const isFavorited = isInWishlist(product.id);
 
+  /** True when a size is chosen; otherwise points the shopper at the size buttons. */
+  const requireSize = () => {
+    if (selectedSize) return true;
+    setSizeError(true);
+    sizeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return false;
+  };
+
   const handleAddToCart = () => {
-    addToCart(product, selectedSize || product.sizes[0], selectedColor || product.colors[0]?.name, quantity);
+    if (!requireSize()) return;
+    addToCart(product, selectedSize, selectedColor || product.colors[0]?.name, quantity);
     setAddedAnimation(true);
     setTimeout(() => setAddedAnimation(false), 2000);
   };
@@ -180,13 +216,13 @@ export default function ProductDetailPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-12 sm:space-y-16 pb-24 md:pb-16">
       {/* 1. BREADCRUMB NAVIGATION */}
       <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-xs text-espresso/60 overflow-x-auto no-scrollbar whitespace-nowrap">
-        <Link href="/" className="hover:text-burgundy transition-colors">Home</Link>
+        <Link href="/" className="py-3 hover:text-burgundy transition-colors">Home</Link>
         <span>/</span>
-        <Link href="/shop" className="hover:text-burgundy transition-colors">Men</Link>
+        <Link href="/shop" className="py-3 hover:text-burgundy transition-colors">Men</Link>
         <span>/</span>
         <Link
           href={`/${product.category.toLowerCase().replace(/\s+/g, "-")}`}
-          className="hover:text-burgundy font-medium transition-colors"
+          className="py-3 hover:text-burgundy font-medium transition-colors"
         >
           {product.category}
         </Link>
@@ -230,7 +266,7 @@ export default function ProductDetailPage() {
                 <span className="rounded bg-espresso px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-ivory shadow-sm">New drop</span>
               )}
               {product.isBestSeller && (
-                <span className="rounded bg-burgundy px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-gold shadow-sm">Best seller</span>
+                <span className="rounded bg-burgundy px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest text-gold-light shadow-sm">Best seller</span>
               )}
             </div>
 
@@ -318,7 +354,7 @@ export default function ProductDetailPage() {
                 <a href="#reviews" className="flex min-h-[32px] items-center space-x-1.5 bg-ivory px-2.5 py-1 rounded-full border border-burgundy/15">
                   <Star className="w-3.5 h-3.5 fill-gold text-gold" />
                   <span className="font-bold text-espresso text-xs">{product.rating.toFixed(1)}</span>
-                  <span className="text-espresso/50 text-[11px] underline">({product.reviewsCount} reviews)</span>
+                  <span className="text-espresso/60 text-[11px] underline">({product.reviewsCount} reviews)</span>
                 </a>
               ) : (
                 <span className="rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-gold-dark">New drop</span>
@@ -336,7 +372,7 @@ export default function ProductDetailPage() {
                 {formatPrice(product.price)}
               </span>
               {product.originalPrice && (
-                <span className="text-sm sm:text-base text-espresso/40 line-through">
+                <span className="text-sm sm:text-base text-espresso/60 line-through">
                   {formatPrice(product.originalPrice)}
                 </span>
               )}
@@ -360,7 +396,7 @@ export default function ProductDetailPage() {
                 Get it for <strong className="text-burgundy font-bold">{formatPrice(Math.round(product.price * 0.9))}</strong> with code <strong className="font-mono text-crimson">TREND10</strong>
               </span>
             </div>
-            <span className="text-[10px] font-bold uppercase text-burgundy bg-white px-2 py-0.5 rounded border border-burgundy/20 flex-shrink-0">
+            <span className="text-[11px] font-bold uppercase text-burgundy bg-white px-2 py-0.5 rounded border border-burgundy/20 flex-shrink-0">
               Save 10%
             </span>
           </div>
@@ -370,7 +406,7 @@ export default function ProductDetailPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-bold text-espresso">
               <span>Color: <span className="font-semibold text-burgundy">{selectedColor || product.colors[0]?.name}</span></span>
-              <span className="text-[11px] text-espresso/50 font-normal">{product.colors.length} Variants</span>
+              <span className="text-[11px] text-espresso/60 font-normal">{product.colors.length} Variants</span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {product.colors.map((color) => {
@@ -396,9 +432,11 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Size Selector with Oval Buttons & Size Chart */}
-          <div className="space-y-2.5 pt-1">
+          <div ref={sizeRef} className={`space-y-2.5 rounded-2xl pt-1 transition-colors ${sizeError ? "-mx-2 bg-crimson/5 px-2 pb-2 ring-1 ring-crimson/40" : ""}`}>
             <div className="flex items-center justify-between text-xs font-bold text-espresso">
-              <span>Please select a size.</span>
+              <span aria-live="polite" className={sizeError ? "text-crimson" : ""}>
+                {sizeError ? "Choose your size to continue" : selectedSize ? `Size: ${selectedSize}` : "Select a size"}
+              </span>
               <button
                 onClick={() => setIsSizeGuideOpen(true)}
                 className="-my-2 -mr-2 flex min-h-[44px] items-center gap-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-burgundy hover:underline"
@@ -410,11 +448,15 @@ export default function ProductDetailPage() {
 
             <div className="flex flex-wrap gap-2">
               {product.sizes.map((size) => {
-                const isSelected = (selectedSize || product.sizes[0]) === size;
+                const isSelected = selectedSize === size;
                 return (
                   <button
                     key={size}
-                    onClick={() => setSelectedSize(size)}
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      setSelectedSize(size);
+                      setSizeError(false);
+                    }}
                     className={`min-w-[52px] h-11 px-3 text-xs font-bold rounded-full border transition-all flex items-center justify-center ${
                       isSelected
                         ? "bg-burgundy text-gold border-burgundy shadow-sm scale-105"
@@ -498,13 +540,28 @@ export default function ProductDetailPage() {
             </div>
 
             {product.inStock && (
-              <Link
-                href="/checkout"
-                onClick={() => addToCart(product, selectedSize || product.sizes[0], selectedColor || product.colors[0]?.name, quantity)}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!requireSize()) return;
+                  addToCart(product, selectedSize, selectedColor || product.colors[0]?.name, quantity);
+                  router.push("/checkout");
+                }}
                 className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-espresso text-sm font-bold uppercase tracking-[0.15em] text-ivory shadow-md transition-colors hover:bg-black"
               >
                 Buy it now
-              </Link>
+              </button>
+            )}
+
+            {/* Sold out → collect a contact so we can bring them back when it restocks */}
+            {!product.inStock && (
+              <div id="notify-me" className="scroll-mt-28 space-y-2.5 rounded-2xl border border-burgundy/15 bg-white p-4">
+                <p className="text-sm font-bold text-espresso">Sold out — get it when it&apos;s back</p>
+                <p className="text-xs text-espresso/70">
+                  {selectedSize ? `We'll message you when size ${selectedSize} is back.` : "Pick your size above (optional) and we'll message you the moment it restocks."}
+                </p>
+                <AlertSignup kind="RESTOCK" productId={product.id} size={selectedSize || undefined} />
+              </div>
             )}
           </div>
 
@@ -544,7 +601,7 @@ export default function ProductDetailPage() {
                 <MapPin className="w-4 h-4 text-burgundy" />
                 <span>Delivery & Shipping Estimate</span>
               </div>
-              <span className="text-[11px] text-espresso/50 font-normal">Across India</span>
+              <span className="text-[11px] text-espresso/60 font-normal">Across India</span>
             </div>
 
             <form onSubmit={handleCheckDelivery} className="flex gap-2">
@@ -681,21 +738,24 @@ export default function ProductDetailPage() {
           <div className="min-w-0">
             <span className="block truncate text-xs font-bold text-espresso">{product.name}</span>
             <span className="text-xs text-espresso/60">
-              <strong className="font-serif text-burgundy">{formatPrice(product.price)}</strong> · Size {selectedSize || product.sizes[0]}
+              <strong className="font-serif text-burgundy">{formatPrice(product.price)}</strong> · {selectedSize ? `Size ${selectedSize}` : "Pick a size"}
             </span>
           </div>
         </div>
 
         <button
-          onClick={handleAddToCart}
-          disabled={!product.inStock}
+          onClick={
+            product.inStock
+              ? handleAddToCart
+              : () => document.getElementById("notify-me")?.scrollIntoView({ behavior: "smooth", block: "center" })
+          }
           tabIndex={showStickyBar ? 0 : -1}
           className={`flex min-h-[44px] flex-shrink-0 items-center gap-1.5 rounded-xl px-4 text-xs font-bold uppercase tracking-wider shadow-md transition-colors disabled:opacity-50 ${
             addedAnimation ? "bg-green-800 text-white" : "bg-burgundy text-gold hover:bg-crimson"
           }`}
         >
           {addedAnimation ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
-          <span>{addedAnimation ? "Added" : product.inStock ? "Add to bag" : "Sold out"}</span>
+          <span>{addedAnimation ? "Added" : product.inStock ? "Add to bag" : "Notify me"}</span>
         </button>
       </div>
 
@@ -704,7 +764,7 @@ export default function ProductDetailPage() {
         <section className="pt-8 border-t border-burgundy/15 space-y-6">
           <div className="flex items-end justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-crimson block mb-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-crimson block mb-0.5">
                 Complete The Silhouette
               </span>
               <h2 className="font-serif text-2xl font-bold text-espresso">
@@ -740,6 +800,7 @@ export default function ProductDetailPage() {
           onClick={(e) => e.target === e.currentTarget && setIsSizeGuideOpen(false)}
         >
           <div
+            ref={sizeSheetRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="size-guide-title"
@@ -804,7 +865,7 @@ export default function ProductDetailPage() {
                       {headers.map((h, i) => (
                         <th key={i} className="px-2 py-2.5 text-[11px] font-bold uppercase tracking-wide first:pl-3">
                           {h}
-                          {i > 0 && <span className="block text-[10px] font-normal normal-case tracking-normal text-gold/70">{chartUnit}</span>}
+                          {i > 0 && <span className="block text-[11px] font-normal normal-case tracking-normal text-gold/70">{chartUnit}</span>}
                         </th>
                       ))}
                     </tr>

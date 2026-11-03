@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
 import { settingsFromDb, settingsToDb } from "@/lib/site-settings";
 import { requireAdminSession } from "@/lib/auth";
+import { refreshStorefront } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,7 @@ export async function PUT(req: NextRequest) {
       });
     }
 
+    refreshStorefront();
     return NextResponse.json({ settings: settingsFromDb(row) });
   } catch (err) {
     console.error("[Admin settings save]:", err);

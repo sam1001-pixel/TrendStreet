@@ -6,13 +6,15 @@ import Image from "next/image";
 import { X, Heart, Star, ShoppingBag, ArrowRight, Check, Shield, Sparkles } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
+import { lockScroll } from "@/lib/scroll-lock";
 
 export const QuickViewModal: React.FC = () => {
   const { quickViewProduct, setQuickViewProduct, addToCart, toggleWishlist, isInWishlist } = useStore();
 
   const product = quickViewProduct;
 
-  const [selectedSize, setSelectedSize] = useState<string>(product?.sizes[0] || "");
+  const [selectedSize, setSelectedSize] = useState<string>(product?.sizes.length === 1 ? product.sizes[0] : "");
+  const [sizeError, setSizeError] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string>(product?.colors[0]?.name || "");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
@@ -20,7 +22,8 @@ export const QuickViewModal: React.FC = () => {
   // Reset state when product changes to prevent stale size/color/image from previous product
   useEffect(() => {
     if (product) {
-      setSelectedSize(product.sizes[0] || "");
+      setSelectedSize(product.sizes.length === 1 ? product.sizes[0] : "");
+      setSizeError(false);
       setSelectedColor(product.colors[0]?.name || "");
       setActiveImageIndex(0);
       setAdded(false);
@@ -36,10 +39,10 @@ export const QuickViewModal: React.FC = () => {
         setQuickViewProduct(null);
       }
     };
-    document.body.style.overflow = "hidden";
+    const unlock = lockScroll();
     window.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.body.style.overflow = "";
+      unlock();
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [product, setQuickViewProduct]);
@@ -49,16 +52,20 @@ export const QuickViewModal: React.FC = () => {
   const isFavorited = isInWishlist(product.id);
 
   const handleAddToCart = () => {
-    addToCart(product, selectedSize || product.sizes[0], selectedColor || product.colors[0]?.name, 1);
+    if (!selectedSize) {
+      setSizeError(true);
+      return;
+    }
+    addToCart(product, selectedSize, selectedColor || product.colors[0]?.name, 1);
     setAdded(true);
     setTimeout(() => {
       setAdded(false);
       setQuickViewProduct(null);
-    }, 1200);
+    }, 700);
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain" role="dialog" aria-modal="true" aria-label={`Quick view: ${product.name}`}>
       {/* Backdrop */}
       <div
         onClick={() => setQuickViewProduct(null)}
@@ -133,7 +140,7 @@ export const QuickViewModal: React.FC = () => {
                     {formatPrice(product.price)}
                   </span>
                   {product.originalPrice && (
-                    <span className="text-sm text-espresso/40 line-through">
+                    <span className="text-sm text-espresso/60 line-through">
                       {formatPrice(product.originalPrice)}
                     </span>
                   )}
@@ -145,7 +152,7 @@ export const QuickViewModal: React.FC = () => {
 
                 {/* Fabric highlight */}
                 <div className="mt-4 p-3 bg-ivory-dark rounded-lg border border-burgundy/10 text-xs">
-                  <span className="font-bold text-burgundy uppercase tracking-wider text-[10px] block">
+                  <span className="font-bold text-burgundy uppercase tracking-wider text-[11px] block">
                     Noble Fabric & Mill
                   </span>
                   <span className="text-espresso/90 font-medium">{product.fabric}</span>
@@ -154,17 +161,27 @@ export const QuickViewModal: React.FC = () => {
                 {/* Size Selector */}
                 <div className="mt-5">
                   <div className="flex justify-between items-center text-xs font-semibold text-espresso mb-2">
-                    <span>Select Size</span>
-                    <span className="text-burgundy text-[11px] underline cursor-pointer">
-                      Smart Fit Guide
+                    <span aria-live="polite" className={sizeError ? "text-crimson" : ""}>
+                      {sizeError ? "Choose your size first" : selectedSize ? `Size: ${selectedSize}` : "Select size"}
                     </span>
+                    <Link
+                      href={`/product/${product.id}`}
+                      onClick={() => setQuickViewProduct(null)}
+                      className="-my-3 flex min-h-[44px] items-center text-burgundy text-[11px] font-semibold underline"
+                    >
+                      Size chart &amp; details
+                    </Link>
                   </div>
                   <div className="grid grid-cols-4 gap-2">
                     {product.sizes.map((size) => (
                       <button
                         key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-2 text-xs font-bold rounded border transition-all ${
+                        aria-pressed={selectedSize === size}
+                        onClick={() => {
+                          setSelectedSize(size);
+                          setSizeError(false);
+                        }}
+                        className={`h-11 text-xs font-bold rounded-lg border transition-all ${sizeError && !selectedSize ? "ring-1 ring-crimson/50 " : ""}${
                           selectedSize === size
                             ? "bg-burgundy text-gold border-burgundy shadow-sm"
                             : "bg-white text-espresso border-burgundy/20 hover:border-burgundy"
@@ -186,7 +203,9 @@ export const QuickViewModal: React.FC = () => {
                       <button
                         key={color.name}
                         onClick={() => setSelectedColor(color.name)}
-                        className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
+                        aria-label={`Colour ${color.name}`}
+                        aria-pressed={selectedColor === color.name}
+                        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
                           selectedColor === color.name
                             ? "border-burgundy scale-110 shadow-sm ring-2 ring-burgundy/20"
                             : "border-black/20 opacity-80 hover:opacity-100"
@@ -209,7 +228,7 @@ export const QuickViewModal: React.FC = () => {
                   <button
                     onClick={handleAddToCart}
                     disabled={!product.inStock}
-                    className={`flex-1 py-3 px-4 rounded text-xs font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-md ${
+                    className={`flex-1 min-h-[48px] px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-md ${
                       added
                         ? "bg-green-800 text-white"
                         : "bg-burgundy hover:bg-crimson text-gold"
@@ -217,7 +236,7 @@ export const QuickViewModal: React.FC = () => {
                   >
                     {added ? (
                       <>
-                        <Check className="w-4 h-4" /> Added to Sartorial Bag
+                        <Check className="w-4 h-4" /> Added to bag
                       </>
                     ) : (
                       <>

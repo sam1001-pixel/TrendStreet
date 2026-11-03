@@ -109,7 +109,7 @@ export default function WhyOffvybePage() {
               <Link href={p.href} className="group block overflow-hidden rounded-2xl bg-white ring-1 ring-burgundy/10 transition-shadow hover:shadow-xl">
                 <span className="relative block aspect-[4/5] overflow-hidden bg-ivory-dark">
                   <Image src={p.image} alt={p.name} fill sizes="(max-width:1024px) 50vw, 25vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <span className="absolute left-2 top-2 rounded-full bg-espresso/85 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-gold">{p.spec}</span>
+                  <span className="absolute left-2 top-2 rounded-full bg-espresso/85 px-2.5 py-1 font-mono text-[11px] font-bold uppercase text-gold">{p.spec}</span>
                 </span>
                 <span className="block p-3 sm:p-5">
                   <span className="flex items-center justify-between font-serif text-lg font-bold text-espresso sm:text-xl">
@@ -137,7 +137,7 @@ export default function WhyOffvybePage() {
                   <Icon className="h-5 w-5" />
                 </span>
                 <span className="lg:mt-4 lg:block">
-                  <span className="font-mono text-[10px] text-gold">0{i + 1}</span>
+                  <span className="font-mono text-[11px] text-gold-light">0{i + 1}</span>
                   <span className="block font-semibold">{title}</span>
                   <span className="mt-1 block text-xs leading-relaxed text-ivory/70">{line}</span>
                 </span>

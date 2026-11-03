@@ -14,7 +14,7 @@ type Tab = "orders" | "details" | "addresses" | "fit";
 type Address = UserProfile["savedAddresses"][number];
 
 const input =
-  "h-12 w-full rounded-xl border border-burgundy/20 bg-white px-3 text-sm text-espresso placeholder:text-espresso/40 focus:border-burgundy focus:outline-none disabled:bg-ivory disabled:text-espresso/60";
+  "h-12 w-full rounded-xl border border-burgundy/20 bg-white px-3 text-sm text-espresso placeholder:text-espresso/60 focus:border-burgundy focus:outline-none disabled:bg-ivory disabled:text-espresso/60";
 const label = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-espresso/60";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -31,7 +31,7 @@ const TIERS = [
 ];
 
 function ProfileContent() {
-  const { user, orders, wishlist, cartItemsCount, setIsCartOpen, updateUserProfile, isDemo, enterDemo, exitDemo } = useStore();
+  const { user, orders, wishlist, cartItemsCount, setIsCartOpen, updateUserProfile, isDemo, exitDemo } = useStore();
   const { user: authUser, isAuthenticated, logout } = useUserAuth();
   const params = useSearchParams();
   const initialTab = (params.get("tab") as Tab) || "orders";
@@ -117,7 +117,7 @@ function ProfileContent() {
           </div>
           {isAuthenticated ? (
             <div className="flex flex-col gap-2 sm:items-end">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-gold bg-gold/15 px-3 py-1 rounded-full border border-gold/30">
+              <span className="text-[11px] uppercase font-bold tracking-widest text-gold bg-gold/15 px-3 py-1 rounded-full border border-gold/30">
                 Atelier Member
               </span>
               <button
@@ -138,27 +138,21 @@ function ProfileContent() {
               >
                 <LogIn className="h-3.5 w-3.5" /> Sign in / Create account
               </Link>
-              <button
-                onClick={enterDemo}
-                className="inline-flex min-h-[40px] items-center justify-center gap-1 text-[11px] font-semibold text-ivory/70 hover:text-gold"
-              >
-                <Sparkles className="h-3.5 w-3.5" /> Preview a demo account
-              </button>
             </div>
           ) : null}
         </div>
 
         <div className="relative mt-6 grid grid-cols-3 gap-2 border-t border-white/10 pt-5">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-ivory/60">Tier</p>
+            <p className="text-[11px] uppercase tracking-wider text-ivory/60">Tier</p>
             <p className="flex items-center gap-1 truncate text-sm font-bold text-gold"><Award className="h-3.5 w-3.5 flex-shrink-0" /> {user.vipTier || TIERS[tierIdx].name}</p>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-ivory/60">Points</p>
+            <p className="text-[11px] uppercase tracking-wider text-ivory/60">Points</p>
             <p className="text-sm font-bold">{points.toLocaleString("en-IN")}</p>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-ivory/60">Spent</p>
+            <p className="text-[11px] uppercase tracking-wider text-ivory/60">Spent</p>
             <p className="truncate text-sm font-bold">{formatPrice(spent)}</p>
           </div>
           {nextTier && (
@@ -184,7 +178,7 @@ function ProfileContent() {
             <>
               <span className="relative">
                 <Icon className="h-5 w-5 text-burgundy" />
-                {n > 0 && <span className="absolute -right-2.5 -top-2 rounded-full bg-crimson px-1.5 text-[9px] font-bold text-white">{n}</span>}
+                {n > 0 && <span className="absolute -right-2.5 -top-2 rounded-full bg-crimson px-1.5 text-[10px] font-bold text-white">{n}</span>}
               </span>
               <span className="text-[11px] font-semibold text-espresso">{l}</span>
             </>
@@ -243,7 +237,7 @@ function ProfileContent() {
                       {new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · {o.items.reduce((s, i) => s + i.quantity, 0)} items
                     </p>
                   </div>
-                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${STATUS_STYLE[o.status] ?? "bg-ivory-dark text-espresso/70"}`}>{o.status}</span>
+                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase ${STATUS_STYLE[o.status] ?? "bg-ivory-dark text-espresso/70"}`}>{o.status}</span>
                 </div>
                 <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 sm:px-5">
                   {o.items.map((it, i) => (
@@ -291,7 +285,7 @@ function ProfileContent() {
             <div key={a.id} className="flex items-start justify-between gap-4 rounded-2xl border border-burgundy/15 bg-white p-5">
               <div className="text-sm">
                 <p className="font-semibold text-espresso">
-                  {a.label || "Address"} {a.isDefault && <span className="ml-2 rounded-full bg-gold/20 px-2 py-0.5 text-[10px] font-bold uppercase text-gold-dark">Default</span>}
+                  {a.label || "Address"} {a.isDefault && <span className="ml-2 rounded-full bg-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase text-gold-dark">Default</span>}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-espresso/70">
                   {a.fullName}, {a.address}, {a.city}{a.state ? `, ${a.state}` : ""} – {a.postalCode}

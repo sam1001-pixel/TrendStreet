@@ -121,8 +121,8 @@ async function main() {
         "Pre-shrunk and garment-dyed in small batches",
         "Blind-stitched sleeve and waist hems",
       ],
-      basePrice: 249900, // ₹2,499
-      originalPrice: 299900,
+      basePrice: 49900, // ₹499 (flat price — see FLAT_PRICE in src/data/products.ts)
+      originalPrice: 99900, // MRP ₹999
       featured: true,
       isNew: false,
       isBestSeller: true,
@@ -152,8 +152,8 @@ async function main() {
         "Discreet inseam kangaroo pocket with bar-tack reinforcement",
         "Ribbed 1x1 heavy knit cuffs and waist",
       ],
-      basePrice: 499900, // ₹4,999
-      originalPrice: 599900,
+      basePrice: 49900, // ₹499 (flat price — see FLAT_PRICE in src/data/products.ts)
+      originalPrice: 99900, // MRP ₹999
       featured: true,
       isNew: true,
       isBestSeller: false,
@@ -182,8 +182,8 @@ async function main() {
         "Solid custom brass buttons with antique patina",
         "Hidden back pocket rivets and chain-stitched hem",
       ],
-      basePrice: 549900, // ₹5,499
-      originalPrice: 649900,
+      basePrice: 49900, // ₹499 (flat price — see FLAT_PRICE in src/data/products.ts)
+      originalPrice: 99900, // MRP ₹999
       featured: true,
       isNew: false,
       isBestSeller: true,
@@ -211,8 +211,8 @@ async function main() {
         "Solid copper rivet reinforcements",
         "Custom leather debossed patch with atelier seal",
       ],
-      basePrice: 599900, // ₹5,999
-      originalPrice: 699900,
+      basePrice: 49900, // ₹499 (flat price — see FLAT_PRICE in src/data/products.ts)
+      originalPrice: 99900, // MRP ₹999
       featured: true,
       isNew: true,
       isBestSeller: false,
@@ -239,8 +239,8 @@ async function main() {
         "Calculated box cut: 4cm wider body with shortened torso",
         "Double-needle neck binding with zero seam exposure",
       ],
-      basePrice: 249900, // ₹2,499
-      originalPrice: 299900,
+      basePrice: 49900, // ₹499 (flat price — see FLAT_PRICE in src/data/products.ts)
+      originalPrice: 99900, // MRP ₹999
       featured: true,
       isNew: false,
       isBestSeller: true,
@@ -269,8 +269,8 @@ async function main() {
         "Horn buttons etched with OFFVYBE monogram",
         "Internal chest passport pocket with brass RiRi zipper",
       ],
-      basePrice: 1199900, // ₹11,999
-      originalPrice: 1399900,
+      basePrice: 49900, // ₹499 (flat price — see FLAT_PRICE in src/data/products.ts)
+      originalPrice: 99900, // MRP ₹999
       featured: true,
       isNew: false,
       isBestSeller: true,
@@ -298,8 +298,8 @@ async function main() {
         "Quilted silk-blend interior insulation",
         "Drop-shoulder boxy flight cut",
       ],
-      basePrice: 1099900, // ₹10,999
-      originalPrice: 1249900,
+      basePrice: 49900, // ₹499 (flat price — see FLAT_PRICE in src/data/products.ts)
+      originalPrice: 99900, // MRP ₹999
       featured: true,
       isNew: true,
       isBestSeller: false,

@@ -75,6 +75,12 @@ export function verifyPassword(password: string, storedHashOrCombined: string, e
   }
 }
 
+/** Burns the same PBKDF2 time as a real check, so "no such account" isn't faster than "wrong password". */
+const DUMMY_HASH = `pbkdf2.${PBKDF2_ITERATIONS}.00000000000000000000000000000000.${"0".repeat(128)}`;
+export function spendPasswordCheckTime(password: string) {
+  verifyPassword(password || "x", DUMMY_HASH);
+}
+
 /** Verifies a customer password against its stored hash. No demo or fallback passwords. */
 export function verifyCustomerPassword(password: string, storedHashOrCombined: string): boolean {
   return verifyPassword(password, storedHashOrCombined);
@@ -173,7 +179,9 @@ export async function createCustomerUser(data: {
         data: { passwordHash: combined, name, phone: phone ?? existing.phone },
       });
       if (claimed.count === 0) throw new Error("ACCOUNT_EXISTS");
-      return toCustomer({ ...existing, name, phone: phone ?? existing.phone });
+      // Reply only with what this person typed: the phone saved from an earlier guest checkout
+      // belongs to whoever placed that order and must not be shown to someone who just knows the email.
+      return toCustomer({ ...existing, name, phone });
     }
 
     const created = await prisma.user.create({

@@ -82,12 +82,12 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
             {shown.length} {config.category}
           </h2>
           <label className="flex items-center gap-1.5 text-xs">
-            <SlidersHorizontal className="h-4 w-4 text-espresso/50" />
+            <SlidersHorizontal className="h-4 w-4 text-espresso/60" />
             <span className="sr-only">Sort by</span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="min-h-[36px] rounded-lg border border-burgundy/20 bg-white px-2 text-xs font-semibold text-espresso focus:border-burgundy focus:outline-none"
+              className="min-h-[44px] rounded-lg border border-burgundy/20 bg-white px-2 text-xs font-semibold text-espresso focus:border-burgundy focus:outline-none"
             >
               {SORTS.map((s) => (
                 <option key={s.id} value={s.id}>{s.label}</option>
@@ -96,13 +96,13 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
           </label>
         </div>
         <div className="no-scrollbar -mx-4 flex items-center gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          <span className="mr-1 flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-espresso/50">Size</span>
+          <span className="mr-1 flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-espresso/60">Size</span>
           {sizes.map((s) => (
             <button
               key={s}
               onClick={() => setSize(size === s ? null : s)}
               aria-pressed={size === s}
-              className={`h-9 min-w-[40px] flex-shrink-0 rounded-full px-3 font-mono text-xs font-bold transition-colors ${
+              className={`h-11 min-w-[44px] flex-shrink-0 rounded-full px-3 font-mono text-xs font-bold transition-colors ${
                 size === s ? "bg-burgundy text-gold" : "bg-white text-espresso ring-1 ring-burgundy/15"
               }`}
             >
@@ -112,7 +112,7 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
           <button
             onClick={() => setInStock(!inStock)}
             aria-pressed={inStock}
-            className={`ml-1 h-9 flex-shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-bold transition-colors ${
+            className={`ml-1 h-11 flex-shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-bold transition-colors ${
               inStock ? "bg-espresso text-ivory" : "bg-white text-espresso/70 ring-1 ring-burgundy/15"
             }`}
           >
@@ -121,7 +121,7 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
           {(size || inStock) && (
             <button
               onClick={() => { setSize(null); setInStock(false); }}
-              className="ml-1 inline-flex h-9 flex-shrink-0 items-center gap-1 px-2 text-xs font-semibold text-crimson"
+              className="ml-1 inline-flex h-11 flex-shrink-0 items-center gap-1 px-2 text-xs font-semibold text-crimson"
             >
               <X className="h-3.5 w-3.5" /> Clear
             </button>
@@ -158,7 +158,7 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
       <div className="absolute inset-0 bg-gradient-to-r from-espresso via-espresso/70 to-transparent" />
       <div className="relative mx-auto max-w-7xl px-4 pb-10 pt-12 sm:px-6 sm:pb-16 sm:pt-20 lg:px-8">
         <nav aria-label="Breadcrumb" className="mb-5 text-xs text-ivory/60">
-          <Link href="/" className="hover:text-gold">Home</Link> / <Link href="/shop" className="hover:text-gold">Shop</Link> /{" "}
+          <Link href="/" className="py-3 hover:text-gold">Home</Link> / <Link href="/shop" className="py-3 hover:text-gold">Shop</Link> /{" "}
           <span className="text-ivory">{config.category}</span>
         </nav>
         <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-gold">{config.eyebrow}</p>
@@ -227,12 +227,12 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
           {/* Top Quick Breadcrumb & Title */}
           <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
             <nav aria-label="Breadcrumb" className="mb-2 text-xs text-espresso/60">
-              <Link href="/" className="hover:text-burgundy">Home</Link> / <Link href="/shop" className="hover:text-burgundy">Shop</Link> /{" "}
+              <Link href="/" className="py-3 hover:text-burgundy">Home</Link> / <Link href="/shop" className="py-3 hover:text-burgundy">Shop</Link> /{" "}
               <span className="font-semibold text-espresso">{config.category}</span>
             </nav>
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-3 border-b border-burgundy/10">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-crimson">{config.eyebrow}</p>
+                <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-crimson">{config.eyebrow}</p>
                 <h1 className="mt-1 font-display text-3xl font-black uppercase tracking-tight text-espresso sm:text-5xl">
                   {config.category} Collection
                 </h1>

@@ -178,8 +178,9 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-espresso mb-1">Inquiry Category *</label>
+                    <label htmlFor="contact-subject" className="block font-semibold text-espresso mb-1">Inquiry Category *</label>
                     <select
+                      id="contact-subject"
                       value={form.subject}
                       onChange={(e) => setForm({ ...form, subject: e.target.value })}
                       className="w-full bg-ivory px-3.5 py-2.5 rounded-lg border border-burgundy/20 text-espresso focus:outline-none focus:border-burgundy cursor-pointer"

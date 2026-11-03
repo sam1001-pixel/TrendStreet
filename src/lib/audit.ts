@@ -26,7 +26,8 @@ export type AuditAction =
   | "MEDIA_DELETE"
   | "REVIEW_CREATE"
   | "REVIEW_EDIT"
-  | "REVIEW_DELETE";
+  | "REVIEW_DELETE"
+  | "STOCK_ALERTS_SENT";
 
 /** Email of the signed-in admin for this request, or null. */
 export async function getAdminEmail(req: NextRequest): Promise<string | null> {

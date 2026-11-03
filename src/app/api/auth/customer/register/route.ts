@@ -7,7 +7,7 @@ import {
   CUSTOMER_SESSION_COOKIE,
   CUSTOMER_SESSION_MAX_AGE,
 } from "@/lib/customer-auth";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     // 1. Sliding-window rate limit (10 registration attempts per 15 minutes per IP)
     const clientIp = getClientIp(req.headers);
-    const rateLimit = checkRateLimit(`cust-register:${clientIp}`, {
+    const rateLimit = await checkDistributedRateLimit(`cust-register:${clientIp}`, {
       windowMs: 15 * 60 * 1000,
       maxRequests: 10,
     });

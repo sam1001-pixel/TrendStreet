@@ -5,6 +5,7 @@
  */
 import type { SiteSettings as DbSiteSettings } from "@prisma/client";
 import type { SiteSettings } from "@/types/store";
+import { safeHref } from "@/lib/safe-redirect";
 
 export type EditableSettings = {
   storeName?: string;
@@ -14,11 +15,12 @@ export type EditableSettings = {
   marqueePhrases?: string[];
   contactInfo?: Partial<SiteSettings["contactInfo"]>;
   storefrontSections?: Partial<NonNullable<SiteSettings["storefrontSections"]>>;
+  nextDrop?: { at: string | null; title: string };
 };
 
 /** Pages that were removed from the site; saved links to them fall back to the shop. */
 const REMOVED_PATHS = ["/lookbook", "/shop-your-way", "/complete-the-fit"];
-const liveLink = (href: string) => (REMOVED_PATHS.some((p) => href.startsWith(p)) ? "/shop?sort=newest" : href);
+const liveLink = (href: string) => (REMOVED_PATHS.some((p) => href.startsWith(p)) ? "/shop?sort=newest" : safeHref(href, "/shop"));
 
 export function settingsFromDb(row: DbSiteSettings | null): EditableSettings {
   if (!row) return {};
@@ -28,7 +30,7 @@ export function settingsFromDb(row: DbSiteSettings | null): EditableSettings {
     topAnnouncement: {
       enabled: row.announcementActive,
       ...(row.announcementText ? { text: row.announcementText } : {}),
-      ...(row.announcementLink ? { linkUrl: row.announcementLink } : {}),
+      ...(row.announcementLink ? { linkUrl: safeHref(row.announcementLink, "/shop") } : {}),
     },
     hero: {
       badgeText: row.heroBadge,
@@ -41,6 +43,7 @@ export function settingsFromDb(row: DbSiteSettings | null): EditableSettings {
     ...(row.marqueeText.length ? { marqueePhrases: row.marqueeText } : {}),
     contactInfo: { phone: row.conciergePhone, email: row.conciergeEmail },
     ...(row.storefrontSections ? { storefrontSections: row.storefrontSections as any } : {}),
+    nextDrop: { at: row.nextDropAt ? row.nextDropAt.toISOString() : null, title: row.nextDropTitle ?? "" },
   };
 }
 
@@ -51,17 +54,27 @@ export function settingsToDb(s: Partial<SiteSettings>) {
     storeName: str(s.storeName),
     storeTagline: str(s.storeTagline),
     announcementText: str(s.topAnnouncement?.text),
-    announcementLink: str(s.topAnnouncement?.linkUrl),
+    announcementLink: s.topAnnouncement?.linkUrl === undefined ? undefined : safeHref(s.topAnnouncement.linkUrl, "/shop"),
     announcementActive: typeof s.topAnnouncement?.enabled === "boolean" ? s.topAnnouncement.enabled : undefined,
     heroBadge: str(s.hero?.badgeText),
     heroTitle1: str(s.hero?.titleLine1),
     heroTitle2: str(s.hero?.titleLine2),
     heroSubtitle: str(s.hero?.subtitle),
-    heroPrimaryCta: str(s.hero?.primaryBtnLink),
-    heroSecondaryCta: str(s.hero?.secondaryBtnLink),
+    heroPrimaryCta: s.hero?.primaryBtnLink === undefined ? undefined : safeHref(s.hero.primaryBtnLink, "/shop"),
+    heroSecondaryCta: s.hero?.secondaryBtnLink === undefined ? undefined : safeHref(s.hero.secondaryBtnLink, "/shop?sort=newest"),
     marqueeText: Array.isArray(s.marqueePhrases) ? s.marqueePhrases.filter((p) => typeof p === "string").slice(0, 30) : undefined,
     conciergePhone: str(s.contactInfo?.phone),
     conciergeEmail: str(s.contactInfo?.email),
     storefrontSections: s.storefrontSections ? JSON.parse(JSON.stringify(s.storefrontSections)) : undefined,
+    ...nextDropToDb(s.nextDrop),
   };
+}
+
+/** Empty date clears the countdown; an unreadable one is ignored. */
+function nextDropToDb(d: SiteSettings["nextDrop"]): { nextDropAt?: Date | null; nextDropTitle?: string | null } {
+  if (!d) return {};
+  const title = typeof d.title === "string" ? d.title.slice(0, 120) : undefined;
+  if (!d.at) return { nextDropAt: null, nextDropTitle: title ?? null };
+  const at = new Date(d.at);
+  return Number.isNaN(at.getTime()) ? { nextDropTitle: title } : { nextDropAt: at, nextDropTitle: title ?? null };
 }

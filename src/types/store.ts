@@ -190,6 +190,8 @@ export interface SiteSettings {
     address: string;
     hours: string;
   };
+  /** Homepage countdown to the next drop (hidden when `at` is empty or past). */
+  nextDrop?: { at: string | null; title: string };
   storefrontSections?: {
     hero?: boolean;
     weightTest?: boolean;
@@ -200,5 +202,10 @@ export interface SiteSettings {
     silhouetteAccordion?: boolean;
     videoReviews?: boolean;
     trustStrip?: boolean;
+    categoryStories?: boolean;
+    priceBanner?: boolean;
+    categoryRails?: boolean;
+    recentlyViewed?: boolean;
+    nextDrop?: boolean;
   };
 }

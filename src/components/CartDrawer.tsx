@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { BagSuggestions } from "@/components/BagSuggestions";
 import { formatPrice } from "@/lib/pricing";
+import { lockScroll } from "@/lib/scroll-lock";
+import { useSwipeToClose } from "@/hooks/useSwipeToClose";
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -23,6 +25,10 @@ export const CartDrawer: React.FC = () => {
     cartDiscount,
   } = useStore();
 
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeBag = useCallback(() => setIsCartOpen(false), [setIsCartOpen]);
+  useSwipeToClose(panelRef, { direction: "right", onClose: closeBag, enabled: isCartOpen });
+
   // Escape key listener for cart dismissal & body scroll lock
   useEffect(() => {
     if (!isCartOpen) return;
@@ -32,10 +38,10 @@ export const CartDrawer: React.FC = () => {
         setIsCartOpen(false);
       }
     };
-    document.body.style.overflow = "hidden";
+    const unlock = lockScroll();
     window.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.body.style.overflow = "";
+      unlock();
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isCartOpen, setIsCartOpen]);
@@ -61,7 +67,7 @@ export const CartDrawer: React.FC = () => {
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
-        <div className="w-screen max-w-md bg-ivory shadow-2xl flex flex-col border-l border-burgundy/20 animate-in slide-in-from-right duration-300">
+        <div ref={panelRef} className="w-screen max-w-md bg-ivory shadow-2xl flex flex-col border-l border-burgundy/20 animate-in slide-in-from-right duration-300">
           {/* Drawer Header */}
           <div className="p-5 sm:p-6 border-b border-burgundy/15 flex items-center justify-between bg-white">
             <div className="flex items-center space-x-2">
@@ -113,7 +119,7 @@ export const CartDrawer: React.FC = () => {
           )}
 
           {/* Cart Items List */}
-          <div data-lenis-prevent className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          <div data-lenis-prevent className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center text-center px-2 py-8 text-espresso/60">
                 <div className="w-16 h-16 rounded-full bg-ivory-dark flex items-center justify-center text-burgundy/40 mb-4">
@@ -161,7 +167,7 @@ export const CartDrawer: React.FC = () => {
                             onClick={() =>
                               removeFromCart(item.product.id, item.selectedSize, item.selectedColor)
                             }
-                            className="-mr-2 -mt-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-espresso/40 hover:text-crimson"
+                            className="-mr-2 -mt-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-espresso/60 hover:text-crimson"
                             aria-label={`Remove ${item.product.name}`}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -288,7 +294,7 @@ export const CartDrawer: React.FC = () => {
                   </span>
                 </div>
                 <div className="pt-2 border-t border-ivory-dark flex justify-between text-base font-bold text-burgundy">
-                  <span>Total <span className="text-xs font-normal text-espresso/50">incl. GST</span></span>
+                  <span>Total <span className="text-xs font-normal text-espresso/60">incl. GST</span></span>
                   <span>{formatPrice(cartTotal)}</span>
                 </div>
               </div>

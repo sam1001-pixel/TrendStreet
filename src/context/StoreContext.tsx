@@ -1,10 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Product, CartItem, Order, UserProfile, OrderStatus, SiteSettings, Review } from "@/types/store";
 import { INITIAL_PRODUCTS } from "@/data/products";
 import { calculateOrderPricing, couponIneligibilityReason, ResolvedCoupon } from "@/lib/pricing";
 import { DEMO_ORDERS, DEMO_USER } from "@/data/demo";
+import type { EditableSettings } from "@/lib/site-settings";
 
 interface StoreContextType {
   products: Product[];
@@ -26,6 +27,9 @@ interface StoreContextType {
   setIsCartOpen: (open: boolean) => void;
   setQuickViewProduct: (product: Product | null) => void;
   addToCart: (product: Product, size: string, color: string, quantity?: number) => void;
+  /** The piece just added — drives the small "Added to bag" message (the bag no longer pops open). */
+  lastAdded: { product: Product; size: string; color: string; quantity: number; at: number } | null;
+  dismissLastAdded: () => void;
   removeFromCart: (productId: string, size: string, color: string) => void;
   updateCartQuantity: (productId: string, size: string, color: string, quantity: number) => void;
   clearCart: () => void;
@@ -135,6 +139,11 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     silhouetteAccordion: true,
     videoReviews: true, // "Worn by you" reel — shows once Admin → Reviews has published reviews with videos
     trustStrip: true,
+    categoryStories: true,
+    priceBanner: true,
+    categoryRails: true,
+    recentlyViewed: true,
+    nextDrop: true,
   },
 };
 
@@ -221,6 +230,18 @@ const INITIAL_ORDERS: Order[] = [
   },
 ];
 
+/** Layers database settings over the defaults (nested groups are merged, not replaced). */
+function mergeSettings(prev: SiteSettings, incoming: EditableSettings | Partial<SiteSettings>): SiteSettings {
+  return {
+    ...prev,
+    ...(incoming as Partial<SiteSettings>),
+    topAnnouncement: { ...prev.topAnnouncement, ...(incoming.topAnnouncement || {}) },
+    hero: { ...prev.hero, ...(incoming.hero || {}) },
+    contactInfo: { ...prev.contactInfo, ...(incoming.contactInfo || {}) },
+    storefrontSections: { ...(prev.storefrontSections || {}), ...(incoming.storefrontSections || {}) },
+  };
+}
+
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{
@@ -228,10 +249,14 @@ export const StoreProvider: React.FC<{
   /** Catalog rendered on the server (database, or the sample catalog only when the database is down). */
   initialProducts?: Product[];
   initialVideoReviews?: Review[];
-}> = ({ children, initialProducts, initialVideoReviews }) => {
+  /** CMS settings from the database, rendered on the server. */
+  initialSettings?: EditableSettings;
+}> = ({ children, initialProducts, initialVideoReviews, initialSettings }) => {
   const [products, setProducts] = useState<Product[]>(initialProducts ?? INITIAL_PRODUCTS);
   const [videoReviews, setVideoReviews] = useState<Review[]>(initialVideoReviews ?? []);
-  const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(() =>
+    initialSettings ? mergeSettings(DEFAULT_SITE_SETTINGS, initialSettings) : DEFAULT_SITE_SETTINGS
+  );
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   // Only this shopper's own receipts — never demo orders.
@@ -240,6 +265,7 @@ export const StoreProvider: React.FC<{
   const [coupon, setCoupon] = useState<ResolvedCoupon | null>(null);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [lastAdded, setLastAdded] = useState<StoreContextType["lastAdded"]>(null);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
   const [isDemo, setIsDemo] = useState<boolean>(false);
 
@@ -305,13 +331,7 @@ export const StoreProvider: React.FC<{
           );
         }
         if (data.settings) {
-          setSiteSettings((prev) => ({
-            ...prev,
-            ...data.settings,
-            topAnnouncement: { ...prev.topAnnouncement, ...(data.settings.topAnnouncement || {}) },
-            hero: { ...prev.hero, ...(data.settings.hero || {}) },
-            contactInfo: { ...prev.contactInfo, ...(data.settings.contactInfo || {}) },
-          }));
+          setSiteSettings((prev) => mergeSettings(prev, data.settings));
         }
       })
       .catch((e) => console.warn("Live catalog unavailable, showing bundled catalog:", e));
@@ -348,8 +368,11 @@ export const StoreProvider: React.FC<{
         return [...prevCart, { product, selectedSize: size, selectedColor: color, quantity }];
       }
     });
-    setIsCartOpen(true);
+    // Keep shoppers where they are: confirm with a small message instead of a full-screen bag.
+    setLastAdded({ product, size, color, quantity, at: Date.now() });
   };
+
+  const dismissLastAdded = useCallback(() => setLastAdded(null), []);
 
   const removeFromCart = (productId: string, size: string, color: string) => {
     setCart((prevCart) =>
@@ -556,6 +579,8 @@ export const StoreProvider: React.FC<{
         setIsCartOpen,
         setQuickViewProduct,
         addToCart,
+        lastAdded,
+        dismissLastAdded,
         removeFromCart,
         updateCartQuantity,
         clearCart,

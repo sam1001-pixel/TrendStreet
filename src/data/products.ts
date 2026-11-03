@@ -1,13 +1,23 @@
 import { Product } from "@/types/store";
 
+/**
+ * Store-wide flat pricing (₹, GST included). Every piece sells at FLAT_PRICE.
+ * FLAT_MRP is the struck-through "MRP" shown next to it — set it to your real printed MRP,
+ * or set it to 0 to hide the strike-through and the "−50%" badge.
+ * After changing these, run `npm run prices:flat` once so the live database matches.
+ */
+export const FLAT_PRICE = 499;
+export const FLAT_MRP = 999;
+const MRP = FLAT_MRP > FLAT_PRICE ? FLAT_MRP : undefined;
+
 const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
   // 1. OVERSIZED
   {
     id: "ts-001",
     name: "The Mayfair Heavyweight Oversized Tee",
     subtitle: "320gsm Combed Cotton with Dropped Shoulder Cut",
-    price: 2499,
-    originalPrice: 2999,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Oversized",
     description: "An architectural everyday essential cut with an exaggerated dropped shoulder, wide 3cm ribbed collar, and a relaxed, heavy silhouette that maintains its structured boxy drape all day.",
     details: [
@@ -55,8 +65,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-002",
     name: "The Tokyo Drop-Shoulder Oversized Hoodie",
     subtitle: "520gsm Loopback French Terry with Double-Walled Hood",
-    price: 4999,
-    originalPrice: 5799,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Oversized",
     description: "Engineered with maximum volume and zero compromise. Cut from custom-milled 520gsm Japanese loopback cotton, featuring an oversized hood without drawstrings for an uncompromising brutalist look.",
     details: [
@@ -102,8 +112,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-003",
     name: "The Kyoto Relaxed Oversized Flannel",
     subtitle: "280gsm Japanese Brushed Ombré Cotton",
-    price: 3999,
-    originalPrice: 4599,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Oversized",
     description: "An elevated layering piece cut with an exaggerated chest width and dropped shoulder stance. Woven from slow-loomed Japanese brushed ombré cotton plaid with a velvety hand-feel.",
     details: [
@@ -139,8 +149,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-004",
     name: "The Shibuya Relaxed Carpenter Jeans",
     subtitle: "14oz Japanese Redline Selvedge Denim with Utility Details",
-    price: 5499,
-    originalPrice: 6299,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jeans",
     description: "Cut with a relaxed wide leg and natural puddle stacking over sneakers. Crafted from 14oz redline selvedge denim woven on vintage Toyoda shuttle looms, complete with utility hammer loop and dual tool pockets.",
     details: [
@@ -187,8 +197,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-005",
     name: "The Okayama Bootcut Flare Denim",
     subtitle: "14.5oz Japanese Selvedge Cotton with Flared Leg & Puddle Stacking",
-    price: 5999,
-    originalPrice: 6999,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jeans",
     description: "Engineered with a sculpted upper block through the thigh that gently opens into an authentic bootcut flare below the knee. Woven from 14.5oz Okayama selvedge denim to puddle naturally over sneakers and boots with zero drag.",
     details: [
@@ -234,8 +244,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-006",
     name: "Raw Indigo Straight Baggy Jeans",
     subtitle: "15oz Heavyweight Kurabo Selvedge Denim",
-    price: 5499,
-    originalPrice: 6499,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jeans",
     description: "Unwashed, un-sanforized rigid raw selvedge denim that shapes and molds specifically to your body and lifestyle over years of wear, developing high-contrast personalized fades.",
     details: [
@@ -271,8 +281,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-007",
     name: "The Boxy Heavyweight Poplin Overshirt",
     subtitle: "220gsm Crisp Mercerized Cotton with Cropped Square Cut",
-    price: 3499,
-    originalPrice: 3999,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Boxy Fit",
     description: "A masterclass in modern geometry. Cut wide across the chest with sharp drop shoulders and cropped at the natural waistline to produce an immaculate proportion when paired with baggy jeans.",
     details: [
@@ -307,8 +317,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-008",
     name: "The Boxy Structured Knit Sweater",
     subtitle: "100% Extra-Fine Merino Wool in Heavy Gauge Rib",
-    price: 4499,
-    originalPrice: 5199,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Boxy Fit",
     description: "Chunky yet refined. Spun from 7-gauge Italian extra-fine merino wool, crafted with a wide horizontal box silhouette, tight collar ring, and clean cropped hem.",
     details: [
@@ -343,8 +353,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-009",
     name: "The Boxy Minimalist Half-Zip Sweatshirt",
     subtitle: "480gsm Heavyweight French Terry with Custom Silver Hardware",
-    price: 3799,
-    originalPrice: 4299,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Boxy Fit",
     description: "Refined post-streetwear silhouette. Features a wide, relaxed chest, high stand collar with custom matte silver Excella zipper, and a cropped elasticized waist.",
     details: [
@@ -380,8 +390,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-010",
     name: "The Tuscan Suede MA-1 Flight Jacket",
     subtitle: "Supple Butter-Soft Lambskin Suede with 2-Way Raccagni Zipper",
-    price: 8999,
-    originalPrice: 10499,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jackets",
     description: "Artisanal bomber jacket handcrafted in Florence from velvety Tuscan lambskin suede. Features a relaxed boxy cut, ribbed wool trim, and silky cupro interior.",
     details: [
@@ -427,8 +437,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-011",
     name: "Heavyweight Washed Canvas Workwear Jacket",
     subtitle: "16oz Rugged Cotton Duck with Contrast Corduroy Collar",
-    price: 6999,
-    originalPrice: 7999,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jackets",
     description: "Built like armor. Cut from 16oz tightly woven duck canvas, pre-washed for immediate comfort and break-in. Finished with a heavy corduroy collar and insulated quilted flannel lining.",
     details: [
@@ -464,8 +474,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     id: "ts-012",
     name: "The Mayfair Boxy Leather Moto Jacket",
     subtitle: "100% Full-Grain Vegetable-Tanned Cowhide",
-    price: 11999,
-    originalPrice: 13999,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jackets",
     description: "An heirloom piece engineered with an exaggerated boxy dropped-shoulder silhouette. Cut from 1.3mm full-grain cowhide that breaks in into a gleaming buttery leather armor.",
     details: [
@@ -508,8 +518,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Blue City Indigo Oversized Tee",
     subtitle: "260gsm Cotton, Indigo-Dipped in Small Batches",
-    price: 1999,
-    originalPrice: 2499,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Oversized",
     description: "Named for Jodhpur's indigo-washed old city. Each tee is dipped by hand, so the blue settles a little differently on every piece. Dropped shoulders, wide body, built for 40° afternoons.",
     details: [
@@ -564,8 +574,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Bandhani Dot Oversized Tee",
     subtitle: "Tie-Dye Dot Pattern on 240gsm Cotton",
-    price: 2199,
-    originalPrice: 2699,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Oversized",
     description: "Marwar's bandhani tie-and-dye, scaled up for streetwear. Tiny resist dots scatter across a roomy cut that stays cool in desert heat.",
     details: [
@@ -618,7 +628,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Mehrangarh Skyline Graphic Tee",
     subtitle: "Puff-Print Fort Silhouette, 280gsm",
-    price: 1899,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Oversized",
     description: "The fort's ridge-line, printed across the back in raised puff ink. A heavyweight everyday tee with a story you can wear.",
     details: [
@@ -671,8 +682,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Thar Sand Heavyweight Hoodie",
     subtitle: "400gsm Brushed Fleece for Desert Nights",
-    price: 3999,
-    originalPrice: 4699,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Oversized",
     description: "Thar evenings drop fast. A dense brushed-fleece hoodie in desert sand, with a double-layer hood and kangaroo pocket.",
     details: [
@@ -724,8 +735,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Ghanta Ghar Straight Selvedge",
     subtitle: "13.5oz Selvedge Denim, Straight Leg",
-    price: 4499,
-    originalPrice: 5299,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jeans",
     description: "A clean straight leg in mid-weight selvedge, named after the clock tower at the heart of Sardar Market. Fades in with every wear.",
     details: [
@@ -774,7 +785,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Dabu Print Wide-Leg Denim",
     subtitle: "Mud-Resist Print Panels on Light Denim",
-    price: 4999,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jeans",
     description: "Rajasthan's dabu mud-resist printing meets a relaxed wide leg. Printed side panels make it a statement without trying too hard.",
     details: [
@@ -823,8 +835,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Sardar Market Carpenter Jeans",
     subtitle: "Utility Pockets, Relaxed Taper",
-    price: 3799,
-    originalPrice: 4299,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jeans",
     description: "Built for walking the bazaar all day: a hammer loop, tool pocket and a relaxed taper that stacks over sneakers.",
     details: [
@@ -876,8 +888,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Bagru Block-Print Boxy Shirt",
     subtitle: "Hand Block-Printed Cotton, Cropped Boxy Cut",
-    price: 2899,
-    originalPrice: 3399,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Boxy Fit",
     description: "Printed with carved wooden blocks in the Bagru tradition, then cut short and wide. Camp collar, breathable cotton, made for summer weddings and city nights alike.",
     details: [
@@ -930,7 +942,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Leheriya Stripe Boxy Tee",
     subtitle: "Diagonal Wave-Dye, 220gsm Cotton",
-    price: 1999,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Boxy Fit",
     description: "Leheriya's diagonal 'wave' stripes, the dye pattern of Rajasthani monsoons, on a cropped boxy tee.",
     details: [
@@ -982,8 +995,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Jodhpuri Bandhgala Bomber",
     subtitle: "Band-Collar Bomber in Wool Blend",
-    price: 6999,
-    originalPrice: 7999,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jackets",
     description: "The Jodhpuri bandhgala's stand collar, reworked as a streetwear bomber. Sharp enough for a sangeet, easy enough for every day.",
     details: [
@@ -1035,7 +1048,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Indigo Chore Jacket",
     subtitle: "Garment-Dyed Cotton Drill, Three Patch Pockets",
-    price: 5499,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jackets",
     description: "A workwear chore coat dyed deep indigo. Three patch pockets, a soft drill hand, and it only gets better with wear.",
     details: [
@@ -1084,8 +1098,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviews: [],
     name: "Desert Utility Field Jacket",
     subtitle: "Water-Resistant Cotton Canvas",
-    price: 5999,
-    originalPrice: 6799,
+    price: FLAT_PRICE,
+    originalPrice: MRP,
     category: "Jackets",
     description: "Four bellow pockets, a stowaway hood and a sand-toned canvas that shrugs off dust storms and drizzle.",
     details: [

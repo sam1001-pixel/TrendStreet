@@ -79,18 +79,18 @@ function RunwayCard({
 
         {/* Top Badges: Sequence Number & Sale / Stock Tags */}
         <div className="pointer-events-none absolute inset-x-2.5 top-2.5 z-10 flex items-start justify-between gap-1.5">
-          <span className="rounded bg-black/65 backdrop-blur-md px-2 py-0.5 font-mono text-[10px] sm:text-[11px] font-semibold text-white/90 border border-white/10">
+          <span className="rounded bg-black/65 backdrop-blur-md px-2 py-0.5 font-mono text-[11px] sm:text-[11px] font-semibold text-white/90 border border-white/10">
             {String(i + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
           </span>
 
           <div className="flex flex-col items-end gap-1">
             {off > 0 && (
-              <span className="rounded bg-gold px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+              <span className="rounded bg-gold px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
                 −{off}%
               </span>
             )}
             {low && (
-              <span className="flex items-center gap-1 rounded bg-crimson/90 backdrop-blur-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+              <span className="flex items-center gap-1 rounded bg-crimson/90 backdrop-blur-sm px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
                 Only {p.stockCount}
               </span>
@@ -156,7 +156,7 @@ function RunwayCard({
       {/* Card Details: Category, Title, Price */}
       <div className="mt-3 flex flex-col gap-0.5 px-0.5 text-white">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-gold truncate">
+          <p className="text-[11px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-gold-light truncate">
             {p.category}
           </p>
         </div>
@@ -176,7 +176,7 @@ function RunwayCard({
             {formatPrice(p.price)}
           </span>
           {off > 0 && (
-            <span className="text-[11px] text-white/40 line-through">
+            <span className="text-[11px] text-white/60 line-through">
               {formatPrice(p.originalPrice!)}
             </span>
           )}
@@ -271,7 +271,7 @@ export function ScrollProductReel() {
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold/90">
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold-light">
               Most-Bagged This Week
             </span>
           </div>

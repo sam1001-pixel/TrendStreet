@@ -113,14 +113,14 @@ export default function BagPage() {
                   <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-crimson">{item.product.category}</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-crimson">{item.product.category}</span>
                         <Link href={`/product/${item.product.id}`} className="line-clamp-2 font-serif text-sm font-bold leading-snug text-espresso hover:text-crimson sm:text-base">
                           {item.product.name}
                         </Link>
                       </div>
                       <button
                         onClick={() => removeFromCart(item.product.id, item.selectedSize, item.selectedColor)}
-                        className="-mr-1 -mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-espresso/40 hover:bg-ivory hover:text-crimson"
+                        className="-mr-1 -mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-espresso/60 hover:bg-ivory hover:text-crimson"
                         aria-label={`Remove ${item.product.name}`}
                       >
                         <X className="h-4 w-4" />
@@ -152,7 +152,7 @@ export default function BagPage() {
                       </div>
                       <div className="text-right">
                         <span className="block text-sm font-bold text-burgundy sm:text-base">{formatPrice(item.product.price * item.quantity)}</span>
-                        {item.quantity > 1 && <span className="text-[11px] text-espresso/50">{formatPrice(item.product.price)} each</span>}
+                        {item.quantity > 1 && <span className="text-[11px] text-espresso/60">{formatPrice(item.product.price)} each</span>}
                       </div>
                     </div>
 
@@ -198,14 +198,14 @@ export default function BagPage() {
               <form onSubmit={handleApplyPromo} className="flex gap-2">
                 <label htmlFor="promo" className="sr-only">Promo code</label>
                 <div className="relative flex-1">
-                  <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-espresso/40" />
+                  <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-espresso/60" />
                   <input
                     id="promo"
                     type="text"
                     placeholder="Promo code"
                     value={inputCode}
                     onChange={(e) => setInputCode(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-burgundy/20 bg-ivory pl-9 pr-2 text-sm uppercase text-espresso placeholder:normal-case placeholder:text-espresso/40 focus:border-burgundy focus:outline-none"
+                    className="h-11 w-full rounded-xl border border-burgundy/20 bg-ivory pl-9 pr-2 text-sm uppercase text-espresso placeholder:normal-case placeholder:text-espresso/60 focus:border-burgundy focus:outline-none"
                   />
                 </div>
                 <button type="submit" className="h-11 rounded-xl bg-espresso px-4 text-xs font-bold uppercase text-ivory hover:bg-black">
@@ -236,7 +236,7 @@ export default function BagPage() {
 
             <dl className="space-y-2 border-t border-ivory-dark pt-4 text-sm text-espresso/80">
               <div className="flex justify-between">
-                <dt>Subtotal ({count} items)</dt>
+                <dt>Subtotal ({count} {count === 1 ? "item" : "items"})</dt>
                 <dd className="font-semibold text-espresso">{formatPrice(cartSubtotal)}</dd>
               </div>
               {cartDiscount > 0 && (
@@ -262,7 +262,7 @@ export default function BagPage() {
             <Link href="/checkout" className="hidden min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-burgundy text-xs font-bold uppercase tracking-[0.18em] text-ivory shadow-lg hover:bg-crimson lg:flex">
               Checkout securely <ArrowRight className="h-4 w-4" />
             </Link>
-            <p className="flex items-center justify-center gap-1.5 text-[11px] text-espresso/50">
+            <p className="flex items-center justify-center gap-1.5 text-[11px] text-espresso/60">
               <ShieldCheck className="h-3.5 w-3.5 text-green-700" /> UPI · Cards · Net banking · COD
             </p>
           </div>
@@ -277,7 +277,7 @@ export default function BagPage() {
       <div className="fixed inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] z-30 border-t border-burgundy/15 bg-ivory/95 px-4 py-3 backdrop-blur-md md:bottom-0 lg:hidden">
         <div className="mx-auto flex max-w-2xl items-center gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] text-espresso/60">Total · {count} items</p>
+            <p className="text-[11px] text-espresso/60">Total · {count} {count === 1 ? "item" : "items"}</p>
             <p className="font-serif text-lg font-bold leading-tight text-burgundy">{formatPrice(cartTotal)}</p>
           </div>
           <Link href="/checkout" className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl bg-burgundy text-xs font-bold uppercase tracking-[0.16em] text-ivory hover:bg-crimson">

@@ -6,6 +6,7 @@ import { BadgeCheck, ChevronLeft, ChevronRight, Play, Star, X } from "lucide-rea
 import { createPortal } from "react-dom";
 import type { Review } from "@/types/store";
 import { ProductVideo } from "@/components/ProductVideo";
+import { lockScroll } from "@/lib/scroll-lock";
 
 export function Stars({ rating, className = "h-3.5 w-3.5" }: { rating: number; className?: string }) {
   return (
@@ -86,7 +87,7 @@ export function VideoReviewCard({ review, onOpen, showProduct = true }: { review
           {review.verified && <BadgeCheck className="h-3.5 w-3.5 text-gold" aria-label="Verified buyer" />}
           {review.city && <span className="font-normal text-white/60">· {review.city}</span>}
         </span>
-        {showProduct && review.productName && <span className="line-clamp-1 block text-[10px] uppercase tracking-wider text-white/55">{review.productName}</span>}
+        {showProduct && review.productName && <span className="line-clamp-1 block text-[11px] uppercase tracking-wider text-white/55">{review.productName}</span>}
       </span>
     </button>
   );
@@ -103,11 +104,10 @@ export function VideoReviewViewer({ reviews, index, onClose }: { reviews: Review
       if (e.key === "ArrowRight") setI((x) => Math.min(reviews.length - 1, x + 1));
       if (e.key === "ArrowLeft") setI((x) => Math.max(0, x - 1));
     };
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const unlock = lockScroll();
     window.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = prev;
+      unlock();
       window.removeEventListener("keydown", onKey);
     };
   }, [onClose, reviews.length]);
@@ -308,12 +308,12 @@ export function ProductReviews({ reviews, rating, productName }: { reviews: Revi
                 <span className="flex min-w-0 items-center gap-1.5 text-xs font-bold text-espresso">
                   <span className="truncate">{rev.author}</span>
                   {rev.verified && (
-                    <span className="flex flex-shrink-0 items-center gap-0.5 rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-800">
+                    <span className="flex flex-shrink-0 items-center gap-0.5 rounded bg-green-100 px-1.5 py-0.5 text-[11px] font-semibold text-green-800">
                       <BadgeCheck className="h-3 w-3" /> Verified buyer
                     </span>
                   )}
                 </span>
-                <span className="flex-shrink-0 text-[11px] text-espresso/50">{rev.date}</span>
+                <span className="flex-shrink-0 text-[11px] text-espresso/60">{rev.date}</span>
               </div>
               <span className="text-espresso">
                 <Stars rating={rev.rating} />

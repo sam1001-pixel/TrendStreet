@@ -17,10 +17,12 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useUserAuth } from "@/context/UserAuthContext";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/profile";
+  // Only ever redirect to a page on this site (blocks javascript: links and phishing redirects).
+  const callbackUrl = safeRedirectPath(searchParams.get("callbackUrl"), "/profile");
 
   const { login, register, isAuthenticated, isLoading } = useUserAuth();
 
@@ -94,9 +96,9 @@ function LoginForm() {
           <Logo variant="burgundy" size="lg" showTagline={true} href="/" />
         </div>
         <div className="pt-2">
-          <span className="text-xs uppercase tracking-[0.2em] font-bold text-burgundy flex items-center justify-center gap-1.5">
+          <h1 className="text-xs uppercase tracking-[0.2em] font-bold text-burgundy flex items-center justify-center gap-1.5">
             <User className="w-3.5 h-3.5 text-gold" /> Your account
-          </span>
+          </h1>
           <p className="text-xs text-espresso/70 mt-1">
             Track orders, save your sizes and wishlist, check out faster
           </p>
@@ -160,7 +162,7 @@ function LoginForm() {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/40" />
+                <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/60" />
                 <input
                   type="email"
                   required
@@ -178,7 +180,7 @@ function LoginForm() {
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/40" />
+                <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/60" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
@@ -191,7 +193,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-xl text-espresso/50 hover:text-burgundy transition-colors focus:outline-none"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-xl text-espresso/60 hover:text-burgundy transition-colors focus:outline-none"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -224,7 +226,7 @@ function LoginForm() {
                 Full Name
               </label>
               <div className="relative">
-                <User className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/40" />
+                <User className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/60" />
                 <input
                   type="text"
                   required
@@ -242,7 +244,7 @@ function LoginForm() {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/40" />
+                <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/60" />
                 <input
                   type="email"
                   required
@@ -260,7 +262,7 @@ function LoginForm() {
                 Mobile Number (For Express Delivery)
               </label>
               <div className="relative">
-                <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/40" />
+                <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/60" />
                 <input
                   type="tel"
                   value={phone}
@@ -277,7 +279,7 @@ function LoginForm() {
                 Create Password (Min. 8 characters)
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/40" />
+                <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/60" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
@@ -291,7 +293,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-xl text-espresso/50 hover:text-burgundy transition-colors focus:outline-none"
+                  className="absolute right-0 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-xl text-espresso/60 hover:text-burgundy transition-colors focus:outline-none"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

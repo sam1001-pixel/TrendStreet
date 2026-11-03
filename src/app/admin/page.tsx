@@ -77,7 +77,8 @@ export default function AdminDashboardPage() {
   ]);
 
   // Storefront sections state
-  const storefrontSections = siteSettings?.storefrontSections || {
+  // Defaults first, then what is saved — sections added later show as on (as they are on the site).
+  const storefrontSections = {
     hero: true,
     weightTest: true,
     shopByPriceOccasion: true,
@@ -87,6 +88,12 @@ export default function AdminDashboardPage() {
     silhouetteAccordion: true,
     videoReviews: true,
     trustStrip: true,
+    categoryStories: true,
+    priceBanner: true,
+    categoryRails: true,
+    recentlyViewed: true,
+    nextDrop: true,
+    ...(siteSettings?.storefrontSections || {}),
   };
 
   const handleToggleSection = async (key: keyof typeof storefrontSections) => {
@@ -528,9 +535,14 @@ export default function AdminDashboardPage() {
               { key: "runwayReel" as const, name: "The Runway Reel" },
               { key: "hangingRail" as const, name: "Fresh off the Rail" },
               { key: "dropList" as const, name: "The Drop List" },
-              { key: "silhouetteAccordion" as const, name: "Three Cuts Accordion" },
+              { key: "silhouetteAccordion" as const, name: "Four Cuts Accordion" },
               { key: "videoReviews" as const, name: "Video Reviews Reel" },
               { key: "trustStrip" as const, name: "Promises Trust Strip" },
+              { key: "categoryStories" as const, name: "Category Shortcuts" },
+              { key: "priceBanner" as const, name: "Everything ₹499 Banner" },
+              { key: "categoryRails" as const, name: "Shop by Fit Rows" },
+              { key: "recentlyViewed" as const, name: "Recently Viewed" },
+              { key: "nextDrop" as const, name: "Next Drop Countdown" },
             ].map((sec) => {
               const isVisible = storefrontSections[sec.key];
               return (

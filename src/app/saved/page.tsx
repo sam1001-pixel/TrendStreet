@@ -40,21 +40,21 @@ function SavedItem({ product, shared, onRemove }: { product: Product; shared: bo
           </button>
         )}
         {drop > 0 && (
-          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-green-700 px-2 py-0.5 text-[10px] font-bold text-white">
+          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-green-700 px-2 py-0.5 text-[11px] font-bold text-white">
             <TrendingDown className="h-3 w-3" /> {formatPrice(drop)} off
           </span>
         )}
-        {!product.inStock && <span className="absolute inset-x-0 bottom-0 bg-espresso/80 py-1.5 text-center text-[10px] font-bold uppercase text-ivory">Sold out</span>}
+        {!product.inStock && <span className="absolute inset-x-0 bottom-0 bg-espresso/80 py-1.5 text-center text-[11px] font-bold uppercase text-ivory">Sold out</span>}
       </div>
 
       <div className="flex flex-1 flex-col p-3">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-crimson">{product.category}</span>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-crimson">{product.category}</span>
         <Link href={`/product/${product.id}`} className="line-clamp-2 font-serif text-[13px] font-bold leading-snug text-espresso hover:text-crimson sm:text-sm">
           {product.name}
         </Link>
         <span className="mt-1 flex items-baseline gap-1.5">
           <span className="text-sm font-bold text-burgundy">{formatPrice(product.price)}</span>
-          {product.originalPrice && <span className="text-[11px] text-espresso/40 line-through">{formatPrice(product.originalPrice)}</span>}
+          {product.originalPrice && <span className="text-[11px] text-espresso/60 line-through">{formatPrice(product.originalPrice)}</span>}
         </span>
 
         {product.inStock && (
@@ -165,7 +165,7 @@ function SavedContent() {
             ["Markdowns", savings ? formatPrice(savings) : "—"],
           ].map(([k, v]) => (
             <div key={k} className="rounded-2xl bg-white p-3 ring-1 ring-burgundy/10">
-              <dt className="text-[10px] font-bold uppercase tracking-wider text-espresso/50">{k}</dt>
+              <dt className="text-[11px] font-bold uppercase tracking-wider text-espresso/60">{k}</dt>
               <dd className="mt-0.5 truncate font-serif text-base font-bold text-espresso sm:text-lg">{v}</dd>
             </div>
           ))}

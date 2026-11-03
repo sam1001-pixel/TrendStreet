@@ -4,6 +4,7 @@ import { getCatalog, refreshStorefront } from "@/lib/catalog";
 import { writeAudit } from "@/lib/audit";
 import { ProductInputError, saveProduct, validateProduct } from "@/lib/admin-products";
 import { requireAdminSession } from "@/lib/auth";
+import { notifyRestock } from "@/lib/stock-alerts";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,10 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       if (JSON.stringify(from) !== JSON.stringify(to)) changed[key] = { from, to };
     }
     refreshStorefront();
+    // Stock went up from the product editor → email the "Notify me" list (never blocks the save).
+    if ((clean.stockCount ?? 0) > (before.inStock ? before.stockCount : 0)) {
+      await notifyRestock(params.id).catch((e) => console.warn("[Admin product update] Restock alerts not sent:", (e as Error).message));
+    }
     await writeAudit(req, { action: "PRODUCT_EDIT", entityType: "Product", entityId: params.id, metadata: { name: clean.name, changed } });
 
     const { products } = await getCatalog({ includeArchived: true });

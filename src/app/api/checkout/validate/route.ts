@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { formatMinorUnits } from "@/lib/pricing";
 import { OrderInputError, priceOrder, DeliveryMethod } from "@/lib/orders";
+import { checkDistributedRateLimit, getClientIp, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 const DELIVERY_METHODS: DeliveryMethod[] = ["standard", "express", "vip_courier"];
 
 export async function POST(req: NextRequest) {
+  const limit = await checkDistributedRateLimit(`checkout-validate:${getClientIp(req.headers)}`, RATE_LIMIT_CONFIG.CHECKOUT_VALIDATE);
+  if (!limit.allowed) {
+    return NextResponse.json({ error: "Too many requests. Please wait a moment and try again." }, { status: 429 });
+  }
   try {
     const body = await req.json();
     const deliveryMethod: DeliveryMethod = DELIVERY_METHODS.includes(body?.deliveryMethod) ? body.deliveryMethod : "standard";

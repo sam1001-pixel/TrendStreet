@@ -14,7 +14,7 @@ export const StoreJsonLd: React.FC = () => {
     description:
       "Indian menswear label for oversized tees and hoodies, boxy fit shirts, denim and jackets, shipped across India.",
     url: SITE_URL,
-    logo: `${SITE_URL}/trend-street-logo-burgundy.png`,
+    logo: `${SITE_URL}/brand/offvybe-logo-dark.png`,
     currenciesAccepted: "INR",
     paymentAccepted: "UPI, Credit Card, Debit Card, Net Banking, Cash on Delivery",
     areaServed: { "@type": "Country", name: "India" },

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -9,6 +9,8 @@ import { Logo } from "@/components/Logo";
 import { useStore } from "@/context/StoreContext";
 import { useUserAuth } from "@/context/UserAuthContext";
 import { QuickCommandMenu } from "@/components/QuickCommandMenu";
+import { lockScroll } from "@/lib/scroll-lock";
+import { useSwipeToClose } from "@/hooks/useSwipeToClose";
 
 const CATEGORIES = [
   { label: "Oversized", href: "/oversized", image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop" },
@@ -32,6 +34,9 @@ export const Header: React.FC = () => {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  useSwipeToClose(menuRef, { direction: "left", onClose: closeMenu, enabled: isMenuOpen });
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -61,17 +66,17 @@ export const Header: React.FC = () => {
   useEffect(() => {
     if (!isMenuOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsMenuOpen(false);
-    document.body.style.overflow = "hidden";
+    const unlock = lockScroll();
     window.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = "";
+      unlock();
       window.removeEventListener("keydown", onKey);
     };
   }, [isMenuOpen]);
 
   const Badge = ({ n, tone }: { n: number; tone: string }) =>
     n > 0 ? (
-      <span className={`absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${tone}`}>
+      <span className={`absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] font-bold ${tone}`}>
         {n > 9 ? "9+" : n}
       </span>
     ) : null;
@@ -81,8 +86,8 @@ export const Header: React.FC = () => {
   return (
     <>
       {/* Announcement */}
-      {siteSettings?.topAnnouncement?.enabled && !isAnnouncementDismissed && (
-        <div className="relative bg-espresso px-10 py-2 text-center text-[11px] font-semibold tracking-wide text-gold sm:text-xs">
+      {siteSettings?.topAnnouncement?.enabled && !isAnnouncementDismissed && !pathname.startsWith("/checkout") && (
+        <div className="relative bg-espresso px-11 py-2 text-center text-[11px] font-semibold tracking-wide text-gold-light sm:text-xs">
           <span className="line-clamp-1">{siteSettings.topAnnouncement.text}</span>
           {siteSettings.topAnnouncement.linkUrl && (
             <Link href={siteSettings.topAnnouncement.linkUrl} className="ml-2 hidden font-bold text-ivory underline hover:text-gold sm:inline">
@@ -91,7 +96,7 @@ export const Header: React.FC = () => {
           )}
           <button
             onClick={() => setIsAnnouncementDismissed(true)}
-            className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-gold/70 hover:text-gold"
+            className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-ivory/70 hover:text-ivory"
             aria-label="Dismiss announcement"
           >
             <X className="h-3.5 w-3.5" />
@@ -153,7 +158,7 @@ export const Header: React.FC = () => {
             >
               <Search className="h-3.5 w-3.5 text-burgundy" />
               <span className="font-medium">Search</span>
-              <kbd className="rounded bg-ivory px-1.5 py-0.5 font-mono text-[9px] font-bold text-burgundy">⌘K</kbd>
+              <kbd className="rounded bg-ivory px-1.5 py-0.5 font-mono text-[10px] font-bold text-burgundy">⌘K</kbd>
             </button>
             <Link href="/track" className={`${iconBtn} hidden lg:flex`} aria-label="Track order" title="Track order">
               <Truck className="h-5 w-5" />
@@ -185,7 +190,7 @@ export const Header: React.FC = () => {
       {isMenuOpen && (
         <div id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" className="fixed inset-0 z-[60] lg:hidden">
           <div className="absolute inset-0 bg-espresso/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
-          <div className="absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col overflow-y-auto bg-ivory shadow-2xl animate-in slide-in-from-left duration-300">
+          <div ref={menuRef} className="absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col overflow-y-auto overscroll-contain bg-ivory shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="flex h-16 items-center justify-between border-b border-burgundy/10 px-4">
               <Logo variant="burgundy" size="sm" href="/" />
               <button onClick={() => setIsMenuOpen(false)} className={iconBtn} aria-label="Close menu">
@@ -195,7 +200,7 @@ export const Header: React.FC = () => {
 
             <div className="flex-1 space-y-6 p-4">
               <div>
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-espresso/50">Shop by silhouette</p>
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-espresso/60">Shop by silhouette</p>
                 <ul className="grid grid-cols-2 gap-2">
                   {CATEGORIES.map((c) => (
                     <li key={c.href}>

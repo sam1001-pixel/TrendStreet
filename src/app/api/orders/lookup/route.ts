@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { adminOrderInclude, toAdminOrder } from "@/lib/admin-orders";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ const NOT_FOUND = "We couldn't find an order with that number and email.";
  * The same message is returned for "no such order" and "wrong email" so order numbers can't be probed.
  */
 export async function POST(req: NextRequest) {
-  const limit = checkRateLimit(`order-lookup:${getClientIp(req.headers)}`, { windowMs: 15 * 60 * 1000, maxRequests: 10 });
+  const limit = await checkDistributedRateLimit(`order-lookup:${getClientIp(req.headers)}`, { windowMs: 15 * 60 * 1000, maxRequests: 10 });
   if (!limit.allowed) {
     return NextResponse.json(
       { error: "Too many attempts. Please try again in a few minutes." },

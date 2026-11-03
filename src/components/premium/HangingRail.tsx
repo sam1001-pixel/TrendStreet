@@ -77,31 +77,11 @@ function Garment({
       }}
       style={{ transformOrigin: "50% 0%" }}
     >
-      {/* Ambient atelier breathing sway (pure compositor GPU animation, 0% CPU impact) */}
-      <motion.div
-        className="transform-gpu"
-        style={{ transformOrigin: "50% 0%" }}
-        animate={
-          reduce
-            ? undefined
-            : {
-                rotate: [0, 1.2, 0, -1.2, 0],
-              }
-        }
-        transition={{
-          duration: 4.8 + (index % 3) * 0.6,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: (index % 4) * 0.4,
-        }}
-        whileHover={
-          reduce
-            ? undefined
-            : {
-                rotate: [0, 2.6, -1.6, 0.8, 0],
-                transition: { duration: 1.1, ease: "easeOut" },
-              }
-        }
+      {/* Gentle sway as a CSS animation: runs on the compositor, so 10 swinging cards cost nothing on phones
+          (the old JavaScript-driven version re-rendered every card on every frame). */}
+      <div
+        className="rail-sway"
+        style={{ animationDuration: `${4.8 + (index % 3) * 0.6}s`, animationDelay: `${(index % 4) * 0.4}s` }}
       >
         <Hanger />
         <Link
@@ -131,7 +111,7 @@ function Garment({
               />
             )}
             {low && (
-              <span className="absolute left-2 top-2 rounded-full bg-crimson px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+              <span className="absolute left-2 top-2 rounded-full bg-crimson px-2 py-0.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
                 Only {p.stockCount} left
               </span>
             )}
@@ -140,27 +120,27 @@ function Garment({
           {/* Luxury Brass-Eyelet Hanging Price Tag */}
           <span className="absolute -right-1.5 sm:-right-2 top-[24%] origin-top-left rotate-6 transition-transform duration-300 ease-out group-hover:rotate-12 pointer-events-none">
             <span className="mx-auto block h-3.5 w-px bg-espresso/40" aria-hidden />
-            <span className="flex items-center gap-1 rounded bg-espresso px-2 py-0.5 text-center font-mono text-[10px] sm:text-[11px] font-bold text-gold shadow-md border border-gold/30">
+            <span className="flex items-center gap-1 rounded bg-espresso px-2 py-0.5 text-center font-mono text-[11px] sm:text-[11px] font-bold text-gold shadow-md border border-gold/30">
               {formatPrice(p.price)}
             </span>
           </span>
 
           {/* Garment Details */}
           <span className="block px-1 pb-1 pt-2">
-            <span className="block text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] text-crimson">
+            <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-crimson">
               {p.category}
             </span>
             <span className="mt-0.5 block truncate font-serif text-xs sm:text-sm font-bold text-espresso group-hover:text-burgundy transition-colors">
               {p.name}
             </span>
             {p.fabric && (
-              <span className="mt-0.5 block truncate text-[10px] text-espresso/60 font-light">
+              <span className="mt-0.5 block truncate text-[11px] text-espresso/60 font-light">
                 {p.fabric}
               </span>
             )}
           </span>
         </Link>
-      </motion.div>
+      </div>
     </motion.li>
   );
 }
@@ -246,7 +226,7 @@ export function HangingRail({
       {/* Section Header with Left/Right Scroll Controls */}
       <div className="mx-auto mb-5 sm:mb-8 flex max-w-[1600px] items-end justify-between gap-3 px-4 sm:px-8 lg:px-12">
         <div>
-          <div className="flex items-center gap-1.5 text-gold text-xs font-bold uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-1.5 text-crimson text-xs font-bold uppercase tracking-wider mb-1">
             <Sparkles className="w-3.5 h-3.5 text-gold" />
             <span>Atelier Rail Selection</span>
           </div>
@@ -318,7 +298,7 @@ export function HangingRail({
         </ul>
 
         {/* Mobile Swipe Cue */}
-        <div className="flex sm:hidden items-center justify-center gap-1.5 text-[11px] font-medium text-espresso/50 pt-1">
+        <div className="flex sm:hidden items-center justify-center gap-1.5 text-[11px] font-medium text-espresso/60 pt-1">
           <span>Swipe to browse · it moves on its own too</span>
         </div>
       </div>

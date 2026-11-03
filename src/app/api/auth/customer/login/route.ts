@@ -3,12 +3,13 @@ import {
   CustomerStoreUnavailableError,
   findCustomerByEmail,
   verifyCustomerPassword,
+  spendPasswordCheckTime,
   signCustomerToken,
   CUSTOMER_SESSION_COOKIE,
   CUSTOMER_SESSION_MAX_AGE,
 } from "@/lib/customer-auth";
 import { isRequestSecure } from "@/lib/auth";
-import { checkRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";
+import { checkDistributedRateLimit, getClientIp, resetRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     // 1. Sliding-window rate limit (25 attempts per 15 minutes per IP)
     const clientIp = getClientIp(req.headers);
-    const rateLimit = checkRateLimit(`cust-login:${clientIp}`, {
+    const rateLimit = await checkDistributedRateLimit(`cust-login:${clientIp}`, {
       windowMs: 15 * 60 * 1000,
       maxRequests: 25,
     });
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
 
     const customer = await findCustomerByEmail(email);
     if (!customer) {
+      spendPasswordCheckTime(password);
       return NextResponse.json(
         { success: false, message: "Invalid email or password." },
         { status: 401 }

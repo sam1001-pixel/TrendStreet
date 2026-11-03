@@ -3,11 +3,13 @@ import { Montserrat, Big_Shoulders_Display } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
-// OFFVYBE typography: Montserrat (ExtraBold / Medium per the brand sheet) for text and headings.
+// OFFVYBE typography: Montserrat for text, Big Shoulders Display for big headings.
 const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
+  // Only the weights the site uses (400–700; the heavy headings use the display font). 12 font files → 4,
+  // which is the biggest saving on a 4G first visit. Italics are drawn by the browser from the upright face.
+  weight: ["400", "500", "600", "700"],
+  style: ["normal"],
   variable: "--font-sans",
   display: "swap",
 });
@@ -24,6 +26,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
 import { QuickViewModal } from "@/components/QuickViewModal";
+import { AddedToBagToast } from "@/components/AddedToBagToast";
+import { InstallAppPrompt } from "@/components/InstallAppPrompt";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { StoreJsonLd } from "@/components/seo/JsonLd";
 import { ScrollReveal } from "@/components/premium/ScrollReveal";
@@ -45,7 +49,8 @@ export const metadata: Metadata = {
   description:
     "OFFVYBE is the definitive contemporary luxury menswear house. Specializing in 520gsm loopback oversized hoodies, boxy fit knits, and handcrafted flight jackets.",
   keywords: [
-    "trend street",
+    "offvybe",
+    "₹499 t-shirts",
     "oversized hoodie",
     "heavyweight oversized tee",
     "heavyweight streetwear",
@@ -60,6 +65,8 @@ export const metadata: Metadata = {
   creator: "OFFVYBE",
   publisher: "OFFVYBE",
   metadataBase: new URL(SITE_URL),
+  // Opened from the iPhone home screen: full screen, with the OFFVYBE name under the icon.
+  appleWebApp: { capable: true, title: "OFFVYBE", statusBarStyle: "black" },
   other: {
     "geo.region": "IN-MH",
     "geo.placename": "Mumbai, Bandra West",
@@ -91,7 +98,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { products, videoReviews } = await getCachedStorefront();
+  const { products, videoReviews, settings } = await getCachedStorefront();
   return (
     <html lang="en">
       <head>
@@ -100,7 +107,7 @@ export default async function RootLayout({
       <body className={`${montserrat.variable} ${display.variable} min-h-screen flex flex-col bg-ivory text-espresso antialiased`}>
         <SmoothScroll />
         <AdminAuthProvider>
-          <StoreProvider initialProducts={products} initialVideoReviews={videoReviews}>
+          <StoreProvider initialProducts={products} initialVideoReviews={videoReviews} initialSettings={settings}>
             <UserAuthProvider>
               <HideOnAdmin>
                 <Header />
@@ -111,6 +118,8 @@ export default async function RootLayout({
                 <Footer />
                 <CartDrawer />
                 <QuickViewModal />
+                <AddedToBagToast />
+                <InstallAppPrompt />
               </HideOnAdmin>
               <MobileBottomNav />
             </UserAuthProvider>

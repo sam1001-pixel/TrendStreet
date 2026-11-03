@@ -7,6 +7,7 @@ import { ProductCategory as DbCategory } from "@prisma/client";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { INITIAL_PRODUCTS } from "@/data/products";
+import { settingsFromDb } from "@/lib/site-settings";
 import type { Product, ProductCategory, Review } from "@/types/store";
 
 export const DB_TO_CATEGORY: Record<DbCategory, ProductCategory> = {
@@ -143,17 +144,23 @@ export async function getVideoReviews(limit = 12): Promise<Review[]> {
   }
 }
 
-/** Catalog + video reviews for server rendering, cached for a minute and refreshed instantly when the admin saves. */
+/** Catalog + video reviews + CMS settings for server rendering, cached for a minute and refreshed instantly when the admin saves. */
 export const getCachedStorefront = unstable_cache(
   async () => {
-    const [{ products, source }, videoReviews] = await Promise.all([getCatalog(), getVideoReviews()]);
-    return { products, source, videoReviews };
+    const [{ products, source }, videoReviews, settingsRow] = await Promise.all([
+      getCatalog(),
+      getVideoReviews(),
+      prisma.siteSettings.findUnique({ where: { id: "global" } }).catch(() => null),
+    ]);
+    // Settings are rendered on the server too, so hidden sections and the announcement bar
+    // don't flash in and then disappear once the browser fetches them.
+    return { products, source, videoReviews, settings: settingsFromDb(settingsRow) };
   },
   ["storefront-catalog"],
   { revalidate: 60, tags: ["catalog"] }
 );
 
-/** Call after any admin change to products or reviews. */
+/** Call after any admin change to products, reviews or storefront settings. */
 export function refreshStorefront() {
   try {
     revalidateTag("catalog");

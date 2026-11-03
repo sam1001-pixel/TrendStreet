@@ -23,6 +23,7 @@ import {
   Shield,
   MessageSquareQuote,
   Images,
+  BellRing,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAdminAuth } from "@/context/AdminAuthContext";
@@ -41,6 +42,7 @@ export const ADMIN_NAV_ITEMS = [
   { label: "Reviews", href: "/admin/reviews", icon: MessageSquareQuote, badge: "Video" },
   { label: "Media Library", href: "/admin/media", icon: Images, badge: null },
   { label: "Inventory", href: "/admin/inventory", icon: Boxes, badge: "Stock" },
+  { label: "Drop alerts", href: "/admin/alerts", icon: BellRing, badge: null },
   { label: "Customers", href: "/admin/customers", icon: Users, badge: null },
   { label: "Discounts & Coupons", href: "/admin/discounts", icon: Tag, badge: null },
   { label: "Shipping & Returns", href: "/admin/shipping", icon: Truck, badge: "Track" },

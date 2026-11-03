@@ -52,7 +52,7 @@ export function CinematicHero() {
   return (
     <section
       ref={ref}
-      className="relative h-[calc(100svh-120px)] sm:h-[100svh] min-h-[560px] w-full overflow-hidden bg-stone-950 text-white grain"
+      className="relative h-[74svh] min-h-[500px] max-h-[760px] w-full overflow-hidden bg-stone-950 text-white sm:h-[100svh] sm:max-h-none sm:min-h-[560px] grain"
       aria-label="Featured silhouettes"
     >
       {/* Image stage */}
@@ -80,7 +80,7 @@ export function CinematicHero() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/50" />
 
       {/* Content */}
-      <motion.div style={{ opacity: fade }} className="relative z-10 flex h-full flex-col justify-end px-4 sm:px-8 lg:px-12 pb-20 sm:pb-16">
+      <motion.div style={{ opacity: fade }} className="relative z-10 flex h-full flex-col justify-end px-4 sm:px-8 lg:px-12 pb-8 sm:pb-16">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -109,11 +109,11 @@ export function CinematicHero() {
 
         {/* Phones: two equal-width buttons side by side; larger screens: natural width */}
         <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
-          <MagneticButton href={look.href} wrapperClassName="w-full sm:w-auto" className="w-full justify-center px-4 tracking-[0.12em] sm:w-auto sm:px-7 sm:tracking-[0.2em]">
+          <MagneticButton href={look.href} wrapperClassName="w-full sm:w-auto" className="w-full justify-center gap-2 whitespace-nowrap px-3 tracking-[0.08em] sm:w-auto sm:gap-3 sm:px-7 sm:tracking-[0.2em]">
             Shop {look.key}
             <ArrowRight className="h-4 w-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
           </MagneticButton>
-          <MagneticButton href="/shop" variant="ghost" wrapperClassName="w-full sm:w-auto" className="w-full justify-center px-4 tracking-[0.12em] sm:w-auto sm:px-7 sm:tracking-[0.2em]">
+          <MagneticButton href="/shop" variant="ghost" wrapperClassName="w-full sm:w-auto" className="w-full justify-center whitespace-nowrap px-3 tracking-[0.08em] sm:w-auto sm:px-7 sm:tracking-[0.2em]">
             Shop all
           </MagneticButton>
         </div>
@@ -166,7 +166,7 @@ export function CinematicHero() {
         ))}
       </motion.h1>
 
-      <div className="absolute bottom-6 right-4 sm:right-8 z-10 hidden sm:flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-white/60">
+      <div className="absolute bottom-6 right-4 sm:right-8 z-10 hidden sm:flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-white/60">
         Scroll <ArrowDown className="h-3.5 w-3.5 animate-bounce" />
       </div>
     </section>

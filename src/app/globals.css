@@ -68,11 +68,16 @@ body {
 
 /* ---- Premium motion layer ---- */
 .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+/* Film grain: desktop only — a full-screen blended layer is expensive to repaint on phones. */
+@media (min-width: 640px) {
 .grain::after {
   content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.07; mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.text-outline { -webkit-text-stroke: 1.5px currentColor; color: transparent; }
+}
+/* Outlined text. Uses text-fill-color (not color) so the stroke keeps the element's text colour —
+   with `color: transparent` the stroke was transparent too and the words were invisible. */
+.text-outline { -webkit-text-stroke: 1.5px currentColor; -webkit-text-fill-color: transparent; }
 :focus-visible { outline: 2px solid var(--color-gold); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
@@ -90,6 +95,15 @@ body {
 .reveal-pending.reveal-in {
   opacity: 1;
   transform: none;
+}
+/* Phones: a quicker, shorter rise so fast thumb-scrolling never lands on blank cards. */
+@media (max-width: 639px) {
+  .reveal-pending {
+    transform: translate3d(0, 14px, 0);
+    transition:
+      opacity 0.4s ease-out var(--reveal-delay, 0ms),
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal-pending { opacity: 1; transform: none; transition: none; }
@@ -123,4 +137,31 @@ body {
   textarea {
     font-size: max(16px, 1em);
   }
+}
+
+/* Hanging rail: garments sway on their hanger (compositor-only transform animation) */
+@keyframes railSway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(1.2deg); }
+  75% { transform: rotate(-1.2deg); }
+}
+.rail-sway {
+  transform-origin: 50% 0%;
+  animation: railSway 5s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail-sway { animation: none; }
+}
+
+/* Finger-sized hit area (44×44) for small icon buttons without changing how they look.
+   The element must already be positioned (relative/absolute). */
+.hit-44::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
 }

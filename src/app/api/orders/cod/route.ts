@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
+import { prisma } from "@/lib/prisma";
 import { checkPincodeServiceability } from "@/lib/pincode";
 import { OrderInputError, placeOrder, sendOrderEmailFromDb, DeliveryMethod } from "@/lib/orders";
 
@@ -7,9 +8,16 @@ export const dynamic = "force-dynamic";
 
 const DELIVERY_METHODS: DeliveryMethod[] = ["standard", "express", "vip_courier"];
 
+/**
+ * Cash-on-delivery orders hold stock without any payment, so fake orders could empty the shop.
+ * Limits: unconfirmed COD orders per customer (email or phone) in 24 h, and pieces per COD order.
+ */
+const MAX_OPEN_COD_PER_CUSTOMER = 2;
+const MAX_COD_PIECES = 6;
+
 /** Places a Cash-on-Delivery order in the database. */
 export async function POST(req: NextRequest) {
-  const limit = checkRateLimit(`cod:${getClientIp(req.headers)}`, { windowMs: 10 * 60 * 1000, maxRequests: 5 });
+  const limit = await checkDistributedRateLimit(`cod:${getClientIp(req.headers)}`, { windowMs: 10 * 60 * 1000, maxRequests: 5 });
   if (!limit.allowed) {
     return NextResponse.json(
       { error: "Too many orders from this connection. Please try again in a few minutes." },
@@ -24,6 +32,33 @@ export async function POST(req: NextRequest) {
     const pin = checkPincodeServiceability(String(body?.customer?.postalCode ?? ""));
     if (!pin.codAvailable) {
       return NextResponse.json({ error: "Cash on delivery isn't available for this PIN code. Please pay online." }, { status: 400 });
+    }
+
+    const pieces = (Array.isArray(body?.items) ? body.items : []).reduce((n: number, it: { quantity?: unknown }) => n + Math.max(0, Math.floor(Number(it?.quantity) || 0)), 0);
+    if (pieces > MAX_COD_PIECES) {
+      return NextResponse.json({ error: `Cash on delivery is available for up to ${MAX_COD_PIECES} pieces per order. Please pay online for bigger orders.` }, { status: 400 });
+    }
+
+    const email = String(body?.customer?.email ?? "").trim().toLowerCase();
+    const phoneDigits = String(body?.customer?.phone ?? "").replace(/\D/g, "").slice(-10);
+    if (email || phoneDigits.length === 10) {
+      const open = await prisma.order.count({
+        where: {
+          status: "PENDING",
+          createdAt: { gte: new Date(Date.now() - 24 * 3600 * 1000) },
+          payments: { some: { provider: "CASH_ON_DELIVERY" } },
+          OR: [
+            ...(email ? [{ user: { email } }] : []),
+            ...(phoneDigits.length === 10 ? [{ shippingAddress: { phone: { contains: phoneDigits } } }] : []),
+          ],
+        },
+      });
+      if (open >= MAX_OPEN_COD_PER_CUSTOMER) {
+        return NextResponse.json(
+          { error: "You already have cash-on-delivery orders waiting for confirmation. Please pay online, or contact us to confirm them first." },
+          { status: 429 }
+        );
+      }
     }
 
     const order = await placeOrder({

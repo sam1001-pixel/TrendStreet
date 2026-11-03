@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ShieldCheck, Truck, RotateCcw, Wallet, Mail, Instagram, Twitter, Facebook, MapPin, Phone, ChevronDown, ArrowRight, Check } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useStore } from "@/context/StoreContext";
@@ -55,6 +56,29 @@ export const Footer: React.FC = () => {
   const [subscribed, setSubscribed] = useState(false);
   const phone = siteSettings.contactInfo?.phone || "+91 98200 12345";
   const mail = siteSettings.contactInfo?.email || "concierge@offvybe.in";
+  const pathname = usePathname();
+
+  // Checkout: a slim footer (help + policies) so nothing pulls the shopper away from paying.
+  if (pathname.startsWith("/checkout")) {
+    return (
+      <footer className="border-t border-burgundy/15 bg-bone px-4 py-6 text-center text-xs text-espresso/70">
+        <p className="flex items-center justify-center gap-1.5 font-semibold text-espresso">
+          <ShieldCheck className="h-4 w-4 text-green-700" /> Secure checkout · GST included
+        </p>
+        <p className="mt-2">
+          Need help?{" "}
+          <a href={`tel:${phone.replace(/\s/g, "")}`} className="font-semibold text-burgundy underline">
+            {phone}
+          </a>
+        </p>
+        <nav aria-label="Policies" className="mt-1 flex justify-center gap-4">
+          <Link href="/shipping-policy" className="py-3 underline">Shipping</Link>
+          <Link href="/returns" className="py-3 underline">Returns</Link>
+          <Link href="/terms" className="py-3 underline">Terms</Link>
+        </nav>
+      </footer>
+    );
+  }
 
   return (
     <footer className="border-t border-burgundy/40 bg-espresso pb-24 text-ivory md:pb-10">
@@ -96,7 +120,7 @@ export const Footer: React.FC = () => {
               >
                 <label htmlFor="footer-email" className="sr-only">Email address</label>
                 <div className="relative flex-1">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ivory/40" />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ivory/60" />
                   <input
                     id="footer-email"
                     type="email"
@@ -117,10 +141,10 @@ export const Footer: React.FC = () => {
               <p className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gold" /> Pali Hill, Bandra West, Mumbai 400050
               </p>
-              <a href={`tel:${phone.replace(/\s/g, "")}`} className="flex items-center gap-2 hover:text-gold">
+              <a href={`tel:${phone.replace(/\s/g, "")}`} className="flex min-h-[40px] items-center gap-2 hover:text-gold-light">
                 <Phone className="h-3.5 w-3.5 text-gold" /> {phone}
               </a>
-              <a href={`mailto:${mail}`} className="flex items-center gap-2 hover:text-gold">
+              <a href={`mailto:${mail}`} className="flex min-h-[40px] items-center gap-2 hover:text-gold-light">
                 <Mail className="h-3.5 w-3.5 text-gold" /> {mail}
               </a>
             </div>
@@ -130,14 +154,14 @@ export const Footer: React.FC = () => {
           <div className="divide-y divide-white/10 border-y border-white/10 sm:grid sm:grid-cols-3 sm:gap-8 sm:divide-y-0 sm:border-0 lg:col-span-7">
             {GROUPS.map((g) => (
               <details key={g.title} className="group sm:hidden">
-                <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-[0.2em] text-gold [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between text-xs font-bold uppercase tracking-[0.2em] text-gold-light [&::-webkit-details-marker]:hidden">
                   {g.title}
                   <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                 </summary>
                 <ul className="space-y-1 pb-4">
                   {g.links.map((l) => (
                     <li key={l.label}>
-                      <Link href={l.href} className="block py-1.5 text-sm text-ivory/80 hover:text-gold">
+                      <Link href={l.href} className="block py-2.5 text-sm text-ivory/80 hover:text-gold-light">
                         {l.label}
                       </Link>
                     </li>
@@ -147,7 +171,7 @@ export const Footer: React.FC = () => {
             ))}
             {GROUPS.map((g) => (
               <div key={`d-${g.title}`} className="hidden sm:block">
-                <h3 className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-gold">{g.title}</h3>
+                <h3 className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-gold-light">{g.title}</h3>
                 <ul className="space-y-2.5">
                   {g.links.map((l) => (
                     <li key={l.label}>
@@ -163,13 +187,13 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col-reverse items-center gap-5 border-t border-white/10 pt-6 text-[11px] text-ivory/55 md:flex-row md:justify-between">
+        <div className="flex flex-col-reverse items-center gap-5 border-t border-white/10 pt-6 text-[11px] text-ivory/60 md:flex-row md:justify-between">
           <p className="text-center">© {new Date().getFullYear()} OFFVYBE</p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            <Link href="/privacy-policy" className="hover:text-gold">Privacy</Link>
-            <Link href="/terms" className="hover:text-gold">Terms</Link>
-            <Link href="/shipping-policy" className="hover:text-gold">Shipping</Link>
-            <Link href="/returns" className="hover:text-gold">Returns</Link>
+            <Link href="/privacy-policy" className="py-3 hover:text-gold-light">Privacy</Link>
+            <Link href="/terms" className="py-3 hover:text-gold-light">Terms</Link>
+            <Link href="/shipping-policy" className="py-3 hover:text-gold-light">Shipping</Link>
+            <Link href="/returns" className="py-3 hover:text-gold-light">Returns</Link>
           </div>
           <div className="flex items-center gap-3">
             {SOCIAL.map(({ href, label, icon: Icon }) => (

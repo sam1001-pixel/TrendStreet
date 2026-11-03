@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { notifyRestock } from "@/lib/stock-alerts";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth";
 import { adjustInventoryTransactional, StockAdjustmentReason } from "@/lib/stock-movements";
@@ -200,10 +201,22 @@ export async function POST(req: NextRequest) {
       });
     });
 
+    // Restocked? Email shoppers who tapped "Notify me" on this product (never blocks the adjustment).
+    let alerts: { sent: number; waiting: number } | null = null;
+    if (changeQty > 0) {
+      try {
+        const inv = await prisma.inventory.findUnique({ where: { id: inventoryId }, select: { variant: { select: { productId: true } } } });
+        if (inv?.variant.productId) alerts = await notifyRestock(inv.variant.productId);
+      } catch (alertErr) {
+        console.warn("[Admin Inventory] Restock alerts not sent:", (alertErr as Error).message);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       inventory: result.inventory,
       movement: result.movement,
+      alerts,
     });
   } catch (err) {
     console.error("[Admin Inventory POST]:", err);

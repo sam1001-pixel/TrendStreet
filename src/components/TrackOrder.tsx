@@ -5,10 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { Search, Package, PackageCheck, Truck, Home, CheckCircle2, MapPin, Phone, MessageCircle, RotateCcw, Sparkles, Loader2 } from "lucide-react";
+import { Search, Package, PackageCheck, Truck, Home, CheckCircle2, MapPin, Phone, MessageCircle, RotateCcw, Loader2 } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
-import { DEMO_ORDERS, TRACK_STEPS, stepIndexFor } from "@/data/demo";
+import { TRACK_STEPS, stepIndexFor } from "@/data/demo";
 
 interface TrackedOrder {
   orderNumber: string;
@@ -48,7 +48,7 @@ export function TrackOrder() {
 
   const fromLocal = (q: string): TrackedOrder | null => {
     const key = q.trim().toUpperCase();
-    const o = [...orders, ...DEMO_ORDERS].find((x) => x.orderNumber.toUpperCase() === key || x.trackingNumber.toUpperCase() === key);
+    const o = orders.find((x) => x.orderNumber.toUpperCase() === key || x.trackingNumber.toUpperCase() === key);
     if (!o) return null;
     const hasTracking = /\d/.test(o.trackingNumber);
     return {
@@ -138,7 +138,7 @@ export function TrackOrder() {
           </div>
           <div>
             <label htmlFor="t-email" className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-ivory/60">
-              Checkout email <span className="font-normal normal-case text-ivory/40">(not needed for orders on this device)</span>
+              Checkout email <span className="font-normal normal-case text-ivory/60">(not needed for orders on this device)</span>
             </label>
             <input
               id="t-email"
@@ -154,21 +154,11 @@ export function TrackOrder() {
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             {busy ? "Searching…" : "Track order"}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setOrderNumber(DEMO_ORDERS[0].orderNumber);
-              lookup(DEMO_ORDERS[0].orderNumber);
-            }}
-            className="flex w-full items-center justify-center gap-1.5 text-[11px] font-semibold text-gold/80 hover:text-gold"
-          >
-            <Sparkles className="h-3.5 w-3.5" /> Try a sample order
-          </button>
         </form>
 
         {recent.length > 0 && (
           <div className="rounded-3xl bg-white p-4 ring-1 ring-burgundy/10">
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-espresso/50">Recent on this device</p>
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-espresso/60">Recent on this device</p>
             <ul className="space-y-1">
               {recent.map((o) => (
                 <li key={o.id}>
@@ -183,7 +173,7 @@ export function TrackOrder() {
                       <span className="block font-mono text-xs font-bold text-burgundy">{o.orderNumber}</span>
                       <span className="text-[11px] text-espresso/60">{fmtDate(o.createdAt)} · {o.items.length} item{o.items.length > 1 ? "s" : ""}</span>
                     </span>
-                    <span className="rounded-full bg-ivory-dark px-2 py-0.5 text-[10px] font-bold text-espresso/70">{o.status}</span>
+                    <span className="rounded-full bg-ivory-dark px-2 py-0.5 text-[11px] font-bold text-espresso/70">{o.status}</span>
                   </button>
                 </li>
               ))}
@@ -212,7 +202,7 @@ export function TrackOrder() {
           >
             <header className="flex flex-wrap items-start justify-between gap-3 bg-burgundy p-5 text-ivory sm:p-6">
               <div>
-                {result.isSample && <span className="mb-1 inline-block rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold uppercase text-white">Sample order</span>}
+                {result.isSample && <span className="mb-1 inline-block rounded-full bg-gold px-2 py-0.5 text-[11px] font-bold uppercase text-white">Sample order</span>}
                 <p className="font-mono text-sm font-bold">{result.orderNumber}</p>
                 <p className="text-xs text-ivory/70">Placed {fmtDate(result.createdAt)}</p>
               </div>
@@ -247,7 +237,7 @@ export function TrackOrder() {
                       >
                         <Icon className="h-4 w-4" />
                       </span>
-                      <span className={`mt-2 text-[10px] font-semibold leading-tight sm:text-xs ${done ? "text-espresso" : "text-espresso/40"}`}>{label}</span>
+                      <span className={`mt-2 text-[11px] font-semibold leading-tight sm:text-xs ${done ? "text-espresso" : "text-espresso/60"}`}>{label}</span>
                     </li>
                   );
                 })}

@@ -14,6 +14,7 @@ import {
 import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCategory } from "@/types/store";
+import { lockScroll } from "@/lib/scroll-lock";
 
 const ALL_CATEGORIES: ProductCategory[] = [
   "Oversized",
@@ -32,6 +33,8 @@ function ShopContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedSize, setSelectedSize] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  // With one store-wide price (₹499) a price slider has nothing to filter, so it is hidden.
+  const hasPriceSpread = new Set(products.map((p) => p.price)).size > 1;
   const PRICE_CEILING = Math.max(1000, Math.ceil(Math.max(0, ...products.map((p) => p.price)) / 500) * 500);
   const [maxPrice, setMaxPrice] = useState<number>(Number.MAX_SAFE_INTEGER);
   const [minPrice, setMinPrice] = useState<number>(0);
@@ -64,10 +67,10 @@ function ShopContent() {
   useEffect(() => {
     if (!isMobileFilterOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsMobileFilterOpen(false);
-    document.body.style.overflow = "hidden";
+    const unlock = lockScroll();
     window.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = "";
+      unlock();
       window.removeEventListener("keydown", onKey);
     };
   }, [isMobileFilterOpen]);
@@ -149,7 +152,7 @@ function ShopContent() {
       {/* Page Header */}
       <div className="flex flex-col justify-between gap-3 border-b border-burgundy/15 pb-4 sm:gap-4 sm:pb-6 md:flex-row md:items-end">
         <div>
-          <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.2em] text-crimson sm:text-xs">
+          <span className="mb-1 block text-[11px] font-bold uppercase tracking-[0.2em] text-crimson sm:text-xs">
             Complete Streetwear Catalog
           </span>
           <h1 className="font-serif text-2xl font-bold text-espresso sm:text-3xl md:text-4xl">
@@ -191,12 +194,12 @@ function ShopContent() {
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => setSelectedCategory(cat)}
-                className={`inline-flex min-h-[36px] flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-xs font-bold transition-colors ${
+                className={`inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-xs font-bold transition-colors ${
                   isSelected ? "bg-espresso text-ivory" : "bg-white text-espresso/75 ring-1 ring-burgundy/15"
                 }`}
               >
                 {cat === "All" ? "All" : cat}
-                <span className={`text-[10px] ${isSelected ? "text-ivory/70" : "text-espresso/45"}`}>{count}</span>
+                <span className={`text-[11px] ${isSelected ? "text-ivory/70" : "text-espresso/60"}`}>{count}</span>
               </button>
             );
           })}
@@ -210,7 +213,7 @@ function ShopContent() {
             Filters
             {(() => {
               const n = (selectedSize !== "All" ? 1 : 0) + (searchQuery ? 1 : 0) + (effectiveMax < PRICE_CEILING || minPrice > 0 ? 1 : 0) + (tag ? 1 : 0) + (inStockOnly ? 1 : 0);
-              return n > 0 ? <span className="rounded-full bg-burgundy px-1.5 text-[10px] text-gold">{n}</span> : null;
+              return n > 0 ? <span className="rounded-full bg-burgundy px-1.5 text-[11px] text-gold">{n}</span> : null;
             })()}
           </button>
           <label className="relative flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-burgundy/20 bg-white text-xs font-bold uppercase tracking-wider text-burgundy">
@@ -257,7 +260,7 @@ function ShopContent() {
               Search Keywords
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-espresso/40" />
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-espresso/60" />
               <input
                 type="text"
                 placeholder="Flannel, Cashmere, Loafer..."
@@ -283,7 +286,7 @@ function ShopContent() {
                 }`}
               >
                 <span>All Menswear</span>
-                <span className="text-[10px] opacity-70">({products.length})</span>
+                <span className="text-[11px] opacity-70">({products.length})</span>
               </button>
 
               {ALL_CATEGORIES.map((cat) => {
@@ -300,7 +303,7 @@ function ShopContent() {
                     }`}
                   >
                     <span>{cat}</span>
-                    <span className="text-[10px] opacity-70">({count})</span>
+                    <span className="text-[11px] opacity-70">({count})</span>
                   </button>
                 );
               })}
@@ -308,6 +311,7 @@ function ShopContent() {
           </div>
 
           {/* Price Range Slider */}
+          {hasPriceSpread && (
           <div className="space-y-2.5 pt-4 border-t border-burgundy/10">
             <div className="flex justify-between items-center text-xs font-semibold text-espresso">
               <span>Max Price</span>
@@ -323,12 +327,13 @@ function ShopContent() {
               onChange={(e) => setMaxPrice(Number(e.target.value))}
               className="w-full accent-burgundy cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-espresso/50">
+            <div className="flex justify-between text-[11px] text-espresso/60">
               <span>₹500</span>
               <span>₹{Math.round(PRICE_CEILING / 2).toLocaleString("en-IN")}</span>
               <span>₹{PRICE_CEILING.toLocaleString("en-IN")}</span>
             </div>
           </div>
+          )}
 
           {/* Size Pills */}
           <div className="space-y-2.5 pt-4 border-t border-burgundy/10">
@@ -436,7 +441,7 @@ function ShopContent() {
                       type="button"
                       aria-pressed={selectedCategory === cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`min-h-[40px] rounded-full border px-4 text-xs font-semibold transition-colors ${
+                      className={`min-h-[44px] rounded-full border px-4 text-xs font-semibold transition-colors ${
                         selectedCategory === cat
                           ? "border-burgundy bg-burgundy text-gold"
                           : "border-burgundy/20 bg-white text-espresso"
@@ -471,6 +476,7 @@ function ShopContent() {
               </fieldset>
 
               {/* Price */}
+              {hasPriceSpread && (
               <div className="space-y-2">
                 <div className="flex justify-between text-xs font-bold text-burgundy">
                   <span className="uppercase tracking-wider">Max price</span>
@@ -487,6 +493,7 @@ function ShopContent() {
                   className="h-8 w-full accent-burgundy"
                 />
               </div>
+              )}
 
               {/* In stock */}
               <label className="flex min-h-[48px] cursor-pointer items-center justify-between rounded-2xl border border-burgundy/15 bg-white px-4 text-sm font-medium text-espresso">

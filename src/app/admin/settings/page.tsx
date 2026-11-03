@@ -19,10 +19,20 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Clock,
 } from "lucide-react";
 import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { SiteSettings } from "@/types/store";
+
+/** ISO time → value for <input type="datetime-local"> in the admin's own time zone. */
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 export default function AdminSettingsPage() {
   const { siteSettings, updateSiteSettings, resetSiteSettings, error, notice, clearError } = useAdminData();
@@ -31,7 +41,7 @@ export default function AdminSettingsPage() {
   useEffect(() => setFormData(siteSettings), [siteSettings]);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved">("idle");
   const [activeTab, setActiveTab] = useState<
-    "hero" | "sections" | "announcement" | "categories" | "marquee" | "promos" | "contact"
+    "hero" | "sections" | "drop" | "announcement" | "categories" | "marquee" | "promos" | "contact"
   >("hero");
   const [newPromoCode, setNewPromoCode] = useState({
     code: "",
@@ -40,7 +50,8 @@ export default function AdminSettingsPage() {
   });
   const [newMarqueeText, setNewMarqueeText] = useState("");
 
-  const storefrontSections = formData.storefrontSections || {
+  // Defaults first, then what is saved — sections added later show as on (as they are on the site).
+  const storefrontSections = {
     hero: true,
     weightTest: true,
     shopByPriceOccasion: true,
@@ -50,6 +61,12 @@ export default function AdminSettingsPage() {
     silhouetteAccordion: true,
     videoReviews: true,
     trustStrip: true,
+    categoryStories: true,
+    priceBanner: true,
+    categoryRails: true,
+    recentlyViewed: true,
+    nextDrop: true,
+    ...(formData.storefrontSections || {}),
   };
 
   const toggleSection = (key: keyof typeof storefrontSections) => {
@@ -75,6 +92,11 @@ export default function AdminSettingsPage() {
         silhouetteAccordion: enabled,
         videoReviews: enabled,
         trustStrip: enabled,
+        categoryStories: enabled,
+        priceBanner: enabled,
+        categoryRails: enabled,
+        recentlyViewed: enabled,
+        nextDrop: enabled,
       },
     });
   };
@@ -203,6 +225,7 @@ export default function AdminSettingsPage() {
         {[
           { id: "hero", label: "Hero & Headlines", icon: Layout },
           { id: "sections", label: "Storefront Sections", icon: Sliders },
+          { id: "drop", label: "Next drop", icon: Clock },
           { id: "announcement", label: "Announcement Bar", icon: Sparkles },
           { id: "categories", label: "Category Taglines", icon: Layers },
           { id: "marquee", label: "Marquee Ticker", icon: Tag },
@@ -515,6 +538,36 @@ export default function AdminSettingsPage() {
                   tag: "Top of Page",
                 },
                 {
+                  key: "categoryStories" as const,
+                  title: "Category Shortcuts",
+                  desc: "Round, story-style category buttons right under the hero — one tap to Oversized, Jeans, Boxy Fit or Jackets.",
+                  tag: "Mobile Navigation",
+                },
+                {
+                  key: "priceBanner" as const,
+                  title: "Everything ₹499 Banner",
+                  desc: "Big price promise block with a product collage and a Shop All button. Shows “Starting at” if prices ever differ.",
+                  tag: "Offer",
+                },
+                {
+                  key: "categoryRails" as const,
+                  title: "Shop by Fit Rows",
+                  desc: "One swipeable product row per category, so the homepage shows the whole range.",
+                  tag: "Full Collection",
+                },
+                {
+                  key: "nextDrop" as const,
+                  title: "Next Drop Countdown",
+                  desc: "Countdown + Remind me sign-up. Set the date and name in the Next drop tab; hidden when no date is set.",
+                  tag: "Drops",
+                },
+                {
+                  key: "recentlyViewed" as const,
+                  title: "Recently Viewed",
+                  desc: "Pieces this visitor opened lately (stored in their browser). Hidden for first-time visitors.",
+                  tag: "Personal",
+                },
+                {
                   key: "runwayReel" as const,
                   title: "The Runway Reel",
                   desc: "Horizontal scrollable reel showcasing highlight pieces with quick add-to-bag drawers.",
@@ -534,7 +587,7 @@ export default function AdminSettingsPage() {
                 },
                 {
                   key: "silhouetteAccordion" as const,
-                  title: "The Three Silhouette Cuts",
+                  title: "The Four Silhouette Cuts",
                   desc: "Expandable sartorial breakdown explaining shoulder drops, chest drape, and hem lengths.",
                   tag: "Design Architecture",
                 },
@@ -806,6 +859,56 @@ export default function AdminSettingsPage() {
                 />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Next drop countdown */}
+        {activeTab === "drop" && (
+          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-5">
+            <div className="border-b border-burgundy/10 pb-3">
+              <h2 className="font-serif text-lg font-bold text-espresso">Next drop countdown</h2>
+              <p className="text-xs text-espresso/70">
+                Shows a live countdown with a &ldquo;Remind me&rdquo; button near the top of the homepage. For two days after the time it switches to
+                &ldquo;Live now&rdquo;, then hides. Leave the date empty to hide it. Send the reminders from Drop alerts when it goes live.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block space-y-1.5">
+                <span className="block text-[11px] font-bold text-espresso uppercase tracking-wider">Drop name</span>
+                <input
+                  type="text"
+                  maxLength={120}
+                  placeholder="e.g. Drop 05 — Winter Heavyweights"
+                  value={formData.nextDrop?.title ?? ""}
+                  onChange={(e) => setFormData({ ...formData, nextDrop: { at: formData.nextDrop?.at ?? null, title: e.target.value } })}
+                  className="w-full rounded-lg border border-burgundy/20 bg-ivory px-3.5 py-2.5 text-sm text-espresso focus:border-burgundy focus:outline-none"
+                />
+              </label>
+              <label className="block space-y-1.5">
+                <span className="block text-[11px] font-bold text-espresso uppercase tracking-wider">Goes live at (your local time)</span>
+                <input
+                  type="datetime-local"
+                  value={toLocalInput(formData.nextDrop?.at ?? null)}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      nextDrop: { title: formData.nextDrop?.title ?? "", at: e.target.value ? new Date(e.target.value).toISOString() : null },
+                    })
+                  }
+                  className="w-full rounded-lg border border-burgundy/20 bg-ivory px-3.5 py-2.5 text-sm text-espresso focus:border-burgundy focus:outline-none"
+                />
+              </label>
+            </div>
+            {formData.nextDrop?.at && (
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, nextDrop: { title: formData.nextDrop?.title ?? "", at: null } })}
+                className="text-xs font-semibold text-crimson underline"
+              >
+                Remove countdown
+              </button>
+            )}
+            <p className="text-xs text-espresso/60">Remember to press Save.</p>
           </div>
         )}
 

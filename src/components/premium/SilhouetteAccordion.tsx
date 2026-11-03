@@ -15,9 +15,17 @@ const PANELS = [
     copy: "Heavyweight loopback hoodies and 320gsm drop-shoulder tees engineered with relaxed architectural drape.",
   },
   {
+    name: "Jeans",
+    href: "/shop?category=Jeans",
+    no: "02",
+    shortTag: "Baggy, Carpenter & Selvedge Denim",
+    image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1400&auto=format&fit=crop",
+    copy: "Relaxed baggy and carpenter cuts in heavyweight denim, made to stack and wear in over years.",
+  },
+  {
     name: "Boxy Fit",
     href: "/boxy-fit",
-    no: "02",
+    no: "03",
     shortTag: "Cropped Waist & Wide-Body Knits",
     image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1400&auto=format&fit=crop",
     copy: "Cropped, wide-body knits and structured flannel overshirts that sit precisely at the natural beltline.",
@@ -25,14 +33,14 @@ const PANELS = [
   {
     name: "Jackets",
     href: "/jackets",
-    no: "03",
+    no: "04",
     shortTag: "Handcrafted Flight Bombers & Shells",
     image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1400&auto=format&fit=crop",
     copy: "Suede flight bombers, Melton overcoats, and Japanese duck canvas chores built for generational longevity.",
   },
 ];
 
-/** Three silhouettes: compact 1 card/row on mobile, 2 cards/row on tablet, expanding accordion on desktop. */
+/** Four silhouettes: 2 × 2 tiles on phones and tablets, an expanding accordion on desktop. */
 export function SilhouetteAccordion() {
   const [open, setOpen] = useState(0);
 
@@ -45,18 +53,18 @@ export function SilhouetteAccordion() {
             Architectural Foundations
           </span>
           <h2 className="font-display text-3xl font-black uppercase leading-[0.85] text-stone-950 sm:text-6xl lg:text-7xl">
-            Three cuts.
+            Four cuts.
             <br />
             <span className="text-outline text-burgundy">Nothing else.</span>
           </h2>
         </div>
         <p className="max-w-xs text-xs sm:text-sm leading-relaxed text-stone-600 font-light">
-          No suits, no formal shoes. Every garment belongs exclusively to one of three architectural silhouettes.
+          No suits, no formal shoes. Every piece belongs to one of four silhouettes.
         </p>
       </div>
 
       {/* Grid: 1 col on mobile, 2 cols on tablet, expanding flex row on desktop */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:h-[580px] lg:flex-row gap-3 sm:gap-4 lg:gap-5">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:flex lg:h-[580px] lg:flex-row lg:gap-5">
         {PANELS.map((p, i) => {
           const isOpen = open === i;
           return (
@@ -65,16 +73,16 @@ export function SilhouetteAccordion() {
               href={p.href}
               onMouseEnter={() => setOpen(i)}
               onFocus={() => setOpen(i)}
-              className={`group relative overflow-hidden rounded-xl sm:rounded-2xl bg-stone-900 h-[190px] xs:h-[210px] sm:h-[230px] md:h-[250px] lg:h-auto lg:aspect-auto lg:transition-[flex-grow] lg:duration-700 lg:ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`group relative overflow-hidden rounded-xl sm:rounded-2xl bg-stone-900 aspect-[4/5] sm:aspect-[4/3] lg:aspect-auto lg:h-auto lg:transition-[flex-grow] lg:duration-700 lg:ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isOpen ? "lg:flex-[3.5]" : "lg:flex-[1]"
-              } ${i === 2 ? "sm:col-span-2 sm:max-w-md sm:mx-auto w-full lg:col-span-1 lg:max-w-none" : ""}`}
+              }`}
             >
               {/* Background Product Image */}
               <Image
                 src={p.image}
                 alt={`${p.name} collection`}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                sizes="(max-width: 1024px) 50vw, 40vw"
                 className={`object-cover transition-all duration-700 ${
                   isOpen ? "scale-105 grayscale-0" : "scale-100 lg:grayscale"
                 }`}
@@ -84,10 +92,10 @@ export function SilhouetteAccordion() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15 transition-opacity duration-500 group-hover:from-black/95 group-hover:via-black/55" />
 
               {/* Card Content Overlay */}
-              <div className="relative z-10 flex h-full flex-col justify-between p-4 sm:p-5 lg:p-7">
+              <div className="relative z-10 flex h-full flex-col justify-between p-3 sm:p-5 lg:p-7">
                 {/* Top Row: Number Tag & Corner Arrow */}
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-0.5 border border-white/15 text-gold font-mono text-[10px] sm:text-[11px] font-bold tracking-wider">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-0.5 border border-white/15 text-gold font-mono text-[11px] sm:text-[11px] font-bold tracking-wider">
                     <span>{p.no}</span>
                     <span className="text-white/30">•</span>
                     <span className="text-white/80 uppercase">Cut</span>
@@ -99,12 +107,12 @@ export function SilhouetteAccordion() {
 
                 {/* Bottom Body: Title & Short Content */}
                 <div>
-                  <h3 className="font-display text-2xl sm:text-3xl lg:text-5xl font-black uppercase text-white leading-none tracking-tight">
+                  <h3 className="font-display text-[1.6rem] sm:text-3xl lg:text-5xl font-black uppercase text-white leading-none tracking-tight">
                     {p.name}
                   </h3>
 
                   {/* Short 1-line tag for mobile & tablet */}
-                  <p className="mt-1 text-xs sm:text-[13px] text-gold/90 font-medium truncate block lg:hidden">
+                  <p className="mt-1 text-[11px] sm:text-[13px] text-white/80 font-medium line-clamp-2 lg:hidden">
                     {p.shortTag}
                   </p>
 
