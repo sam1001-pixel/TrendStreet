@@ -24,6 +24,7 @@ import {
   MessageSquareQuote,
   Images,
   BellRing,
+  RotateCcw,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAdminAuth } from "@/context/AdminAuthContext";
@@ -46,6 +47,7 @@ export const ADMIN_NAV_ITEMS = [
   { label: "Customers", href: "/admin/customers", icon: Users, badge: null },
   { label: "Discounts & Coupons", href: "/admin/discounts", icon: Tag, badge: null },
   { label: "Shipping & Returns", href: "/admin/shipping", icon: Truck, badge: "Track" },
+  { label: "Exchanges & returns", href: "/admin/returns", icon: RotateCcw, badge: null },
   { label: "Analytics & Reports", href: "/admin/analytics", icon: BarChart3, badge: null },
   { label: "Storefront & Content", href: "/admin/content", icon: Palette, badge: null },
   { label: "Settings", href: "/admin/settings", icon: Sliders, badge: null },

@@ -9,12 +9,14 @@ import { Search, Package, PackageCheck, Truck, Home, CheckCircle2, MapPin, Phone
 import { useStore, useStoreConfig } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
 import { TRACK_STEPS, stepIndexFor } from "@/data/demo";
+import { CancelSheet, ReturnSheet } from "@/components/orders/OrderCard";
+import type { Order, OrderReturn } from "@/types/store";
 
 interface TrackedOrder {
   orderNumber: string;
   createdAt: string;
   status: string;
-  items: { productName: string; selectedSize: string; selectedColor: string; quantity: number; price: number; image: string }[];
+  items: { productName: string; selectedSize: string; selectedColor: string; quantity: number; price: number; image: string; productId?: string; orderItemId?: string }[];
   total: number;
   trackingNumber: string;
   courier: string | null;
@@ -22,6 +24,55 @@ interface TrackedOrder {
   postalCode?: string;
   estimatedDelivery?: string;
   isSample?: boolean;
+  /** Live from the server: what the shopper can do now. */
+  paymentMethod?: Order["paymentMethod"];
+  cancellable?: boolean;
+  cancelViaSupport?: boolean;
+  returnable?: boolean;
+  returnBy?: string | null;
+  returns?: OrderReturn[];
+}
+
+/** Server order (after cancel / return request) → the shape this page shows. */
+function fromServer(o: Order): TrackedOrder {
+  return {
+    orderNumber: o.orderNumber,
+    createdAt: o.createdAt,
+    status: o.status,
+    items: o.items,
+    total: o.total,
+    trackingNumber: o.trackingNumber,
+    courier: o.courier ?? null,
+    city: o.customer.city,
+    postalCode: o.customer.postalCode,
+    paymentMethod: o.paymentMethod,
+    cancellable: o.cancellable,
+    cancelViaSupport: o.cancelViaSupport,
+    returnable: o.returnable,
+    returnBy: o.returnBy,
+    returns: o.returns,
+  };
+}
+
+/** Minimal Order for the cancel / exchange sheets. */
+function asOrder(t: TrackedOrder): Order {
+  return {
+    id: t.orderNumber,
+    orderNumber: t.orderNumber,
+    createdAt: t.createdAt,
+    status: t.status as Order["status"],
+    items: t.items.map((i) => ({ ...i, productId: i.productId ?? "" })),
+    subtotal: t.total,
+    discount: 0,
+    shipping: 0,
+    tax: 0,
+    total: t.total,
+    customer: { fullName: "", email: "", phone: "", address: "", city: t.city, postalCode: t.postalCode ?? "", country: "India" },
+    deliveryMethod: "standard",
+    paymentMethod: t.paymentMethod ?? "cod",
+    trackingNumber: t.trackingNumber,
+    estimatedDelivery: t.estimatedDelivery ?? "",
+  };
 }
 
 const STEP_ICONS = [CheckCircle2, Package, Truck, Truck, Home];
@@ -47,6 +98,26 @@ export function TrackOrder() {
   const [result, setResult] = useState<TrackedOrder | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Email that proved ownership of the shown order (needed to cancel / request an exchange as a guest).
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [sheet, setSheet] = useState<"cancel" | "return" | null>(null);
+
+  /** Fetches the live status for an order; quietly keeps the current view if it can't. */
+  const fetchLive = async (q: string, mail: string, quiet: boolean) => {
+    try {
+      const res = await fetch("/api/orders/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderNumber: q, email: mail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "We couldn't find that order.");
+      setResult(data.order);
+      setOwnerEmail(mail);
+    } catch (err) {
+      if (!quiet) setError((err as Error).message);
+    }
+  };
 
   useEffect(() => setEmail((e) => e || user.email), [user.email]);
 
@@ -78,6 +149,9 @@ export function TrackOrder() {
     const local = fromLocal(q);
     if (local) {
       setResult(local);
+      // This device's copy may be out of date: refresh it from the server in the background.
+      const mail = localEmail(q) || email.trim();
+      if (!local.isSample && mail) void fetchLive(local.orderNumber, mail, true);
       return;
     }
     if (!email.trim()) {
@@ -85,28 +159,22 @@ export function TrackOrder() {
       return;
     }
     setBusy(true);
-    try {
-      const res = await fetch("/api/orders/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderNumber: q, email }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "We couldn't find that order.");
-      setResult(data.order);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    await fetchLive(q, email.trim(), false);
+    setBusy(false);
   };
+
+  const localEmail = (q: string) => orders.find((x) => x.orderNumber.toUpperCase() === q.trim().toUpperCase())?.customer.email ?? "";
 
   // Deep link: /track?order=TS-...
   useEffect(() => {
     const q = params.get("order");
     if (q) {
       const local = fromLocal(q);
-      if (local) setResult(local);
+      if (local) {
+        setResult(local);
+        const mail = localEmail(q) || user.email;
+        if (!local.isSample && mail) void fetchLive(local.orderNumber, mail, true);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, orders]);
@@ -281,6 +349,38 @@ export function TrackOrder() {
                 <span className="font-bold text-burgundy">{formatPrice(result.total)}</span>
               </div>
 
+              {result.returns && result.returns.length > 0 && (
+                <ul className="space-y-2">
+                  {result.returns.map((r) => (
+                    <li key={r.id} className="rounded-xl bg-ivory p-3 text-xs">
+                      <p className="font-bold text-espresso">
+                        {r.kind === "EXCHANGE" ? "Exchange" : "Return"} request · <span className="text-burgundy">{r.statusLabel}</span>
+                      </p>
+                      <p className="mt-0.5 text-espresso/60">{r.reason}</p>
+                      {r.adminNote && <p className="mt-1 rounded-lg bg-white p-2 text-espresso">OFFVYBE: {r.adminNote}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {(result.cancellable || result.returnable) && (
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  {result.returnable && (
+                    <button type="button" onClick={() => setSheet("return")} className="inline-flex min-h-[48px] flex-1 items-center justify-center gap-1.5 rounded-full bg-burgundy px-5 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson">
+                      <RotateCcw className="h-4 w-4" /> Exchange / return
+                    </button>
+                  )}
+                  {result.cancellable && (
+                    <button type="button" onClick={() => setSheet("cancel")} className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full px-5 text-xs font-bold uppercase tracking-wider text-crimson ring-1 ring-crimson/30 hover:bg-crimson/5">
+                      Cancel order
+                    </button>
+                  )}
+                </div>
+              )}
+              {result.returnable && result.returnBy && (
+                <p className="text-center text-[11px] text-espresso/60">Free exchange or return until {fmtDate(result.returnBy)}.</p>
+              )}
+
               <div className="grid grid-cols-3 gap-2 pt-1">
                 {waDigits && (
                   <a href={`https://wa.me/91${waDigits}?text=${encodeURIComponent(`Hi, about my order ${result.orderNumber}`)}`} target="_blank" rel="noreferrer" className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
@@ -298,6 +398,12 @@ export function TrackOrder() {
               </div>
             </div>
           </motion.article>
+        )}
+        {result && sheet === "cancel" && (
+          <CancelSheet order={asOrder(result)} email={ownerEmail || undefined} onClose={() => setSheet(null)} onDone={(o) => { setSheet(null); setResult(fromServer(o)); }} />
+        )}
+        {result && sheet === "return" && (
+          <ReturnSheet order={asOrder(result)} email={ownerEmail || undefined} onClose={() => setSheet(null)} onDone={(o) => { setSheet(null); setResult(fromServer(o)); }} />
         )}
       </div>
     </div>

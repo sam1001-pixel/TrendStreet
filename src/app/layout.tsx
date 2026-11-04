@@ -22,6 +22,7 @@ const display = Big_Shoulders_Display({
 import { StoreProvider } from "@/context/StoreContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { UserAuthProvider } from "@/context/UserAuthContext";
+import { AccountProvider } from "@/context/AccountContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
@@ -109,6 +110,7 @@ export default async function RootLayout({
         <AdminAuthProvider>
           <StoreProvider initialProducts={products} initialVideoReviews={videoReviews} initialSettings={settings}>
             <UserAuthProvider>
+             <AccountProvider>
               <HideOnAdmin>
                 <Header />
               </HideOnAdmin>
@@ -122,6 +124,7 @@ export default async function RootLayout({
                 <InstallAppPrompt />
               </HideOnAdmin>
               <MobileBottomNav />
+             </AccountProvider>
             </UserAuthProvider>
           </StoreProvider>
         </AdminAuthProvider>

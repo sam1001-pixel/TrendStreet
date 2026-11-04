@@ -2,12 +2,13 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { User, Package, MapPin, Ruler, Check, Trash2, Plus, Truck, Heart, ShoppingBag, Sparkles, LogOut, ChevronRight, Award, LogIn } from "lucide-react";
+import { User, Package, MapPin, Ruler, Check, Trash2, Plus, Truck, Heart, ShoppingBag, Sparkles, LogOut, LogIn, Cloud, Smartphone } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { useUserAuth } from "@/context/UserAuthContext";
-import { formatPrice } from "@/lib/pricing";
+import { useAccount } from "@/context/AccountContext";
+import { OrderCard } from "@/components/orders/OrderCard";
+import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states";
 import type { UserProfile } from "@/types/store";
 
 type Tab = "orders" | "details" | "addresses" | "fit";
@@ -17,21 +18,9 @@ const input =
   "h-12 w-full rounded-xl border border-burgundy/20 bg-white px-3 text-sm text-espresso placeholder:text-espresso/60 focus:border-burgundy focus:outline-none disabled:bg-ivory disabled:text-espresso/60";
 const label = "mb-1 block text-[11px] font-bold uppercase tracking-wider text-espresso/60";
 
-const STATUS_STYLE: Record<string, string> = {
-  Delivered: "bg-green-100 text-green-800",
-  Shipped: "bg-burgundy/10 text-burgundy",
-  "In Transit": "bg-gold/25 text-gold-dark",
-  Cancelled: "bg-red-100 text-red-700",
-};
-
-const TIERS = [
-  { name: "Street", min: 0 },
-  { name: "Indigo Circle", min: 2000 },
-  { name: "Mehrangarh", min: 5000 },
-];
-
 function ProfileContent() {
-  const { user, orders, wishlist, cartItemsCount, setIsCartOpen, updateUserProfile, isDemo, exitDemo } = useStore();
+  const { user, orders, wishlist, cartItemsCount, setIsCartOpen, updateUserProfile, upsertOrder, isDemo, exitDemo } = useStore();
+  const account = useAccount();
   const { user: authUser, isAuthenticated, logout } = useUserAuth();
   const params = useSearchParams();
   const initialTab = (params.get("tab") as Tab) || "orders";
@@ -39,6 +28,9 @@ function ProfileContent() {
   const [details, setDetails] = useState({ name: user.name, email: user.email, phone: user.phone });
   const [fit, setFit] = useState(user.measurements);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const synced = isAuthenticated && account.status === "ready";
   const [draft, setDraft] = useState<Address | null>(null);
 
   // Profile loads from device storage or authenticated user — pick it up.
@@ -55,34 +47,54 @@ function ProfileContent() {
     setTimeout(() => setSavedMsg(null), 2500);
   };
 
-  const saveDetails = (e: React.FormEvent) => {
+  const saveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    if (synced) {
+      setBusy(true);
+      const res = await account.saveDetails({ name: details.name.trim(), phone: details.phone.trim() });
+      setBusy(false);
+      if (!res.ok) return setFormError(res.error);
+      flash("Details saved to your account.");
+      return;
+    }
     updateUserProfile({ name: details.name.trim(), email: details.email.trim(), phone: details.phone.trim() });
     flash("Details saved — they'll be filled in at checkout.");
   };
 
-  const saveAddress = (e: React.FormEvent) => {
+  const saveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!draft) return;
-    let list = user.savedAddresses.filter((a) => a.id !== draft.id);
-    if (draft.isDefault || list.length === 0) list = list.map((a) => ({ ...a, isDefault: false }));
-    const next = { ...draft, isDefault: draft.isDefault || list.length === 0 };
-    updateUserProfile({ savedAddresses: next.isDefault ? [next, ...list] : [...list, next] });
+    setFormError(null);
+    if (synced) {
+      setBusy(true);
+      const res = await account.saveAddress(draft);
+      setBusy(false);
+      if (!res.ok) return setFormError(res.error);
+    } else {
+      let list = user.savedAddresses.filter((a) => a.id !== draft.id);
+      if (draft.isDefault || list.length === 0) list = list.map((a) => ({ ...a, isDefault: false }));
+      const next = { ...draft, isDefault: draft.isDefault || list.length === 0 };
+      updateUserProfile({ savedAddresses: next.isDefault ? [next, ...list] : [...list, next] });
+    }
     setDraft(null);
     flash("Address saved.");
   };
 
-  const removeAddress = (id: string) => {
+  const removeAddress = async (id: string) => {
+    setFormError(null);
+    if (synced) {
+      const res = await account.deleteAddress(id);
+      if (!res.ok) setFormError(res.error);
+      return;
+    }
     const rest = user.savedAddresses.filter((a) => a.id !== id);
     if (rest.length && !rest.some((a) => a.isDefault)) rest[0] = { ...rest[0], isDefault: true };
     updateUserProfile({ savedAddresses: rest });
   };
 
-  const points = user.rewardPoints || 0;
-  const tierIdx = TIERS.reduce((acc, t, i) => (points >= t.min ? i : acc), 0);
-  const nextTier = TIERS[tierIdx + 1];
-  const tierPct = nextTier ? Math.min(100, Math.round(((points - TIERS[tierIdx].min) / (nextTier.min - TIERS[tierIdx].min)) * 100)) : 100;
-  const spent = orders.filter((o) => o.status !== "Cancelled").reduce((s, o) => s + o.total, 0);
+  const activeOrders = orders.filter((o) => !["Delivered", "Cancelled"].includes(o.status)).length;
+  const memberSince = account.memberSince ? new Date(account.memberSince).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : null;
 
   const tabs: { id: Tab; label: string; icon: typeof User }[] = [
     { id: "orders", label: `Orders (${orders.length})`, icon: Package },
@@ -117,9 +129,6 @@ function ProfileContent() {
           </div>
           {isAuthenticated ? (
             <div className="flex flex-col gap-2 sm:items-end">
-              <span className="text-[11px] uppercase font-bold tracking-widest text-gold bg-gold/15 px-3 py-1 rounded-full border border-gold/30">
-                Atelier Member
-              </span>
               <button
                 onClick={async () => {
                   await logout();
@@ -142,29 +151,49 @@ function ProfileContent() {
           ) : null}
         </div>
 
-        <div className="relative mt-6 grid grid-cols-3 gap-2 border-t border-white/10 pt-5">
+        <dl className="relative mt-6 grid grid-cols-3 gap-2 border-t border-white/10 pt-5">
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-ivory/60">Tier</p>
-            <p className="flex items-center gap-1 truncate text-sm font-bold text-gold"><Award className="h-3.5 w-3.5 flex-shrink-0" /> {user.vipTier || TIERS[tierIdx].name}</p>
+            <dt className="text-[11px] uppercase tracking-wider text-ivory/60">Orders</dt>
+            <dd className="text-sm font-bold">
+              {orders.length}
+              {activeOrders > 0 && <span className="ml-1 text-[11px] font-semibold text-gold">· {activeOrders} on the way</span>}
+            </dd>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-ivory/60">Points</p>
-            <p className="text-sm font-bold">{points.toLocaleString("en-IN")}</p>
+            <dt className="text-[11px] uppercase tracking-wider text-ivory/60">Saved</dt>
+            <dd className="text-sm font-bold">{wishlist.length}</dd>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-ivory/60">Spent</p>
-            <p className="truncate text-sm font-bold">{formatPrice(spent)}</p>
+            <dt className="text-[11px] uppercase tracking-wider text-ivory/60">{memberSince ? "Member since" : "Stored"}</dt>
+            <dd className="truncate text-sm font-bold">{memberSince ?? "This device"}</dd>
           </div>
-          {nextTier && (
-            <div className="col-span-3 mt-2">
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
-                <div className="h-full rounded-full bg-gold transition-all duration-700" style={{ width: `${tierPct}%` }} />
-              </div>
-              <p className="mt-1 text-[11px] text-ivory/60">{(nextTier.min - points).toLocaleString("en-IN")} points to {nextTier.name}</p>
-            </div>
-          )}
-        </div>
+        </dl>
       </header>
+
+      {!isDemo && (
+        isAuthenticated ? (
+          <p className="flex items-center gap-2 text-[11px] font-semibold text-espresso/60">
+            <Cloud className="h-3.5 w-3.5 text-burgundy" />
+            {account.status === "ready"
+              ? "Your orders, addresses and saved items are synced to your account."
+              : account.status === "error"
+                ? "Couldn't reach your account just now — showing what's on this device."
+                : "Syncing your account…"}
+            {account.status === "error" && (
+              <button onClick={() => account.refresh()} className="font-bold text-burgundy underline">Retry</button>
+            )}
+          </p>
+        ) : (
+          <Link href="/login?callbackUrl=/profile" className="flex items-center gap-3 rounded-2xl bg-white p-3 text-xs text-espresso ring-1 ring-burgundy/10 hover:ring-burgundy/40">
+            <Smartphone className="h-5 w-5 flex-shrink-0 text-burgundy" />
+            <span className="flex-1">
+              <span className="block font-bold">Saved on this phone only</span>
+              Sign in to see your orders, addresses and saved items on any device.
+            </span>
+            <LogIn className="h-4 w-4 text-burgundy" />
+          </Link>
+        )
+      )}
 
       {/* Quick actions */}
       <nav aria-label="Account shortcuts" className="grid grid-cols-4 gap-2">
@@ -209,6 +238,9 @@ function ProfileContent() {
       </div>
 
       <p aria-live="polite" className="sr-only">{savedMsg}</p>
+      {formError && (
+        <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-800">{formError}</p>
+      )}
       {savedMsg && (
         <p className="flex items-center gap-2 rounded-xl border border-green-300 bg-green-50 p-3 text-xs text-green-800">
           <Check className="h-4 w-4" /> {savedMsg}
@@ -220,40 +252,15 @@ function ProfileContent() {
           {orders.length === 0 ? (
             <div className="rounded-3xl bg-white p-8 text-center ring-1 ring-burgundy/10">
               <Package className="mx-auto h-10 w-10 text-burgundy/30" />
-              <p className="mt-3 font-serif text-lg font-bold text-espresso">No orders on this device yet</p>
-              <p className="mt-1 text-sm text-espresso/60">Ordered on another phone? Find it with your order number.</p>
+              <p className="mt-3 font-serif text-lg font-bold text-espresso">{synced ? "No orders yet" : "No orders on this device yet"}</p>
+              <p className="mt-1 text-sm text-espresso/60">{synced ? "Orders you place while signed in show up here on every device." : "Ordered as a guest or on another phone? Find it with your order number."}</p>
               <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
                 <Link href="/shop" className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-burgundy px-6 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson">Start shopping</Link>
                 <Link href="/track" className="inline-flex min-h-[48px] items-center justify-center rounded-full px-6 text-xs font-bold uppercase tracking-wider text-burgundy ring-1 ring-burgundy/30">Find an order</Link>
               </div>
             </div>
           ) : (
-            orders.map((o) => (
-              <article key={o.id} className="overflow-hidden rounded-2xl bg-white ring-1 ring-burgundy/10">
-                <div className="flex items-start justify-between gap-3 p-4 sm:p-5">
-                  <div>
-                    <p className="font-mono text-xs font-bold text-burgundy">{o.orderNumber}</p>
-                    <p className="text-[11px] text-espresso/60">
-                      {new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · {o.items.reduce((s, i) => s + i.quantity, 0)} items
-                    </p>
-                  </div>
-                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase ${STATUS_STYLE[o.status] ?? "bg-ivory-dark text-espresso/70"}`}>{o.status}</span>
-                </div>
-                <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 sm:px-5">
-                  {o.items.map((it, i) => (
-                    <span key={i} className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-ivory-dark" title={it.productName}>
-                      {it.image && <Image src={it.image} alt={it.productName} fill sizes="64px" className="object-cover" />}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-4 flex items-center justify-between gap-3 border-t border-burgundy/10 px-4 py-3 sm:px-5">
-                  <span className="text-sm font-bold text-espresso">{formatPrice(o.total)}</span>
-                  <Link href={`/track?order=${encodeURIComponent(o.orderNumber)}`} className="inline-flex min-h-[40px] items-center gap-1 rounded-full bg-ivory px-4 text-xs font-bold text-burgundy hover:bg-ivory-dark">
-                    Track <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </article>
-            ))
+            orders.map((o, i) => <OrderCard key={o.orderNumber} order={o} onUpdated={upsertOrder} defaultOpen={i === 0 && !["Delivered", "Cancelled"].includes(o.status)} />)
           )}
         </div>
       )}
@@ -266,14 +273,17 @@ function ProfileContent() {
           </div>
           <div>
             <label htmlFor="d-email" className={label}>Email</label>
-            <input id="d-email" type="email" autoComplete="email" value={details.email} onChange={(e) => setDetails({ ...details, email: e.target.value })} className={input} />
+            <input id="d-email" type="email" autoComplete="email" value={details.email} readOnly={isAuthenticated} onChange={(e) => setDetails({ ...details, email: e.target.value })} className={`${input} ${isAuthenticated ? "bg-ivory text-espresso/70" : ""}`} />
+            {isAuthenticated && <p className="mt-1 text-[11px] text-espresso/50">This is your sign-in email.</p>}
           </div>
           <div>
             <label htmlFor="d-phone" className={label}>Mobile</label>
             <input id="d-phone" type="tel" inputMode="tel" autoComplete="tel" value={details.phone} onChange={(e) => setDetails({ ...details, phone: e.target.value })} placeholder="10-digit number" className={input} />
           </div>
-          <p className="text-xs text-espresso/60 sm:col-span-2">Saved only in this browser to speed up checkout. Clear your browser data to remove them.</p>
-          <button className="rounded-lg bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson sm:col-span-2 sm:justify-self-start">
+          <p className="text-xs text-espresso/60 sm:col-span-2">
+            {synced ? "Saved to your account and filled in at checkout on any device." : "Saved only in this browser to speed up checkout. Clear your browser data to remove them."}
+          </p>
+          <button disabled={busy} className="min-h-[48px] rounded-lg disabled:opacity-60 bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson sm:col-span-2 sm:justify-self-start">
             Save details
           </button>
         </fieldset></form>
@@ -288,7 +298,9 @@ function ProfileContent() {
                   {a.label || "Address"} {a.isDefault && <span className="ml-2 rounded-full bg-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase text-gold-dark">Default</span>}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-espresso/70">
-                  {a.fullName}, {a.address}, {a.city}{a.state ? `, ${a.state}` : ""} – {a.postalCode}
+                  {a.fullName}{a.phone ? ` · ${a.phone}` : ""}
+                  <br />
+                  {[a.address, a.apartment, a.city, a.state].filter(Boolean).join(", ")} – {a.postalCode}
                 </p>
               </div>
               <div className={`flex gap-2 ${isDemo ? "hidden" : ""}`}>
@@ -302,41 +314,62 @@ function ProfileContent() {
 
           {draft ? (
             <form onSubmit={saveAddress} className="grid gap-4 rounded-2xl border border-burgundy/15 bg-white p-5 sm:grid-cols-2 sm:p-6">
+              <div className="sm:col-span-2">
+                <p className={label}>Label</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Home", "Work", "Other"].map((l) => (
+                    <button key={l} type="button" onClick={() => setDraft({ ...draft, label: l })} aria-pressed={draft.label === l} className={`min-h-[40px] rounded-full px-4 text-xs font-bold ${draft.label === l ? "bg-espresso text-ivory" : "bg-ivory text-espresso ring-1 ring-burgundy/15"}`}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {([
-                ["label", "Label (Home, Office…)", "text", false],
-                ["fullName", "Full name", "text", true],
-                ["address", "House, street, area", "text", true],
-                ["city", "City", "text", true],
-                ["state", "State", "text", true],
-                ["postalCode", "PIN code", "text", true],
-              ] as const).map(([key, l, type, required]) => (
-                <div key={key} className={key === "address" ? "sm:col-span-2" : ""}>
+                ["fullName", "Full name", "name", true, ""],
+                ["phone", "Mobile (for the courier)", "tel", false, ""],
+                ["address", "House no., street, area", "address-line1", true, "sm:col-span-2"],
+                ["apartment", "Flat, floor, landmark (optional)", "address-line2", false, "sm:col-span-2"],
+                ["city", "City", "address-level2", true, ""],
+                ["postalCode", "PIN code", "postal-code", true, ""],
+              ] as const).map(([key, l, auto, required, cls]) => (
+                <div key={key} className={cls}>
                   <label htmlFor={`a-${key}`} className={label}>{l}</label>
                   <input
                     id={`a-${key}`}
-                    type={type}
+                    type={key === "phone" ? "tel" : "text"}
+                    autoComplete={auto}
                     required={required}
-                    inputMode={key === "postalCode" ? "numeric" : undefined}
-                    pattern={key === "postalCode" ? "[1-9][0-9]{5}" : undefined}
-                    title={key === "postalCode" ? "6-digit PIN code" : undefined}
+                    inputMode={key === "postalCode" || key === "phone" ? "numeric" : undefined}
+                    pattern={key === "postalCode" ? "[1-9][0-9]{5}" : key === "phone" ? "[6-9][0-9]{9}" : undefined}
+                    maxLength={key === "postalCode" ? 6 : key === "phone" ? 10 : undefined}
+                    title={key === "postalCode" ? "6-digit PIN code" : key === "phone" ? "10-digit mobile number" : undefined}
                     value={(draft[key] as string) ?? ""}
-                    onChange={(e) => setDraft({ ...draft, [key]: e.target.value })}
+                    onChange={(e) => setDraft({ ...draft, [key]: key === "postalCode" || key === "phone" ? e.target.value.replace(/\D/g, "") : e.target.value })}
                     className={input}
                   />
                 </div>
               ))}
+              <div className="sm:col-span-2">
+                <label htmlFor="a-state" className={label}>State</label>
+                <select id="a-state" required autoComplete="address-level1" value={draft.state ?? ""} onChange={(e) => setDraft({ ...draft, state: e.target.value })} className={input}>
+                  <option value="">Choose state</option>
+                  {INDIAN_STATES_AND_UTS.map((st) => (
+                    <option key={st} value={st}>{st}</option>
+                  ))}
+                </select>
+              </div>
               <label className="flex items-center gap-2 text-xs text-espresso sm:col-span-2">
                 <input type="checkbox" checked={draft.isDefault} onChange={(e) => setDraft({ ...draft, isDefault: e.target.checked })} className="h-4 w-4 accent-burgundy" />
                 Use as my default delivery address
               </label>
               <div className="flex gap-2 sm:col-span-2">
-                <button className="rounded-lg bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson">Save address</button>
+                <button disabled={busy} className="min-h-[48px] rounded-lg bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson disabled:opacity-60">{busy ? "Saving…" : "Save address"}</button>
                 <button type="button" onClick={() => setDraft(null)} className="rounded-lg px-4 py-3 text-xs font-semibold text-espresso/70 hover:text-espresso">Cancel</button>
               </div>
             </form>
           ) : !isDemo && (
             <button
-              onClick={() => setDraft({ id: `addr-${Date.now()}`, label: "", fullName: user.name, address: "", city: "", state: "", postalCode: "", isDefault: user.savedAddresses.length === 0 })}
+              onClick={() => setDraft({ id: `addr-${Date.now()}`, label: "Home", fullName: user.name, phone: user.phone, address: "", apartment: "", city: "", state: "", postalCode: "", isDefault: user.savedAddresses.length === 0 })}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-burgundy/25 p-5 text-xs font-bold uppercase tracking-wider text-burgundy hover:border-burgundy"
             >
               <Plus className="h-4 w-4" /> Add an address
@@ -367,6 +400,7 @@ function ProfileContent() {
               <input id={`f-${key}`} value={fit[key]} placeholder={ph} onChange={(e) => setFit({ ...fit, [key]: e.target.value })} className={input} />
             </div>
           ))}
+          <p className="text-xs text-espresso/60 sm:col-span-2">Kept on this device. Product pages highlight your size so it&apos;s one tap to pick.</p>
           <button className="rounded-lg bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson sm:col-span-2 sm:justify-self-start">
             Save sizes
           </button>

@@ -27,7 +27,10 @@ export type AuditAction =
   | "REVIEW_CREATE"
   | "REVIEW_EDIT"
   | "REVIEW_DELETE"
-  | "STOCK_ALERTS_SENT";
+  | "STOCK_ALERTS_SENT"
+  | "ORDER_CANCELLED_BY_CUSTOMER"
+  | "RETURN_REQUESTED"
+  | "RETURN_STATUS_UPDATE";
 
 /** Email of the signed-in admin for this request, or null. */
 export async function getAdminEmail(req: NextRequest): Promise<string | null> {

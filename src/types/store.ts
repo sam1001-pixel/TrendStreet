@@ -61,6 +61,8 @@ export interface CartItem {
 export type OrderStatus = "Pending" | "Confirmed" | "Processing" | "In Transit" | "Shipped" | "Delivered" | "Cancelled";
 
 export interface OrderItem {
+  /** Set on orders loaded from the server (used to pick items for an exchange). */
+  orderItemId?: string;
   productId: string;
   productName: string;
   price: number;
@@ -96,6 +98,27 @@ export interface Order {
   paymentMethod: "card" | "upi" | "netbanking" | "cod" | "razorpay";
   trackingNumber: string;
   estimatedDelivery: string;
+  /** Loaded from the signed-in account (live status) rather than this device's receipt copy. */
+  fromAccount?: boolean;
+  courier?: string;
+  cancellable?: boolean;
+  /** Paid online and not shipped yet: cancelling goes through support (refund). */
+  cancelViaSupport?: boolean;
+  returnable?: boolean;
+  returnBy?: string | null;
+  deliveredAt?: string | null;
+  cancelledAt?: string | null;
+  returns?: OrderReturn[];
+}
+
+export interface OrderReturn {
+  id: string;
+  kind: "EXCHANGE" | "RETURN";
+  status: "REQUESTED" | "APPROVED" | "PICKED_UP" | "COMPLETED" | "REJECTED";
+  statusLabel: string;
+  reason: string;
+  adminNote: string | null;
+  createdAt: string;
 }
 
 export interface UserProfile {
@@ -113,6 +136,8 @@ export interface UserProfile {
     state?: string;
     postalCode: string;
     isDefault: boolean;
+    phone?: string;
+    apartment?: string;
   }[];
   measurements: {
     oversizedFit: string;

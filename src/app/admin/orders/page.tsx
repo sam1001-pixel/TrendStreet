@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Package,
@@ -41,6 +41,11 @@ export default function AdminOrdersPage() {
   const [trackingDrafts, setTrackingDrafts] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [search, setSearch] = useState<string>("");
+  // Deep link from Exchanges & returns: /admin/orders?q=TS-…
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) setSearch(q.slice(0, 40));
+  }, []);
   const [activeSlipOrder, setActiveSlipOrder] = useState<Order | null>(null);
 
   // Generate authentic AWB tracking ID and save to order

@@ -1,3 +1,4 @@
+import { getCustomerSession } from "@/lib/order-actions";
 import { NextRequest, NextResponse } from "next/server";
 import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
       customer: body?.customer,
       promoCode: body?.promoCode,
       deliveryMethod,
+      accountUserId: (await getCustomerSession(req))?.userId ?? null,
       payment: { provider: "CASH_ON_DELIVERY" },
     });
 

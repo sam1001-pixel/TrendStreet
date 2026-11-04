@@ -48,6 +48,8 @@ export interface PlaceOrderInput {
   /** Pre-generated order number (used as the Razorpay receipt). Generated if omitted. */
   orderNumber?: string;
   payment: { provider: "CASH_ON_DELIVERY" } | { provider: "RAZORPAY"; gatewayOrderId: string };
+  /** Signed-in customer placing the order. It shows in their account only if the checkout email is theirs. */
+  accountUserId?: string | null;
 }
 
 export class OrderInputError extends Error {}
@@ -213,6 +215,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
         totalAmount: pricing.totalMinor,
         promoCode: pricing.promoCodeApplied,
         deliveryCourier: DELIVERY_COURIER,
+        placedSignedIn: Boolean(input.accountUserId) && input.accountUserId === user.id,
         items: {
           create: lines.map((l, i) => ({
             variantId: variants[i]!.id,

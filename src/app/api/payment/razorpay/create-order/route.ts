@@ -1,3 +1,4 @@
+import { getCustomerSession } from "@/lib/order-actions";
 import { NextRequest, NextResponse } from "next/server";
 import { createRazorpayOrder } from "@/lib/razorpay";
 import {
@@ -65,6 +66,7 @@ export async function POST(req: NextRequest) {
       promoCode: body?.promoCode,
       deliveryMethod,
       orderNumber,
+      accountUserId: (await getCustomerSession(req))?.userId ?? null,
       payment: { provider: "RAZORPAY", gatewayOrderId: rzpOrder.id },
     });
 

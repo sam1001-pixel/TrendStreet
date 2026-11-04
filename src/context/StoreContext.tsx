@@ -49,6 +49,12 @@ interface StoreContextType {
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: string) => void;
   updateUserProfile: (profile: Partial<UserProfile>) => void;
+  /** Signed-in account sync: server orders replace their local copies; saved items come from the account. */
+  applyAccountOrders: (serverOrders: Order[]) => void;
+  upsertOrder: (order: Order) => void;
+  setWishlistIds: (ids: string[]) => void;
+  /** On sign-out: forget the account's orders and details on this device (shared phones). */
+  clearAccountData: () => void;
   cartSubtotal: number;
   cartDiscount: number;
   cartShipping: number;
@@ -494,6 +500,33 @@ export const StoreProvider: React.FC<{
     return newOrder;
   };
 
+  const applyAccountOrders = useCallback((serverOrders: Order[]) => {
+    setOrders((prev) => {
+      const fromServer = serverOrders.map((o) => ({ ...o, fromAccount: true }));
+      const known = new Set(fromServer.map((o) => o.orderNumber));
+      // Keep this device's guest receipts; drop stale copies of account orders.
+      const local = prev.filter((o) => !known.has(o.orderNumber) && !o.fromAccount);
+      return [...fromServer, ...local].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    });
+  }, []);
+
+  const upsertOrder = useCallback((order: Order) => {
+    setOrders((prev) => {
+      const i = prev.findIndex((o) => o.orderNumber === order.orderNumber);
+      if (i < 0) return [order, ...prev];
+      const next = [...prev];
+      next[i] = { ...order, fromAccount: prev[i].fromAccount || order.fromAccount };
+      return next;
+    });
+  }, []);
+
+  const setWishlistIds = useCallback((ids: string[]) => setWishlist(Array.from(new Set(ids))), []);
+
+  const clearAccountData = useCallback(() => {
+    setOrders((prev) => prev.filter((o) => !o.fromAccount));
+    setUser((prev) => ({ ...prev, name: "", email: "", phone: "", savedAddresses: [] }));
+  }, []);
+
   const updateOrderStatus = (orderId: string, status: OrderStatus) => {
     setOrders((prev) =>
       prev.map((ord) => (ord.id === orderId ? { ...ord, status } : ord))
@@ -605,6 +638,10 @@ export const StoreProvider: React.FC<{
         updateProduct,
         deleteProduct,
         updateUserProfile,
+        applyAccountOrders,
+        upsertOrder,
+        setWishlistIds,
+        clearAccountData,
         cartSubtotal,
         cartDiscount,
         cartShipping,

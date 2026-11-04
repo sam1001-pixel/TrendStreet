@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -43,7 +43,7 @@ import { AlertSignup } from "@/components/AlertSignup";
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { products, addToCart, toggleWishlist, isInWishlist, siteSettings } = useStore();
+  const { products, addToCart, toggleWishlist, isInWishlist, siteSettings, user, orders } = useStore();
   const config = useStoreConfig();
   const offer = siteSettings.offerCoupon;
 
@@ -125,6 +125,27 @@ export default function ProductDetailPage() {
       }
     }
   }, [product, selectedSize, selectedColor]);
+
+  // The shopper's usual size for this kind of piece: from "My sizes", else what they ordered before.
+  // Highlighted, never pre-selected (a pre-picked size causes wrong-size orders).
+  const mySize = useMemo(() => {
+    if (!product) return null;
+    const norm = (v: string) => v.trim().toUpperCase();
+    const inRange = (v?: string) => (v ? product.sizes.find((sz) => norm(sz) === norm(v)) : undefined);
+    const m = user.measurements;
+    const saved = ({ Oversized: m?.oversizedFit, "Boxy Fit": m?.boxyFit, Jackets: m?.jacketSize, Jeans: m?.denimWaist } as Record<string, string | undefined>)[product.category];
+    const fromSaved = inRange(saved);
+    if (fromSaved) return { size: fromSaved, source: "your saved sizes" };
+    for (const o of orders) {
+      if (o.status === "Cancelled") continue;
+      for (const it of o.items) {
+        const p = products.find((x) => x.id === it.productId);
+        const hit = p?.category === product.category ? inRange(it.selectedSize) : undefined;
+        if (hit) return { size: hit, source: "your past orders" };
+      }
+    }
+    return null;
+  }, [product, user.measurements, orders, products]);
 
   if (!product) {
     return (
@@ -469,17 +490,31 @@ export default function ProductDetailPage() {
                       setSelectedSize(size);
                       setSizeError(false);
                     }}
-                    className={`min-w-[52px] h-11 px-3 text-xs font-bold rounded-full border transition-all flex items-center justify-center ${
+                    aria-label={mySize?.size === size ? `${size} (your size)` : undefined}
+                    className={`relative min-w-[52px] h-11 px-3 text-xs font-bold rounded-full border transition-all flex items-center justify-center ${
                       isSelected
                         ? "bg-burgundy text-gold border-burgundy shadow-sm scale-105"
-                        : "bg-white text-espresso border-burgundy/20 hover:border-burgundy"
+                        : mySize?.size === size
+                          ? "bg-gold/10 text-espresso border-gold ring-1 ring-gold hover:border-burgundy"
+                          : "bg-white text-espresso border-burgundy/20 hover:border-burgundy"
                     }`}
                   >
                     {size}
+                    {mySize?.size === size && <span aria-hidden className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-gold ring-2 ring-ivory" />}
                   </button>
                 );
               })}
             </div>
+
+            {mySize && !selectedSize && (
+              <p className="flex flex-wrap items-center gap-1.5 text-xs text-espresso/75">
+                <span aria-hidden className="h-2 w-2 rounded-full bg-gold" />
+                Your usual size is <strong className="text-espresso">{mySize.size}</strong> (from {mySize.source}).
+                <button type="button" onClick={() => { setSelectedSize(mySize.size); setSizeError(false); }} className="min-h-[32px] font-bold text-burgundy underline underline-offset-2">
+                  Pick it
+                </button>
+              </p>
+            )}
 
             {/* Dynamic Stock Scarcity Status */}
             <p className="text-xs text-espresso/65 flex items-center gap-1.5 pt-0.5">

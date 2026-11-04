@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
-import { adminOrderInclude, toAdminOrder } from "@/lib/admin-orders";
+import { customerOrderInclude, toCustomerOrder } from "@/lib/order-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +28,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Enter your order number and the email you used at checkout." }, { status: 400 });
     }
 
-    const order = await prisma.order.findUnique({ where: { orderNumber }, include: adminOrderInclude });
+    const order = await prisma.order.findUnique({ where: { orderNumber }, include: customerOrderInclude });
     if (!order || order.user?.email.toLowerCase() !== email) {
       return NextResponse.json({ error: NOT_FOUND }, { status: 404 });
     }
 
-    const o = toAdminOrder(order);
+    const o = toCustomerOrder(order);
     // Return only what the customer needs — not internal ids or payment gateway details.
     return NextResponse.json({
       order: {
@@ -47,10 +47,16 @@ export async function POST(req: NextRequest) {
         tax: o.tax,
         total: o.total,
         trackingNumber: o.trackingNumber,
-        courier: order.deliveryCourier,
+        courier: o.courier,
         paymentMethod: o.paymentMethod,
         city: o.customer.city,
         postalCode: o.customer.postalCode,
+        cancellable: o.cancellable,
+        cancelViaSupport: o.cancelViaSupport,
+        returnable: o.returnable,
+        returnBy: o.returnBy,
+        returns: o.returns,
+        deliveredAt: o.deliveredAt,
       },
     });
   } catch (err) {

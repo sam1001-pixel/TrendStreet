@@ -44,7 +44,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       }
       return tx.order.update({
         where: { id: params.id },
-        data: { ...(dbStatus ? { status: dbStatus } : {}), ...(tracking !== undefined ? { trackingNumber: tracking || null } : {}) },
+        data: {
+          ...(dbStatus ? { status: dbStatus } : {}),
+          ...(tracking !== undefined ? { trackingNumber: tracking || null } : {}),
+          // Starts the 30-day exchange window; cleared if the status is moved back.
+          ...(dbStatus && dbStatus !== before.status ? { deliveredAt: dbStatus === "DELIVERED" ? new Date() : null } : {}),
+          ...(cancelling ? { cancelledAt: new Date(), cancelReason: "Cancelled by the store" } : reopening ? { cancelledAt: null, cancelReason: null } : {}),
+        },
         include: adminOrderInclude,
       });
     });

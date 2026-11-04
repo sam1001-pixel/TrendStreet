@@ -83,6 +83,9 @@ model Address {
   postalCode  String
   country     String   @default("IN")
   isDefault   Boolean  @default(false)
+  /// True for addresses the customer saved in their account (shown in their address book).
+  /// Addresses written by checkout for an order stay false.
+  saved       Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   orders      Order[]
@@ -276,11 +279,18 @@ model Order {
   trackingNumber    String?
   deliveryCourier   String?
   estimatedDelivery DateTime?
+  /// Placed while signed in to the account it belongs to. Only these show in "My orders" —
+  /// accounts don't verify email, so guest orders that merely share the email stay private.
+  placedSignedIn    Boolean         @default(false)
+  deliveredAt       DateTime?
+  cancelledAt       DateTime?
+  cancelReason      String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
   items             OrderItem[]
   payments          Payment[]
+  returnRequests    ReturnRequest[]
 
   @@index([userId])
   @@index([status])
@@ -391,6 +401,39 @@ model StockAlert {
 // ----------------------------------------------------
 // 7. COMPLIANCE & PRIVILEGED AUDIT LOGS
 // ----------------------------------------------------
+
+enum ReturnKind {
+  EXCHANGE
+  RETURN
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  PICKED_UP
+  COMPLETED
+  REJECTED
+}
+
+/// Exchange / return requests customers raise from their account or the track-order page.
+model ReturnRequest {
+  id        String       @id @default(cuid())
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  kind      ReturnKind
+  status    ReturnStatus @default(REQUESTED)
+  reason    String
+  note      String?
+  /// [{ orderItemId, productName, size, quantity, exchangeSize? }]
+  items     Json
+  adminNote String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@map("return_requests")
+}
 
 model AuditLog {
   id         String   @id @default(cuid())

@@ -23,49 +23,15 @@ const IS_RAZORPAY_TEST = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "").startsW
 const inputClass =
   "w-full min-h-[48px] rounded-lg border border-burgundy/20 bg-ivory px-3.5 py-3 text-sm text-espresso focus:border-burgundy focus:outline-none";
 const labelClass = "mb-1.5 block text-xs font-semibold text-espresso";
+import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states";
+import { useUserAuth } from "@/context/UserAuthContext";
+import { useAccount } from "@/context/AccountContext";
 import { useStore, useStoreConfig } from "@/context/StoreContext";
 import { shippingRulesFromConfig } from "@/lib/store-config";
 import { formatPrice, calculateOrderPricing } from "@/lib/pricing";
 import { checkPincodeServiceability, PincodeServiceability } from "@/lib/pincode";
 
-const INDIAN_STATES_AND_UTS = [
-  "Andaman and Nicobar Islands",
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chandigarh",
-  "Chhattisgarh",
-  "Dadra and Nagar Haveli and Daman and Diu",
-  "Delhi",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jammu and Kashmir",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Ladakh",
-  "Lakshadweep",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Puducherry",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal",
-];
+
 
 const loadRazorpayScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
@@ -91,6 +57,10 @@ export default function CheckoutPage() {
     updateUserProfile,
   } = useStore();
   const config = useStoreConfig();
+  const { isAuthenticated } = useUserAuth();
+  const account = useAccount();
+  // Signed in: offer to keep a new address in the account for next time.
+  const [saveToAccount, setSaveToAccount] = useState(true);
 
   const [step, setStep] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -120,6 +90,61 @@ export default function CheckoutPage() {
     cardName: "",
     bankName: "",
   });
+
+  type SavedAddr = (typeof user.savedAddresses)[number];
+  const pickAddress = (a: SavedAddr) =>
+    setFormData((f) => ({
+      ...f,
+      fullName: a.fullName || f.fullName,
+      phone: a.phone || f.phone,
+      address: a.address,
+      apartment: a.apartment || "",
+      city: a.city,
+      state: a.state || "",
+      postalCode: a.postalCode,
+    }));
+  const sameAddress = (a: SavedAddr) =>
+    a.address.trim().toLowerCase() === formData.address.trim().toLowerCase() && a.postalCode === formData.postalCode;
+  const isSavedAddress = user.savedAddresses.some(sameAddress);
+
+  // Saved addresses and details arrive after sign-in loads: fill the form once if it's still empty.
+  const prefilled = React.useRef(false);
+  useEffect(() => {
+    if (prefilled.current) return;
+    const def = user.savedAddresses.find((a) => a.isDefault) ?? user.savedAddresses[0];
+    if (!def && !user.name) return;
+    prefilled.current = true;
+    setFormData((f) => ({
+      ...f,
+      fullName: f.fullName || def?.fullName || user.name,
+      email: f.email || user.email,
+      phone: f.phone || def?.phone || user.phone,
+      ...(def && !f.address
+        ? { address: def.address, apartment: def.apartment || "", city: def.city, state: def.state || "", postalCode: def.postalCode }
+        : {}),
+    }));
+  }, [user.savedAddresses, user.name, user.email, user.phone]);
+
+  /** After a successful order: remember details (and the address, for accounts), refresh "My orders". */
+  const afterOrderPlaced = () => {
+    updateUserProfile({ name: formData.fullName, email: formData.email, phone: formData.phone });
+    if (isAuthenticated && account.status === "ready") {
+      if (saveToAccount && !isSavedAddress) {
+        void account.saveAddress({
+          label: user.savedAddresses.length ? "Address" : "Home",
+          fullName: formData.fullName,
+          phone: formData.phone,
+          address: formData.landmark ? `${formData.address}, Near ${formData.landmark}` : formData.address,
+          apartment: formData.apartment,
+          city: formData.city,
+          state: formData.state,
+          postalCode: formData.postalCode,
+          isDefault: user.savedAddresses.length === 0,
+        });
+      }
+      void account.refresh();
+    }
+  };
 
   // Price with the delivery method actually chosen, using the same engine the server charges with.
   const pricing = calculateOrderPricing(
@@ -317,8 +342,7 @@ export default function CheckoutPage() {
         });
 
         setIsProcessing(false);
-        // Remember contact details on this device so the next checkout fills itself in.
-        updateUserProfile({ name: formData.fullName, email: formData.email, phone: formData.phone });
+        afterOrderPlaced();
         router.push(`/order-confirmation/${newOrder.id}`);
       } catch (err) {
         console.error("COD Order completion error:", err);
@@ -446,8 +470,7 @@ export default function CheckoutPage() {
             });
 
             setIsProcessing(false);
-            // Remember contact details on this device so the next checkout fills itself in.
-            updateUserProfile({ name: formData.fullName, email: formData.email, phone: formData.phone });
+            afterOrderPlaced();
             router.push(`/order-confirmation/${newOrder.id}`);
           } catch (verifyErr) {
             console.error("Signature verification error:", verifyErr);
@@ -571,6 +594,36 @@ export default function CheckoutPage() {
               {step1Error && (
                 <div className="p-3 bg-crimson/10 border border-crimson/30 rounded-lg text-xs text-crimson font-medium">
                   {step1Error}
+                </div>
+              )}
+
+              {user.savedAddresses.length > 0 && (
+                <div>
+                  <p className={labelClass}>Deliver to a saved address</p>
+                  <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+                    {user.savedAddresses.map((a) => {
+                      const active = sameAddress(a);
+                      return (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => pickAddress(a)}
+                          aria-pressed={active}
+                          className={`flex min-h-[56px] w-[220px] flex-shrink-0 flex-col items-start justify-center rounded-xl border px-3 py-2 text-left transition-colors sm:w-auto sm:max-w-[260px] ${
+                            active ? "border-burgundy bg-burgundy/5 ring-1 ring-burgundy" : "border-burgundy/20 bg-white hover:border-burgundy/50"
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5 text-xs font-bold text-espresso">
+                            {active && <Check className="h-3.5 w-3.5 text-burgundy" />} {a.label || "Address"}
+                            {a.isDefault && <span className="rounded-full bg-gold/20 px-1.5 text-[10px] font-bold uppercase text-gold-dark">Default</span>}
+                          </span>
+                          <span className="mt-0.5 line-clamp-1 text-[11px] text-espresso/65">
+                            {a.address}, {a.city} – {a.postalCode}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -733,6 +786,18 @@ export default function CheckoutPage() {
 
                 {/* We deliver within India only — the order API validates Indian PIN codes. */}
               </div>
+
+              {isAuthenticated && !isSavedAddress && formData.address.trim().length > 4 && (
+                <label className="flex min-h-[44px] items-center gap-2.5 text-xs text-espresso">
+                  <input
+                    type="checkbox"
+                    checked={saveToAccount}
+                    onChange={(e) => setSaveToAccount(e.target.checked)}
+                    className="h-4 w-4 accent-burgundy"
+                  />
+                  Save this address to my account for next time
+                </label>
+              )}
 
               {/* Real-time PIN code serviceability badge */}
               {pincodeServiceability && (
