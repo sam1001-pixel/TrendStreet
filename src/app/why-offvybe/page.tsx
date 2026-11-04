@@ -42,7 +42,7 @@ const PROCESS = [
   { icon: Scissors, title: "Cut in small batches", line: "Patterns graded for Indian body proportions, cut 200 pieces at a time." },
   { icon: Droplets, title: "Washed before you wear it", line: "Garment-dyed and pre-shrunk, so the size you buy is the size you keep." },
   { icon: SearchCheck, title: "Inspected by hand", line: "Seams, collars and hems checked at our Mumbai atelier before packing." },
-  { icon: Truck, title: "Shipped in 24 hours", line: "Blue Dart and Delhivery air to 19,000+ PIN codes, free over ₹1,999." },
+  { icon: Truck, title: "Shipped in 24 hours", line: "Blue Dart and Delhivery air to 19,000+ PIN codes, with free delivery on bigger orders." },
 ];
 
 const STATS = [
@@ -152,7 +152,7 @@ export default function WhyOffvybePage() {
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 text-center sm:px-8">
         <h2 className="font-serif text-3xl font-bold text-espresso sm:text-4xl">Feel the weight for yourself.</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-espresso/70">Free delivery over ₹1,999 and a 30-day doorstep exchange if the size isn&apos;t right.</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-espresso/70">Free delivery on bigger orders and a 30-day doorstep exchange if the size isn&apos;t right.</p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link href="/shop" className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-burgundy px-8 text-xs font-bold uppercase tracking-[0.2em] text-ivory hover:bg-crimson sm:w-auto">
             Shop all drops <ArrowRight className="h-4 w-4" />

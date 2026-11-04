@@ -1,13 +1,32 @@
 import { signToken, verifyToken } from "./session-token";
 
 export const SESSION_COOKIE_NAME = "ts_admin_session";
-export const SESSION_MAX_AGE = 60 * 60 * 12; // 12 hours in seconds
+export const SESSION_MAX_AGE = 60 * 60 * 8; // 8 hours in seconds
 
 export interface SessionPayload {
   email: string;
   role: "admin";
   issuedAt: number;
   expiresAt: number;
+  /** Fingerprint of the admin login settings when the session started (see adminCredentialVersion). */
+  cv?: string;
+}
+
+/**
+ * Changes whenever the admin email, password, 2-step secret or ADMIN_SESSION_VERSION changes.
+ * Sessions carry it, so changing the password (or bumping ADMIN_SESSION_VERSION) signs out every
+ * device straight away — including a stolen session cookie. Works in Edge and Node.
+ */
+export async function adminCredentialVersion(): Promise<string> {
+  const material = [
+    process.env.ADMIN_EMAIL || "",
+    process.env.ADMIN_PASSWORD_HASH || "",
+    process.env.ADMIN_PASSWORD || "",
+    process.env.ADMIN_TOTP_SECRET || "",
+    process.env.ADMIN_SESSION_VERSION || "",
+  ].join("|");
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(material)));
+  return Array.from(digest.slice(0, 12), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /**
@@ -20,6 +39,7 @@ export async function signSessionToken(email: string): Promise<string> {
     role: "admin",
     issuedAt: Date.now(),
     expiresAt: Date.now() + SESSION_MAX_AGE * 1000,
+    cv: await adminCredentialVersion(),
   };
   return signToken(payload, "admin");
 }
@@ -28,6 +48,9 @@ export async function signSessionToken(email: string): Promise<string> {
 export async function verifySessionToken(token: string | undefined): Promise<SessionPayload | null> {
   const payload = await verifyToken<SessionPayload>(token, "admin");
   if (!payload || payload.role !== "admin" || typeof payload.email !== "string") return null;
+  // Signed before the login settings last changed → no longer valid.
+  if (payload.cv !== (await adminCredentialVersion())) return null;
+  if (payload.email !== (process.env.ADMIN_EMAIL || "").toLowerCase().trim()) return null;
   return payload;
 }
 

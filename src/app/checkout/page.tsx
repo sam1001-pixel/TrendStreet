@@ -23,7 +23,8 @@ const IS_RAZORPAY_TEST = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "").startsW
 const inputClass =
   "w-full min-h-[48px] rounded-lg border border-burgundy/20 bg-ivory px-3.5 py-3 text-sm text-espresso focus:border-burgundy focus:outline-none";
 const labelClass = "mb-1.5 block text-xs font-semibold text-espresso";
-import { useStore } from "@/context/StoreContext";
+import { useStore, useStoreConfig } from "@/context/StoreContext";
+import { shippingRulesFromConfig } from "@/lib/store-config";
 import { formatPrice, calculateOrderPricing } from "@/lib/pricing";
 import { checkPincodeServiceability, PincodeServiceability } from "@/lib/pincode";
 
@@ -89,6 +90,7 @@ export default function CheckoutPage() {
     user,
     updateUserProfile,
   } = useStore();
+  const config = useStoreConfig();
 
   const [step, setStep] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -129,7 +131,12 @@ export default function CheckoutPage() {
       size: item.selectedSize,
       color: item.selectedColor,
     })),
-    { coupon, deliveryMethod: formData.deliveryMethod, currency: "INR" }
+    {
+      coupon,
+      deliveryMethod: config.shipping.expressEnabled ? formData.deliveryMethod : "standard",
+      currency: "INR",
+      shipping: shippingRulesFromConfig(config),
+    }
   );
   const cartSubtotal = pricing.subtotalMinor / 100;
   const cartDiscount = pricing.discountMinor / 100;
@@ -783,7 +790,8 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-3">
-                {/* Express Courier */}
+                {/* Express Courier — hidden when switched off in Admin → Settings → Delivery */}
+                {config.shipping.expressEnabled && (
                 <label
                   className={`p-4 rounded-xl border-2 flex items-center justify-between gap-3 cursor-pointer transition-all ${
                     formData.deliveryMethod === "express"
@@ -808,14 +816,15 @@ export default function CheckoutPage() {
                         </span>
                       </div>
                       <p className="text-xs text-espresso/70 mt-0.5">
-                        2–3 business days · Blue Dart / Delhivery Air · SMS tracking
+                        {config.shipping.expressDays} · Blue Dart / Delhivery Air · SMS tracking
                       </p>
                     </div>
                   </div>
                   <span className="flex-shrink-0 text-sm font-bold text-green-800">
-                    {pricing.isFreeShipping ? "Free" : formatPrice(250)}
+                    {pricing.isFreeShipping ? "Free" : formatPrice(config.shipping.express)}
                   </span>
                 </label>
+                )}
 
                 {/* Standard Courier */}
                 <label
@@ -837,12 +846,12 @@ export default function CheckoutPage() {
                     <div>
                       <span className="font-bold text-sm text-espresso">Standard</span>
                       <p className="text-xs text-espresso/70 mt-0.5">
-                        4–5 business days · Delhivery / DTDC
+                        {config.shipping.standardDays} · Delhivery / DTDC
                       </p>
                     </div>
                   </div>
                   <span className="flex-shrink-0 text-sm font-bold text-green-800">
-                    {pricing.isFreeShipping ? "Free" : formatPrice(150)}
+                    {pricing.isFreeShipping ? "Free" : formatPrice(config.shipping.standard)}
                   </span>
                 </label>
               </div>
@@ -897,7 +906,10 @@ export default function CheckoutPage() {
                     note: "Pay in cash or by UPI to the courier at your door",
                     Icon: Banknote,
                   },
-                ].map(({ id, title, note, Icon }) => {
+                ]
+                  // Cash on delivery can be switched off in Admin → Settings → Delivery & COD.
+                  .filter((m) => m.id !== "cod" || config.cod.enabled)
+                  .map(({ id, title, note, Icon }) => {
                   const selected = id === "cod" ? formData.paymentMethod === "cod" : formData.paymentMethod !== "cod";
                   return (
                     <label

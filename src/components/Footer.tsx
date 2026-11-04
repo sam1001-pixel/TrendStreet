@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldCheck, Truck, RotateCcw, Wallet, Mail, Instagram, Twitter, Facebook, MapPin, Phone, ChevronDown, ArrowRight, Check } from "lucide-react";
+import { ShieldCheck, Truck, RotateCcw, Wallet, Mail, Instagram, Twitter, Facebook, MapPin, Phone, ChevronDown, ArrowRight, Check, Youtube, MessageCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { useStore } from "@/context/StoreContext";
+import { useStore, useStoreConfig } from "@/context/StoreContext";
+import { fillText } from "@/lib/store-config";
 
 const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -37,18 +38,7 @@ const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
   },
 ];
 
-const PROMISES = [
-  { icon: Truck, title: "Free delivery", note: "Over ₹1,999" },
-  { icon: RotateCcw, title: "30-day exchange", note: "Doorstep pickup" },
-  { icon: Wallet, title: "Cash on delivery", note: "Most PIN codes" },
-  { icon: ShieldCheck, title: "Secure checkout", note: "UPI · Cards · Razorpay" },
-];
-
-const SOCIAL = [
-  { href: "https://instagram.com", label: "Instagram", icon: Instagram },
-  { href: "https://twitter.com", label: "X / Twitter", icon: Twitter },
-  { href: "https://facebook.com", label: "Facebook", icon: Facebook },
-];
+const PROMISE_ICONS = [Truck, RotateCcw, Wallet, ShieldCheck];
 
 export const Footer: React.FC = () => {
   const { siteSettings } = useStore();
@@ -57,6 +47,18 @@ export const Footer: React.FC = () => {
   const phone = siteSettings.contactInfo?.phone || "+91 98200 12345";
   const mail = siteSettings.contactInfo?.email || "concierge@offvybe.in";
   const pathname = usePathname();
+  const config = useStoreConfig();
+  // Badges and social links come from Admin → Settings; empty social links are simply not shown.
+  const PROMISES = config.trust
+    .map((t, i) => ({ icon: PROMISE_ICONS[i], title: fillText(t.title, config), note: fillText(t.note, config) }))
+    .filter((_, i) => i !== 2 || config.cod.enabled);
+  const SOCIAL = [
+    { href: config.social.instagram, label: "Instagram", icon: Instagram },
+    { href: config.social.x, label: "X / Twitter", icon: Twitter },
+    { href: config.social.facebook, label: "Facebook", icon: Facebook },
+    { href: config.social.youtube, label: "YouTube", icon: Youtube },
+    { href: config.social.whatsapp ? `https://wa.me/91${config.social.whatsapp}` : "", label: "WhatsApp", icon: MessageCircle },
+  ].filter((s) => s.href);
 
   // Checkout: a slim footer (help + policies) so nothing pulls the shopper away from paying.
   if (pathname.startsWith("/checkout")) {
@@ -104,11 +106,16 @@ export const Footer: React.FC = () => {
             <Logo variant="ivory" size="md" href="/" />
             <div>
               <h2 className="font-display text-3xl font-black uppercase leading-none sm:text-4xl">Get the next drop first</h2>
-              <p className="mt-2 max-w-sm text-xs leading-relaxed text-ivory/70">Early access to limited runs and 10% off your first order over ₹1,999.</p>
+              <p className="mt-2 max-w-sm text-xs leading-relaxed text-ivory/70">{config.offer.newsletterCode ? "Early access to limited runs and a welcome code for your first order." : "Early access to limited runs and new drops."}</p>
             </div>
             {subscribed ? (
               <p className="flex max-w-sm items-center gap-2 rounded-xl bg-white/10 p-3 text-xs text-gold">
-                <Check className="h-4 w-4" /> You&apos;re in. Use <span className="font-bold text-ivory">TREND10</span> at checkout.
+                <Check className="h-4 w-4" /> You&apos;re in.
+                {config.offer.newsletterCode && (
+                  <>
+                    {" "}Use <span className="font-bold text-ivory">{config.offer.newsletterCode}</span> at checkout.
+                  </>
+                )}
               </p>
             ) : (
               <form
@@ -195,7 +202,7 @@ export const Footer: React.FC = () => {
             <Link href="/shipping-policy" className="py-3 hover:text-gold-light">Shipping</Link>
             <Link href="/returns" className="py-3 hover:text-gold-light">Returns</Link>
           </div>
-          <div className="flex items-center gap-3">
+          <div className={`flex items-center gap-3 ${SOCIAL.length ? "" : "hidden"}`}>
             {SOCIAL.map(({ href, label, icon: Icon }) => (
               <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-ivory transition-colors hover:bg-gold hover:text-white">
                 <Icon className="h-4 w-4" />

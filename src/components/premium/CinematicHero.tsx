@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { MagneticButton } from "./MagneticButton";
+import { useStore } from "@/context/StoreContext";
 
 const LOOKS = [
   {
@@ -33,6 +34,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export function CinematicHero() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  const { siteSettings } = useStore();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -91,7 +93,7 @@ export function CinematicHero() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-gold" />
           </span>
-          Drop 04 — live now
+          {siteSettings.hero?.badgeText?.trim() || "Drop 04 — live now"}
         </motion.p>
 
         <AnimatePresence mode="wait">
@@ -101,26 +103,37 @@ export function CinematicHero() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.35, ease: EASE }}
-            className="mb-6 max-w-md font-serif text-lg italic text-white/85 sm:text-2xl"
+            className="mb-4 max-w-md font-serif text-lg italic text-white/85 sm:mb-6 sm:text-2xl"
           >
             {look.line}
           </motion.p>
         </AnimatePresence>
 
-        {/* Phones: two equal-width buttons side by side; larger screens: natural width */}
-        <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
-          <MagneticButton href={look.href} wrapperClassName="w-full sm:w-auto" className="w-full justify-center gap-2 whitespace-nowrap px-3 tracking-[0.08em] sm:w-auto sm:gap-3 sm:px-7 sm:tracking-[0.2em]">
-            Shop {look.key}
+        {/* Buttons keep the same size whichever silhouette is showing, so nothing jumps when it rotates.
+            Phones: stacked, full width (long labels like "Shop Oversized" never spill out of the button).
+            Larger screens: side by side with fixed widths; label left, arrow right. */}
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
+          <MagneticButton
+            href={look.href}
+            wrapperClassName="w-full sm:w-[270px]"
+            className="w-full justify-center gap-2.5 px-5 tracking-[0.16em] sm:justify-between sm:px-7 sm:tracking-[0.2em]"
+          >
+            <span className="min-w-0 truncate">Shop {look.key}</span>
             <ArrowRight className="h-4 w-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
           </MagneticButton>
-          <MagneticButton href="/shop" variant="ghost" wrapperClassName="w-full sm:w-auto" className="w-full justify-center whitespace-nowrap px-3 tracking-[0.08em] sm:w-auto sm:px-7 sm:tracking-[0.2em]">
+          <MagneticButton
+            href="/shop"
+            variant="ghost"
+            wrapperClassName="w-full sm:w-[170px]"
+            className="w-full justify-center px-5 tracking-[0.16em] sm:tracking-[0.2em]"
+          >
             Shop all
           </MagneticButton>
         </div>
 
         {/* Silhouette switcher with progress */}
         <div
-          className="mt-6 sm:mt-8 grid grid-cols-3 gap-2 sm:max-w-xl"
+          className="mt-3 sm:mt-8 grid grid-cols-3 gap-2 sm:max-w-xl"
           role="tablist"
           aria-label="Choose silhouette"
           onMouseEnter={() => setPaused(true)}

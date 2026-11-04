@@ -16,6 +16,8 @@ import { getCatalogForPricing } from "@/lib/catalog";
 import { calculateOrderPricing, PricingItem, PricingSummary, ResolvedCoupon } from "@/lib/pricing";
 import { consumeCoupon, resolveCoupon } from "@/lib/coupons";
 import { isValidIndianPincode } from "@/lib/pincode";
+import { getStoreConfig } from "@/lib/store-config-server";
+import { shippingRulesFromConfig } from "@/lib/store-config";
 
 export type DeliveryMethod = "standard" | "express" | "vip_courier";
 
@@ -112,7 +114,10 @@ export async function priceOrder(items: OrderLineInput[], promoCode: string | nu
   }
 
   const coupon: ResolvedCoupon | null = promoCode ? await resolveCoupon(promoCode) : null;
-  const pricing = calculateOrderPricing(lines, { coupon, deliveryMethod, currency: "INR" });
+  // Delivery charges come from Admin → Settings → Delivery (never from the browser).
+  const config = await getStoreConfig();
+  const method: DeliveryMethod = deliveryMethod === "standard" || !config.shipping.expressEnabled ? "standard" : "express";
+  const pricing = calculateOrderPricing(lines, { coupon, deliveryMethod: method, currency: "INR", shipping: shippingRulesFromConfig(config) });
   return { lines, pricing };
 }
 

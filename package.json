@@ -14,7 +14,8 @@
     "hash-password": "tsx scripts/hash-password.ts",
     "db:push": "node scripts/db-push.mjs",
     "admin:set": "tsx scripts/set-admin-login.ts",
-    "prices:flat": "tsx scripts/set-flat-price.ts"
+    "prices:flat": "tsx scripts/set-flat-price.ts",
+    "admin:2fa": "tsx scripts/admin-2fa.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

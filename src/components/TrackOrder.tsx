@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { Search, Package, PackageCheck, Truck, Home, CheckCircle2, MapPin, Phone, MessageCircle, RotateCcw, Loader2 } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
+import { useStore, useStoreConfig } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
 import { TRACK_STEPS, stepIndexFor } from "@/data/demo";
 
@@ -35,7 +35,11 @@ function courierFor(tracking: string) {
 }
 
 export function TrackOrder() {
-  const { orders, user } = useStore();
+  const { orders, user, siteSettings } = useStore();
+  const config = useStoreConfig();
+  // Contact numbers come from Admin → Settings (Contact details / Social & WhatsApp).
+  const callDigits = (siteSettings.contactInfo?.phone || "").replace(/\D/g, "");
+  const waDigits = config.social.whatsapp || (callDigits.length >= 10 ? callDigits.slice(-10) : "");
   const params = useSearchParams();
   const reduce = useReducedMotion();
   const [orderNumber, setOrderNumber] = useState(params.get("order") ?? "");
@@ -278,12 +282,16 @@ export function TrackOrder() {
               </div>
 
               <div className="grid grid-cols-3 gap-2 pt-1">
-                <a href="https://wa.me/919820012345" target="_blank" rel="noreferrer" className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
-                  <MessageCircle className="h-4 w-4 text-green-700" /> WhatsApp
-                </a>
-                <a href="tel:+919820012345" className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
-                  <Phone className="h-4 w-4 text-burgundy" /> Call us
-                </a>
+                {waDigits && (
+                  <a href={`https://wa.me/91${waDigits}?text=${encodeURIComponent(`Hi, about my order ${result.orderNumber}`)}`} target="_blank" rel="noreferrer" className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
+                    <MessageCircle className="h-4 w-4 text-green-700" /> WhatsApp
+                  </a>
+                )}
+                {callDigits.length >= 10 && (
+                  <a href={`tel:+91${callDigits.slice(-10)}`} className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
+                    <Phone className="h-4 w-4 text-burgundy" /> Call us
+                  </a>
+                )}
                 <Link href="/returns" className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
                   <RotateCcw className="h-4 w-4 text-crimson" /> Exchange
                 </Link>

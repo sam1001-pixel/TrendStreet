@@ -8,7 +8,7 @@ interface AdminAuthContextType {
   isLoading: boolean;
   adminEmail: string | null;
   adminName: string;
-  login: (id: string, pass: string) => Promise<{ success: boolean; message: string }>;
+  login: (id: string, pass: string, code?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   accessRegister: AdminAccessRecord[];
   updateAccessRecord: (record: AdminAccessRecord) => void;
@@ -165,12 +165,12 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [accessRegister, isHydrated]);
 
   // Server-authoritative login via /api/auth/login
-  const login = async (id: string, pass: string): Promise<{ success: boolean; message: string }> => {
+  const login = async (id: string, pass: string, code?: string): Promise<{ success: boolean; message: string }> => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: id, password: pass }),
+        body: JSON.stringify({ email: id, password: pass, ...(code ? { code } : {}) }),
       });
 
       const data = await res.json();

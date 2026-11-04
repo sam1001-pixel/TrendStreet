@@ -1,13 +1,18 @@
 import React from "react";
 import Link from "next/link";
 import { Scale, FileCheck, AlertCircle, ArrowLeft } from "lucide-react";
+import { getCachedStorefront } from "@/lib/catalog";
+import { DEFAULT_STORE_CONFIG, rupees } from "@/lib/store-config";
+
+export const revalidate = 300;
 
 export const metadata = {
   title: "Terms of Service | OFFVYBE",
   description: "Terms and Conditions of OFFVYBE luxury menswear e-commerce platform pursuant to Indian Consumer Protection (E-Commerce) Rules 2020.",
 };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const cfg = (await getCachedStorefront()).settings.config ?? DEFAULT_STORE_CONFIG;
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12">
       {/* Back Link */}
@@ -80,10 +85,10 @@ export default function TermsPage() {
               <strong>Inclusive Taxation:</strong> In accordance with Indian legal requirements, all displayed retail prices are fully inclusive of statutory Goods and Services Tax (GST on apparel is 5% for pieces sold at up to ₹2,500 and 18% above). A detailed GST tax invoice with HSN classification codes is issued with every shipment.
             </li>
             <li>
-              <strong>Complimentary Shipping Threshold:</strong> Domestic orders of ₹1,999 and above receive complimentary express air courier delivery across India. Orders below ₹1,999 are subject to a nominal courier fee (Standard Surface ₹150; Express Air ₹250).
+              <strong>Complimentary Shipping Threshold:</strong> Domestic orders of {rupees(cfg.shipping.freeOver)} and above (after discounts) receive free delivery across India. Orders below {rupees(cfg.shipping.freeOver)} carry a courier fee (Standard {rupees(cfg.shipping.standard)}{cfg.shipping.expressEnabled ? `; Express ${rupees(cfg.shipping.express)}` : ""}).
             </li>
             <li>
-              <strong>Promotional Codes:</strong> Authentic promotional codes (e.g. TREND10, STREET20) are subject to declared minimum spend criteria and cannot be combined or converted to cash.
+              <strong>Promotional Codes:</strong> Promotional codes are subject to declared minimum spend criteria and cannot be combined or converted to cash.
             </li>
           </ul>
         </section>

@@ -1,3 +1,5 @@
+import type { StoreConfig } from "@/lib/store-config";
+
 export type ProductCategory =
   | "Oversized"
   | "Jeans"
@@ -192,6 +194,10 @@ export interface SiteSettings {
   };
   /** Homepage countdown to the next drop (hidden when `at` is empty or past). */
   nextDrop?: { at: string | null; title: string };
+  /** Admin-controlled store settings (delivery, COD, offers, banner, social, trust badges). */
+  config?: StoreConfig;
+  /** The offer coupon from Admin → Discounts, looked up on the server so % and minimum are always real. */
+  offerCoupon?: { code: string; percent: number; minSpend: number; freeShipping: boolean } | null;
   storefrontSections?: {
     hero?: boolean;
     weightTest?: boolean;

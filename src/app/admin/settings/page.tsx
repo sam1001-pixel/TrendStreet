@@ -20,10 +20,15 @@ import {
   Eye,
   EyeOff,
   Clock,
+  Truck,
+  Share2,
+  ShieldCheck,
 } from "lucide-react";
 import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { SiteSettings } from "@/types/store";
+import { sanitizeStoreConfig, type StoreConfig } from "@/lib/store-config";
+import { DeliveryPanel, PricingPanel, OffersPanel, SocialPanel, TrustPanel } from "@/components/admin/StoreConfigPanels";
 
 /** ISO time → value for <input type="datetime-local"> in the admin's own time zone. */
 function toLocalInput(iso: string | null): string {
@@ -40,9 +45,11 @@ export default function AdminSettingsPage() {
   // Pick up the live database values once they load (and after each save).
   useEffect(() => setFormData(siteSettings), [siteSettings]);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved">("idle");
+  const storeConfig = sanitizeStoreConfig(formData.config);
+  const setStoreConfig = (next: StoreConfig) => setFormData({ ...formData, config: next });
   const [activeTab, setActiveTab] = useState<
-    "hero" | "sections" | "drop" | "announcement" | "categories" | "marquee" | "promos" | "contact"
-  >("hero");
+    "hero" | "sections" | "drop" | "announcement" | "categories" | "marquee" | "promos" | "contact" | "delivery" | "pricing" | "offers" | "social" | "trust"
+  >("delivery");
   const [newPromoCode, setNewPromoCode] = useState({
     code: "",
     discountPercent: 15,
@@ -223,6 +230,11 @@ export default function AdminSettingsPage() {
       {/* Navigation tabs */}
       <div className="flex overflow-x-auto border-b border-burgundy/15 gap-2 no-scrollbar">
         {[
+          { id: "delivery", label: "Delivery & COD", icon: Truck },
+          { id: "pricing", label: "Price & ₹ banner", icon: Tag },
+          { id: "offers", label: "Offers", icon: Percent },
+          { id: "social", label: "Social & WhatsApp", icon: Share2 },
+          { id: "trust", label: "Trust badges", icon: ShieldCheck },
           { id: "hero", label: "Hero & Headlines", icon: Layout },
           { id: "sections", label: "Storefront Sections", icon: Sliders },
           { id: "drop", label: "Next drop", icon: Clock },
@@ -254,9 +266,20 @@ export default function AdminSettingsPage() {
       {/* Main Settings Form Body */}
       <AdminStatusBar error={error} notice={notice} onDismiss={clearError} />
       <form onSubmit={handleSave} className="space-y-6">
+        {/* Store settings: delivery, pricing, offers, social, trust badges (src/lib/store-config.ts) */}
+        {activeTab === "delivery" && <DeliveryPanel config={storeConfig} onChange={setStoreConfig} />}
+        {activeTab === "pricing" && <PricingPanel config={storeConfig} onChange={setStoreConfig} />}
+        {activeTab === "offers" && <OffersPanel config={storeConfig} onChange={setStoreConfig} />}
+        {activeTab === "social" && <SocialPanel config={storeConfig} onChange={setStoreConfig} />}
+        {activeTab === "trust" && <TrustPanel config={storeConfig} onChange={setStoreConfig} />}
+
         {/* Tab 1: Hero & Headlines */}
         {activeTab === "hero" && (
           <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
+            <p role="note" className="rounded-xl border border-burgundy/15 bg-ivory p-3 text-xs text-espresso/80">
+              On the current homepage the <strong>Top Badge</strong> is the red line above the hero buttons (e.g. &ldquo;Drop 04 — live now&rdquo;).
+              The other hero fields are kept for alternative layouts and don&apos;t show right now.
+            </p>
             <div className="border-b border-burgundy/10 pb-3">
               <h2 className="font-serif text-lg font-bold text-espresso">
                 Storefront Hero Presentation
@@ -786,8 +809,8 @@ export default function AdminSettingsPage() {
         {/* Tab 3: Category Taglines */}
         {activeTab === "categories" && (
           <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
-            <p role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
-              Category taglines are not stored in the database yet, so changes here only affect this browser.
+            <p role="note" className="rounded-xl border border-burgundy/15 bg-ivory p-3 text-xs text-espresso/80">
+              Shown under the title on each category page. Press Save to publish.
             </p>
             <div className="border-b border-burgundy/10 pb-3">
               <h2 className="font-serif text-lg font-bold text-espresso">
@@ -968,109 +991,17 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        {/* Tab 5: Promo Codes */}
+        {/* Tab 5: Promo codes live in Admin → Discounts (the database checkout uses) */}
         {activeTab === "promos" && (
-          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
-            <p role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
-              Checkout only honours the codes defined in <code>src/lib/pricing.ts</code> (TREND10, STREET20, BUNDLE15, VIP15, FREESHIP). Codes added here are not applied at checkout yet.
+          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-3">
+            <h2 className="font-serif text-lg font-bold text-espresso">Promo codes</h2>
+            <p className="text-sm text-espresso/70">
+              Codes are created, paused and limited in <strong>Discounts &amp; Coupons</strong> — that is the list checkout actually uses.
+              Choose which code is advertised on product pages and in the bag in the <strong>Offers</strong> tab.
             </p>
-            <div className="border-b border-burgundy/10 pb-3">
-              <h2 className="font-serif text-lg font-bold text-espresso">
-                Active Promo Codes & Discounts
-              </h2>
-              <p className="text-xs text-espresso/60">
-                Define valid discount codes that customers can apply at checkout and in the shopping bag.
-              </p>
-            </div>
-
-            {/* Existing Promo Codes Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead>
-                  <tr className="bg-ivory text-espresso/80 border-b border-burgundy/15 uppercase font-bold text-[10px] tracking-wider">
-                    <th className="p-3">Code</th>
-                    <th className="p-3">Discount</th>
-                    <th className="p-3">Description</th>
-                    <th className="p-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-burgundy/10">
-                  {formData.promoCodes.map((promo) => (
-                    <tr key={promo.code} className="hover:bg-ivory/50">
-                      <td className="p-3 font-mono font-bold text-burgundy">{promo.code}</td>
-                      <td className="p-3 font-bold text-espresso">{promo.discountPercent}% OFF</td>
-                      <td className="p-3 text-espresso/70">{promo.description}</td>
-                      <td className="p-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => removePromoCode(promo.code)}
-                          className="p-1 text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Add New Promo Code */}
-            <div className="p-4 bg-ivory rounded-xl border border-burgundy/15 space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-espresso">
-                Create New Promo Code
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div>
-                  <input
-                    type="text"
-                    placeholder="CODE (e.g. VIP25)"
-                    value={newPromoCode.code}
-                    onChange={(e) =>
-                      setNewPromoCode({ ...newPromoCode, code: e.target.value.toUpperCase() })
-                    }
-                    className="w-full px-3 py-2 text-xs bg-white rounded border border-burgundy/20 font-mono font-bold uppercase"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    placeholder="Discount % (e.g. 25)"
-                    value={newPromoCode.discountPercent}
-                    onChange={(e) =>
-                      setNewPromoCode({
-                        ...newPromoCode,
-                        discountPercent: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs bg-white rounded border border-burgundy/20"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Description (e.g. Spring Sale)"
-                    value={newPromoCode.description}
-                    onChange={(e) =>
-                      setNewPromoCode({ ...newPromoCode, description: e.target.value })
-                    }
-                    className="w-full px-3 py-2 text-xs bg-white rounded border border-burgundy/20"
-                  />
-                </div>
-                <div>
-                  <button
-                    type="button"
-                    onClick={addPromoCode}
-                    className="w-full py-2 bg-burgundy hover:bg-crimson text-gold text-xs font-bold uppercase rounded transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Code</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <Link href="/admin/discounts" className="inline-flex min-h-[44px] items-center rounded-xl bg-espresso px-4 text-xs font-bold uppercase tracking-wider text-ivory">
+              Open Discounts &amp; Coupons
+            </Link>
           </div>
         )}
 

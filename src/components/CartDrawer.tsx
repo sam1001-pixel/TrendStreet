@@ -4,7 +4,8 @@ import React, { useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
+import { useStore, useStoreConfig } from "@/context/StoreContext";
+import { rupees } from "@/lib/store-config";
 import { BagSuggestions } from "@/components/BagSuggestions";
 import { formatPrice } from "@/lib/pricing";
 import { lockScroll } from "@/lib/scroll-lock";
@@ -24,6 +25,7 @@ export const CartDrawer: React.FC = () => {
     cartShipping,
     cartDiscount,
   } = useStore();
+  const config = useStoreConfig();
 
   const panelRef = useRef<HTMLDivElement>(null);
   const closeBag = useCallback(() => setIsCartOpen(false), [setIsCartOpen]);
@@ -48,10 +50,10 @@ export const CartDrawer: React.FC = () => {
 
   if (!isCartOpen) return null;
 
-  // Same rule as the server: free delivery once the bag (after discount) reaches ₹1,999.
-  const freeShippingThreshold = 1999;
+  // Same rule as the server: free delivery once the bag (after discount) reaches the admin's amount.
+  const freeShippingThreshold = config.shipping.freeOver;
   const qualifyingTotal = Math.max(0, cartSubtotal - cartDiscount);
-  const progressToFreeShipping = Math.min(100, (qualifyingTotal / freeShippingThreshold) * 100);
+  const progressToFreeShipping = freeShippingThreshold > 0 ? Math.min(100, (qualifyingTotal / freeShippingThreshold) * 100) : 100;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - qualifyingTotal);
 
   // Recommended coordinating cross-sell item not yet in cart (OFFCULT / Off Duty style)
@@ -129,7 +131,7 @@ export const CartDrawer: React.FC = () => {
                   Your bag is empty
                 </h3>
                 <p className="text-xs text-espresso/60 max-w-xs mb-6">
-                  Oversized tees, selvedge denim, boxy shirts and jackets — free delivery over ₹1,999.
+                  Oversized tees, denim, boxy shirts and jackets — free delivery over {rupees(config.shipping.freeOver)}.
                 </p>
                 <Link
                   href="/shop"

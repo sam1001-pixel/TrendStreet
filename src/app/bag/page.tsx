@@ -4,11 +4,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, Truck, Heart, X, RotateCcw, Wallet } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
+import { useStore, useStoreConfig } from "@/context/StoreContext";
+import { rupees } from "@/lib/store-config";
 import { BagSuggestions } from "@/components/BagSuggestions";
 import { formatPrice } from "@/lib/pricing";
 
-const FREE_SHIPPING = 1999;
 
 export default function BagPage() {
   const {
@@ -27,6 +27,8 @@ export default function BagPage() {
     applyPromoCode,
     removePromoCode,
   } = useStore();
+  const config = useStoreConfig();
+  const FREE_SHIPPING = config.shipping.freeOver;
 
   const [inputCode, setInputCode] = useState("");
   const [promoMessage, setPromoMessage] = useState<{ success: boolean; text: string } | null>(null);
@@ -42,7 +44,7 @@ export default function BagPage() {
 
   const qualifying = Math.max(0, cartSubtotal - cartDiscount);
   const remaining = Math.max(0, FREE_SHIPPING - qualifying);
-  const progress = Math.min(100, (qualifying / FREE_SHIPPING) * 100);
+  const progress = FREE_SHIPPING > 0 ? Math.min(100, (qualifying / FREE_SHIPPING) * 100) : 100;
 
   if (cart.length === 0) {
     return (
@@ -51,7 +53,7 @@ export default function BagPage() {
           <ShoppingBag className="h-9 w-9" />
         </div>
         <h1 className="mt-5 font-display text-5xl font-black uppercase leading-none text-espresso">Your bag is empty</h1>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-espresso/60">Oversized tees, selvedge denim, boxy shirts and jackets. Free delivery over ₹1,999.</p>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-espresso/60">Oversized tees, denim, boxy shirts and jackets. Free delivery over {rupees(FREE_SHIPPING)}.</p>
         <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
           <Link href="/shop" className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-burgundy px-7 text-xs font-bold uppercase tracking-[0.18em] text-ivory hover:bg-crimson">
             Shop the collection <ArrowRight className="h-4 w-4" />
@@ -212,9 +214,9 @@ export default function BagPage() {
                   Apply
                 </button>
               </form>
-              {!promoCode && (
+              {!promoCode && config.offer.bagCodes.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {["TREND10", "STREET20"].map((c) => (
+                  {config.offer.bagCodes.map((c) => (
                     <button key={c} type="button" onClick={async () => { const r = await applyPromoCode(c); setPromoMessage({ success: r.success, text: r.message }); }} className="inline-flex min-h-[36px] items-center rounded-full border border-dashed border-burgundy/40 px-3 font-mono text-xs font-bold text-burgundy hover:bg-burgundy/5">
                       {c}
                     </button>

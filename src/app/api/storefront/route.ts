@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCatalog, getVideoReviews } from "@/lib/catalog";
 import { settingsFromDb } from "@/lib/site-settings";
+import { getOfferCoupon } from "@/lib/store-config-server";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,11 @@ export async function GET() {
     prisma.siteSettings.findUnique({ where: { id: "global" } }).catch(() => null),
   ]);
 
+  const settings = settingsFromDb(settingsRow);
+  const offerCoupon = settings.config ? await getOfferCoupon(settings.config) : null;
+
   return NextResponse.json(
-    { products, videoReviews, settings: settingsFromDb(settingsRow), source },
+    { products, videoReviews, settings: { ...settings, offerCoupon }, source },
     { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=300" } }
   );
 }

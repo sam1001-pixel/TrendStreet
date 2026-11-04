@@ -360,6 +360,8 @@ model SiteSettings {
   /// Next drop countdown on the homepage (hidden when empty or in the past).
   nextDropAt         DateTime?
   nextDropTitle      String?
+  /// Delivery charges, COD rules, offers, banner text, social links, trust badges (see src/lib/store-config.ts).
+  config             Json?
   updatedAt          DateTime @updatedAt
 
   @@map("site_settings")

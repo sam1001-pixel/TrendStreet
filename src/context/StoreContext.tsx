@@ -1,11 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { Product, CartItem, Order, UserProfile, OrderStatus, SiteSettings, Review } from "@/types/store";
 import { INITIAL_PRODUCTS } from "@/data/products";
 import { calculateOrderPricing, couponIneligibilityReason, ResolvedCoupon } from "@/lib/pricing";
 import { DEMO_ORDERS, DEMO_USER } from "@/data/demo";
 import type { EditableSettings } from "@/lib/site-settings";
+import { DEFAULT_STORE_CONFIG, sanitizeStoreConfig, shippingRulesFromConfig } from "@/lib/store-config";
 
 interface StoreContextType {
   products: Product[];
@@ -79,6 +80,8 @@ const DEFAULT_USER: UserProfile = {
 };
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
+  config: DEFAULT_STORE_CONFIG,
+  offerCoupon: null,
   storeName: "OFFVYBE",
   storeTagline: "Wear Your Own Vibe",
   topAnnouncement: {
@@ -239,6 +242,7 @@ function mergeSettings(prev: SiteSettings, incoming: EditableSettings | Partial<
     hero: { ...prev.hero, ...(incoming.hero || {}) },
     contactInfo: { ...prev.contactInfo, ...(incoming.contactInfo || {}) },
     storefrontSections: { ...(prev.storefrontSections || {}), ...(incoming.storefrontSections || {}) },
+    config: incoming.config ? sanitizeStoreConfig(incoming.config) : prev.config ?? DEFAULT_STORE_CONFIG,
   };
 }
 
@@ -453,6 +457,7 @@ export const StoreProvider: React.FC<{
       topAnnouncement: { ...prev.topAnnouncement, ...(newSettings.topAnnouncement || {}) },
       contactInfo: { ...prev.contactInfo, ...(newSettings.contactInfo || {}) },
       categoryTaglines: { ...prev.categoryTaglines, ...(newSettings.categoryTaglines || {}) },
+      config: newSettings.config ? sanitizeStoreConfig(newSettings.config) : prev.config,
     }));
   };
 
@@ -549,7 +554,13 @@ export const StoreProvider: React.FC<{
 
   // Calculations
   // Same engine the server uses (src/lib/pricing.ts), so the bag total always matches what checkout charges.
-  const pricing = calculateOrderPricing(cartPricingItems(), { coupon, deliveryMethod: "standard", currency: "INR" });
+  const storeConfig = siteSettings.config ?? DEFAULT_STORE_CONFIG;
+  // Admin → Settings → "Show MRP" off: hide every struck-through price and "% off" badge in one place.
+  const displayProducts = useMemo(
+    () => (storeConfig.pricing.showMrp ? products : products.map((p) => (p.originalPrice ? { ...p, originalPrice: undefined } : p))),
+    [products, storeConfig.pricing.showMrp]
+  );
+  const pricing = calculateOrderPricing(cartPricingItems(), { coupon, deliveryMethod: "standard", currency: "INR", shipping: shippingRulesFromConfig(storeConfig) });
   const promoCode = pricing.promoCodeApplied;
   const discountRate = pricing.discountPercent / 100;
   const cartSubtotal = pricing.subtotalMinor / 100;
@@ -562,7 +573,7 @@ export const StoreProvider: React.FC<{
   return (
     <StoreContext.Provider
       value={{
-        products,
+        products: displayProducts,
         videoReviews,
         siteSettings,
         updateSiteSettings,
@@ -617,3 +628,9 @@ export const useStore = () => {
   }
   return context;
 };
+
+/** Admin-controlled store settings (delivery, COD, offers, banner, social, trust badges), always complete. */
+export function useStoreConfig() {
+  const { siteSettings } = useStore();
+  return siteSettings.config ?? DEFAULT_STORE_CONFIG;
+}

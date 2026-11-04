@@ -14,6 +14,16 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [code, setCode] = useState("");
+  const [twoFactor, setTwoFactor] = useState(false);
+
+  // Ask for the authenticator code only when two-step login is switched on.
+  useEffect(() => {
+    fetch("/api/auth/login")
+      .then((r) => r.json())
+      .then((d) => setTwoFactor(Boolean(d?.twoFactor)))
+      .catch(() => {});
+  }, []);
 
   // If already authenticated, redirect safely once session check finishes
   useEffect(() => {
@@ -27,7 +37,7 @@ export default function AdminLoginPage() {
     setError(null);
     setLoading(true);
 
-    const res = await login(adminId, password);
+    const res = await login(adminId, password, twoFactor ? code : undefined);
     if (res.success) {
       window.location.href = "/admin";
     } else {
@@ -121,16 +131,27 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-espresso/70 pt-1">
-              <label className="flex items-center gap-2 cursor-pointer">
+            {twoFactor && (
+              <div className="space-y-1.5">
+                <label htmlFor="admin-code" className="text-xs font-bold uppercase tracking-wider text-espresso/70">
+                  Authenticator code
+                </label>
                 <input
-                  type="checkbox"
-                  defaultChecked
-                  className="w-3.5 h-3.5 text-burgundy rounded border-burgundy/30"
+                  id="admin-code"
+                  required
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="6-digit code"
+                  className="w-full bg-white px-3.5 py-2.5 rounded-xl border border-burgundy/20 text-sm font-mono tracking-[0.4em] text-espresso focus:outline-none focus:border-burgundy"
                 />
-                <span>Remember Session</span>
-              </label>
-            </div>
+              </div>
+            )}
+
+            <p className="pt-1 text-[11px] text-espresso/60">For your safety you&apos;re signed out after 8 hours.</p>
 
             <button
               type="submit"

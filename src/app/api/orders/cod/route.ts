@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { getStoreConfig } from "@/lib/store-config-server";
 import { checkPincodeServiceability } from "@/lib/pincode";
 import { OrderInputError, placeOrder, sendOrderEmailFromDb, DeliveryMethod } from "@/lib/orders";
 
@@ -10,10 +11,9 @@ const DELIVERY_METHODS: DeliveryMethod[] = ["standard", "express", "vip_courier"
 
 /**
  * Cash-on-delivery orders hold stock without any payment, so fake orders could empty the shop.
- * Limits: unconfirmed COD orders per customer (email or phone) in 24 h, and pieces per COD order.
+ * Limits (set in Admin → Settings → Delivery & COD): unconfirmed COD orders per customer
+ * (email or phone) in 24 h, and pieces per COD order. COD can also be switched off entirely.
  */
-const MAX_OPEN_COD_PER_CUSTOMER = 2;
-const MAX_COD_PIECES = 6;
 
 /** Places a Cash-on-Delivery order in the database. */
 export async function POST(req: NextRequest) {
@@ -33,6 +33,13 @@ export async function POST(req: NextRequest) {
     if (!pin.codAvailable) {
       return NextResponse.json({ error: "Cash on delivery isn't available for this PIN code. Please pay online." }, { status: 400 });
     }
+
+    const { cod } = await getStoreConfig();
+    if (!cod.enabled) {
+      return NextResponse.json({ error: "Cash on delivery is paused right now. Please pay online with UPI, card or net banking." }, { status: 400 });
+    }
+    const MAX_COD_PIECES = cod.maxPieces;
+    const MAX_OPEN_COD_PER_CUSTOMER = cod.maxOpenPerCustomer;
 
     const pieces = (Array.isArray(body?.items) ? body.items : []).reduce((n: number, it: { quantity?: unknown }) => n + Math.max(0, Math.floor(Number(it?.quantity) || 0)), 0);
     if (pieces > MAX_COD_PIECES) {

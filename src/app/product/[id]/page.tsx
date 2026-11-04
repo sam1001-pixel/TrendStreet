@@ -27,7 +27,8 @@ import {
   ArrowLeft,
   Play,
 } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
+import { useStore, useStoreConfig } from "@/context/StoreContext";
+import { rupees } from "@/lib/store-config";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductVideo } from "@/components/ProductVideo";
 import { ProductReviews } from "@/components/VideoReviews";
@@ -42,7 +43,9 @@ import { AlertSignup } from "@/components/AlertSignup";
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { products, addToCart, toggleWishlist, isInWishlist } = useStore();
+  const { products, addToCart, toggleWishlist, isInWishlist, siteSettings } = useStore();
+  const config = useStoreConfig();
+  const offer = siteSettings.offerCoupon;
 
   const product = products.find((p) => p.id === id);
 
@@ -382,24 +385,33 @@ export default function ProductDetailPage() {
                 </span>
               )}
               <span className="text-[11px] text-espresso/60 block w-full">
-                Inclusive of GST • Free delivery over ₹1,999
+                Inclusive of GST{config.shipping.freeOver > 0 ? ` • Free delivery over ${rupees(config.shipping.freeOver)}` : " • Free delivery"}
               </span>
             </div>
           </div>
 
-          {/* Offer banner — only when this piece alone meets the code's ₹1,999 minimum */}
-          {product.price >= 1999 && (
-          <div className="p-3.5 bg-burgundy/10 rounded-xl border border-burgundy/25 flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gold flex-shrink-0" />
-              <span className="text-espresso font-medium">
-                Get it for <strong className="text-burgundy font-bold">{formatPrice(Math.round(product.price * 0.9))}</strong> with code <strong className="font-mono text-crimson">TREND10</strong>
+          {/* Offer from Admin → Settings → Offers. % and minimum come from the real coupon in Admin → Discounts. */}
+          {offer && offer.percent > 0 && (
+            <div className="p-3.5 bg-burgundy/10 rounded-xl border border-burgundy/25 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-gold flex-shrink-0" />
+                <span className="text-espresso font-medium">
+                  {product.price >= offer.minSpend ? (
+                    <>
+                      Get it for <strong className="text-burgundy font-bold">{formatPrice(Math.round(product.price * (1 - offer.percent / 100)))}</strong> with code{" "}
+                    </>
+                  ) : (
+                    <>
+                      Extra {offer.percent}% off on orders over <strong className="text-burgundy font-bold">{formatPrice(offer.minSpend)}</strong> with code{" "}
+                    </>
+                  )}
+                  <strong className="font-mono text-crimson">{offer.code}</strong>
+                </span>
+              </div>
+              <span className="text-[11px] font-bold uppercase text-burgundy bg-white px-2 py-0.5 rounded border border-burgundy/20 flex-shrink-0">
+                Save {offer.percent}%
               </span>
             </div>
-            <span className="text-[11px] font-bold uppercase text-burgundy bg-white px-2 py-0.5 rounded border border-burgundy/20 flex-shrink-0">
-              Save 10%
-            </span>
-          </div>
           )}
 
           {/* Color Variant Picker */}
@@ -652,11 +664,11 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-2 gap-2 text-[11px] text-espresso/80 pt-1">
             <div className="p-2.5 bg-white rounded-lg border border-burgundy/15 flex items-center gap-2">
               <Truck className="w-4 h-4 text-gold flex-shrink-0" />
-              <span>Free Courier Over ₹1,999</span>
+              <span>{config.shipping.freeOver > 0 ? `Free delivery over ${rupees(config.shipping.freeOver)}` : "Free delivery"}</span>
             </div>
             <div className="p-2.5 bg-white rounded-lg border border-burgundy/15 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-gold flex-shrink-0" />
-              <span>Certified Seam Integrity</span>
+              <span>{config.cod.enabled ? "Cash on delivery" : "Secure payments"}</span>
             </div>
           </div>
 

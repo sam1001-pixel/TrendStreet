@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Heart, Eye, Star, Plus, Check, Play } from "lucide-react";
 import { Product } from "@/types/store";
-import { useStore } from "@/context/StoreContext";
+import { useStore, useStoreConfig } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
 
 interface ProductCardProps {
@@ -34,7 +34,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
   const [addedSize, setAddedSize] = useState<string | null>(null);
 
   const isFavorited = isInWishlist(product.id);
-  const hasMrp = !!product.originalPrice && product.originalPrice > product.price;
+  const { showMrp } = useStoreConfig().pricing;
+  const hasMrp = showMrp && !!product.originalPrice && product.originalPrice > product.price;
   const discount = hasMrp ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100) : 0;
   const lowStock = product.inStock && product.stockCount > 0 && product.stockCount <= 8;
   const secondary = product.images[1];

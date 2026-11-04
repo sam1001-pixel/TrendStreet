@@ -3,7 +3,7 @@ import { CategoryLanding, type CategoryConfig } from "@/components/CategoryLandi
 
 export const metadata: Metadata = {
   title: "Oversized Tees & Hoodies | OFFVYBE",
-  description: "Heavyweight oversized tees and hoodies in 320–520gsm cotton with dropped shoulders. Free delivery over ₹1,999.",
+  description: "Heavyweight oversized tees and hoodies in 320–520gsm cotton with dropped shoulders. Cash on delivery and easy size exchanges.",
   alternates: { canonical: "/oversized" },
 };
 

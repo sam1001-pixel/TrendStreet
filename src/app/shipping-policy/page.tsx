@@ -1,13 +1,22 @@
 import React from "react";
 import Link from "next/link";
 import { Truck, Package, Clock, ShieldCheck, MapPin, ArrowLeft } from "lucide-react";
+import { getCachedStorefront } from "@/lib/catalog";
+import { DEFAULT_STORE_CONFIG, rupees } from "@/lib/store-config";
+
+// Charges and contact details are read from Admin → Settings, so this page never goes out of date.
+export const revalidate = 300;
 
 export const metadata = {
   title: "Shipping & Logistics Policy | OFFVYBE",
   description: "OFFVYBE shipping timelines, courier partners (Blue Dart Apex & Delhivery Air), and domestic delivery coverage across India.",
 };
 
-export default function ShippingPolicyPage() {
+export default async function ShippingPolicyPage() {
+  const { settings } = await getCachedStorefront();
+  const cfg = settings.config ?? DEFAULT_STORE_CONFIG;
+  const phone = settings.contactInfo?.phone || "";
+  const email = settings.contactInfo?.email || "concierge@offvybe.in";
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12">
       {/* Back Link */}
@@ -94,20 +103,20 @@ export default function ShippingPolicyPage() {
               <thead>
                 <tr className="bg-ivory text-espresso font-serif">
                   <th className="p-3 border border-burgundy/15">Order Value Threshold</th>
-                  <th className="p-3 border border-burgundy/15">Standard Ground (4–5 Days)</th>
-                  <th className="p-3 border border-burgundy/15">Express Air (2–3 Days)</th>
+                  <th className="p-3 border border-burgundy/15">Standard ({cfg.shipping.standardDays})</th>
+                  <th className="p-3 border border-burgundy/15">{cfg.shipping.expressEnabled ? `Express (${cfg.shipping.expressDays})` : "Express (currently unavailable)"}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-burgundy/10">
                 <tr>
-                  <td className="p-3 border border-burgundy/15 font-semibold text-burgundy">Orders of ₹1,999 and above</td>
+                  <td className="p-3 border border-burgundy/15 font-semibold text-burgundy">Orders of {rupees(cfg.shipping.freeOver)} and above</td>
                   <td className="p-3 border border-burgundy/15 font-bold text-green-800">COMPLIMENTARY (FREE)</td>
                   <td className="p-3 border border-burgundy/15 font-bold text-green-800">COMPLIMENTARY (FREE)</td>
                 </tr>
                 <tr>
-                  <td className="p-3 border border-burgundy/15">Orders below ₹1,999</td>
-                  <td className="p-3 border border-burgundy/15">₹150</td>
-                  <td className="p-3 border border-burgundy/15">₹250</td>
+                  <td className="p-3 border border-burgundy/15">Orders below {rupees(cfg.shipping.freeOver)}</td>
+                  <td className="p-3 border border-burgundy/15">{rupees(cfg.shipping.standard)}</td>
+                  <td className="p-3 border border-burgundy/15">{cfg.shipping.expressEnabled ? rupees(cfg.shipping.express) : "—"}</td>
                 </tr>
               </tbody>
             </table>
@@ -148,8 +157,8 @@ export default function ShippingPolicyPage() {
             If you need to adjust your delivery address or contact number, please contact our support team within 4 hours of placing your order:
           </p>
           <div className="pt-1 flex flex-wrap gap-4 text-xs font-semibold text-burgundy">
-            <span>Email: <a href="mailto:concierge@offvybe.in" className="underline">concierge@offvybe.in</a></span>
-            <span>WhatsApp / Phone: +91 98200 12345</span>
+            <span>Email: <a href={`mailto:${email}`} className="underline">{email}</a></span>
+            {phone && <span>WhatsApp / Phone: {phone}</span>}
           </div>
         </section>
       </div>

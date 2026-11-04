@@ -5,6 +5,8 @@ import { validateAdminCredentials } from "../../src/lib/admin-credentials";
 
 test("auth - signs and verifies valid session tokens", async () => {
   const email = "concierge@offvybe.com";
+  const savedEmail = process.env.ADMIN_EMAIL;
+  process.env.ADMIN_EMAIL = email;
   const token = await signSessionToken(email);
 
   assert.equal(typeof token, "string");
@@ -14,6 +16,7 @@ test("auth - signs and verifies valid session tokens", async () => {
   assert.notEqual(session, null);
   assert.equal(session?.email, email);
   assert.equal(session?.role, "admin");
+  process.env.ADMIN_EMAIL = savedEmail;
 });
 
 test("auth - rejects tampered tokens", async () => {
@@ -125,4 +128,23 @@ test("auth - ADMIN_PASSWORD_HASH is used when set, and a malformed hash disables
   } finally {
     delete env.ADMIN_PASSWORD_HASH;
   }
+});
+
+test("auth - sessions end when the admin email or password changes", async () => {
+  const before = { email: process.env.ADMIN_EMAIL, pw: process.env.ADMIN_PASSWORD_HASH };
+  process.env.ADMIN_EMAIL = "owner@offvybe.com";
+  process.env.ADMIN_PASSWORD_HASH = "pbkdf2.310000.c2FsdA.aGFzaDE";
+  const token = await signSessionToken("owner@offvybe.com");
+  assert.notEqual(await verifySessionToken(token), null);
+
+  process.env.ADMIN_PASSWORD_HASH = "pbkdf2.310000.c2FsdA.aGFzaDI";
+  assert.equal(await verifySessionToken(token), null, "old sessions must stop working after a password change");
+
+  process.env.ADMIN_PASSWORD_HASH = "pbkdf2.310000.c2FsdA.aGFzaDE";
+  process.env.ADMIN_EMAIL = "someone-else@offvybe.com";
+  assert.equal(await verifySessionToken(token), null, "a token for a different admin email is rejected");
+
+  process.env.ADMIN_EMAIL = before.email;
+  if (before.pw === undefined) delete process.env.ADMIN_PASSWORD_HASH;
+  else process.env.ADMIN_PASSWORD_HASH = before.pw;
 });

@@ -8,6 +8,7 @@ import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { INITIAL_PRODUCTS } from "@/data/products";
 import { settingsFromDb } from "@/lib/site-settings";
+import { getOfferCoupon } from "@/lib/store-config-server";
 import type { Product, ProductCategory, Review } from "@/types/store";
 
 export const DB_TO_CATEGORY: Record<DbCategory, ProductCategory> = {
@@ -154,7 +155,9 @@ export const getCachedStorefront = unstable_cache(
     ]);
     // Settings are rendered on the server too, so hidden sections and the announcement bar
     // don't flash in and then disappear once the browser fetches them.
-    return { products, source, videoReviews, settings: settingsFromDb(settingsRow) };
+    const settings = settingsFromDb(settingsRow);
+    const offerCoupon = settings.config ? await getOfferCoupon(settings.config) : null;
+    return { products, source, videoReviews, settings: { ...settings, offerCoupon } };
   },
   ["storefront-catalog"],
   { revalidate: 60, tags: ["catalog"] }

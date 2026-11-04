@@ -28,10 +28,17 @@ export interface ResolvedCoupon {
   description?: string | null;
 }
 
+export interface ShippingRules {
+  freeOverMinor: number;
+  ratesMinor: Record<"standard" | "express" | "vip_courier", number>;
+}
+
 export interface PricingOptions {
   coupon?: ResolvedCoupon | null;
   deliveryMethod?: "standard" | "express" | "vip_courier";
   currency?: "USD" | "INR";
+  /** Delivery charges set in Admin → Settings → Delivery. Defaults to the constants below. */
+  shipping?: ShippingRules;
 }
 
 export interface PricingSummary {
@@ -117,9 +124,9 @@ export function calculateOrderPricing(items: PricingItem[], options: PricingOpti
   const discountedSubtotalMinor = Math.max(0, subtotalMinor - discountMinor);
 
   // 3. Shipping (threshold met OR a free-shipping coupon applies)
-  const isFreeShipping =
-    discountedSubtotalMinor >= FREE_SHIPPING_THRESHOLD_MINOR || (couponApplies && coupon!.freeShipping);
-  const baseShipping = SHIPPING_RATES_MINOR[deliveryMethod] || SHIPPING_RATES_MINOR.standard;
+  const rules = options.shipping ?? { freeOverMinor: FREE_SHIPPING_THRESHOLD_MINOR, ratesMinor: SHIPPING_RATES_MINOR };
+  const isFreeShipping = discountedSubtotalMinor >= rules.freeOverMinor || (couponApplies && coupon!.freeShipping);
+  const baseShipping = rules.ratesMinor[deliveryMethod] ?? rules.ratesMinor.standard;
   const shippingMinor = isFreeShipping ? 0 : baseShipping;
 
   // 4. GST is included in listed prices. Extract the embedded component per piece:

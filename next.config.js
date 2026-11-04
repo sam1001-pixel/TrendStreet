@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Don't advertise the framework in every response.
+  poweredByHeader: false,
   images: {
     // AVIF is off: Next.js 14's image optimizer has an open security advisory for AVIF input/output
     // (GHSA-2xp9-vwfh-vxw4). Re-enable after upgrading to a patched Next.js release.
@@ -94,12 +96,34 @@ const nextConfig = {
         key: "Referrer-Policy",
         value: "strict-origin-when-cross-origin",
       },
+      {
+        // Other sites can't get a handle on our window (popups keep working for UPI/Razorpay).
+        key: "Cross-Origin-Opener-Policy",
+        value: "same-origin-allow-popups",
+      },
+      {
+        key: "X-Permitted-Cross-Domain-Policies",
+        value: "none",
+      },
     ];
 
     return [
       {
         source: "/(.*)",
         headers: rootHeaders,
+      },
+      {
+        // Admin screens and API responses never belong in search results.
+        source: "/(admin|api)/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        // The service worker must always be re-checked so new versions roll out straight away.
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
       },
       {
         source: "/(api/admin/:path*|api/orders/:path*|api/auth/:path*|api/payment/:path*|admin/:path*|checkout|bag|profile|saved)",

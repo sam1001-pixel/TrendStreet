@@ -6,6 +6,7 @@
 import type { SiteSettings as DbSiteSettings } from "@prisma/client";
 import type { SiteSettings } from "@/types/store";
 import { safeHref } from "@/lib/safe-redirect";
+import { sanitizeStoreConfig, type StoreConfig } from "@/lib/store-config";
 
 export type EditableSettings = {
   storeName?: string;
@@ -16,6 +17,9 @@ export type EditableSettings = {
   contactInfo?: Partial<SiteSettings["contactInfo"]>;
   storefrontSections?: Partial<NonNullable<SiteSettings["storefrontSections"]>>;
   nextDrop?: { at: string | null; title: string };
+  config?: StoreConfig;
+  categoryTaglines?: SiteSettings["categoryTaglines"];
+  offerCoupon?: SiteSettings["offerCoupon"];
 };
 
 /** Pages that were removed from the site; saved links to them fall back to the shop. */
@@ -44,6 +48,8 @@ export function settingsFromDb(row: DbSiteSettings | null): EditableSettings {
     contactInfo: { phone: row.conciergePhone, email: row.conciergeEmail },
     ...(row.storefrontSections ? { storefrontSections: row.storefrontSections as any } : {}),
     nextDrop: { at: row.nextDropAt ? row.nextDropAt.toISOString() : null, title: row.nextDropTitle ?? "" },
+    config: sanitizeStoreConfig(row.config),
+    categoryTaglines: sanitizeStoreConfig(row.config).categoryTaglines,
   };
 }
 
@@ -67,6 +73,12 @@ export function settingsToDb(s: Partial<SiteSettings>) {
     conciergeEmail: str(s.contactInfo?.email),
     storefrontSections: s.storefrontSections ? JSON.parse(JSON.stringify(s.storefrontSections)) : undefined,
     ...nextDropToDb(s.nextDrop),
+    // Always stored cleaned, so a bad value can never break checkout.
+    // Category taglines are edited in their own admin tab but stored inside the config.
+    config:
+      s.config === undefined
+        ? undefined
+        : (sanitizeStoreConfig({ ...s.config, categoryTaglines: s.categoryTaglines ?? s.config.categoryTaglines }) as unknown as object),
   };
 }
 

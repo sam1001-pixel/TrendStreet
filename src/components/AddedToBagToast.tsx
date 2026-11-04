@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Check, X, ShoppingBag } from "lucide-react";
-import { useStore } from "@/context/StoreContext";
-import { formatPrice, FREE_SHIPPING_THRESHOLD_MINOR } from "@/lib/pricing";
+import { useStore, useStoreConfig } from "@/context/StoreContext";
+import { formatPrice } from "@/lib/pricing";
 
 const SHOW_FOR_MS = 4000;
 
@@ -17,6 +17,7 @@ const SHOW_FOR_MS = 4000;
 export function AddedToBagToast() {
   const { lastAdded, dismissLastAdded, setIsCartOpen, isCartOpen, cartSubtotal, cartDiscount, cartItemsCount } = useStore();
   const pathname = usePathname();
+  const config = useStoreConfig();
   const [paused, setPaused] = useState(false);
 
   // Each new add starts a fresh timer.
@@ -32,7 +33,7 @@ export function AddedToBagToast() {
   if (!lastAdded || isCartOpen || pathname.startsWith("/checkout") || pathname.startsWith("/admin")) return null;
 
   const { product, size, quantity } = lastAdded;
-  const freeAt = FREE_SHIPPING_THRESHOLD_MINOR / 100;
+  const freeAt = config.shipping.freeOver;
   const left = Math.max(0, freeAt - (cartSubtotal - cartDiscount));
 
   return (
