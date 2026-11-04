@@ -1,7 +1,7 @@
 import { PLACED_ORDERS_WHERE } from "@/lib/admin-orders";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession, requireRecentAdminAuth } from "@/lib/admin-guard";
 import { generateSafeCsv, getSafeExportFilename } from "@/lib/csv-security";
 
 export const dynamic = "force-dynamic";
@@ -12,12 +12,13 @@ export const dynamic = "force-dynamic";
  * Supports search and safe CSV export with formula injection protection.
  */
 export async function GET(req: NextRequest) {
-  const auth = await requireAdminSession(req);
+  const isExport = req.nextUrl.searchParams.get("export") === "csv";
+  // Downloading every customer's details needs a sign-in from the last 30 minutes.
+  const auth = isExport ? await requireRecentAdminAuth(req) : await requireAdminSession(req);
   if (!auth.authorized) return auth.response;
 
   try {
     const search = req.nextUrl.searchParams.get("search")?.toLowerCase().trim() || "";
-    const isExport = req.nextUrl.searchParams.get("export") === "csv";
 
     // 1. Fetch registered users and orders
     const [users, orders] = await Promise.all([

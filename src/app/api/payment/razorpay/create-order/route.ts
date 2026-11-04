@@ -1,5 +1,5 @@
 import { getCustomerSession } from "@/lib/order-actions";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createRazorpayOrder } from "@/lib/razorpay";
 import {
   OrderInputError,
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Opportunistically free stock held by abandoned payments (also runs from the daily cron).
-    void releaseStaleRazorpayOrders(10).catch((e) => console.warn("[Release stale orders]:", e?.message || e));
+    after(() => releaseStaleRazorpayOrders(10).then(() => undefined).catch((e) => console.warn("[Release stale orders]:", e?.message || e)));
 
     const orderNumber = generateOrderNumber();
     const { order: rzpOrder, keyId, isTestMode } = await createRazorpayOrder({

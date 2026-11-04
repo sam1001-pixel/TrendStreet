@@ -1,7 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse, after } from "next/server";
 import { verifyRazorpayWebhookSignature } from "@/lib/razorpay";
 import { confirmRazorpayPayment, sendOrderEmailFromDb } from "@/lib/orders";
+import { claimOnce, isClaimed } from "@/lib/security-marker";
+import { writeAudit } from "@/lib/audit";
+
+/** Razorpay retries for up to ~24 h; keep processed event ids for a week. */
+const EVENT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_WEBHOOK_BYTES = 256 * 1024;
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +18,11 @@ export const dynamic = "force-dynamic";
  * `x-razorpay-event-id` header.
  */
 export async function POST(req: NextRequest) {
+  if (Number(req.headers.get("content-length") || 0) > MAX_WEBHOOK_BYTES) {
+    return NextResponse.json({ error: "Payload too large." }, { status: 413 });
+  }
   const rawBody = await req.text();
+  if (rawBody.length > MAX_WEBHOOK_BYTES) return NextResponse.json({ error: "Payload too large." }, { status: 413 });
   const signature = req.headers.get("x-razorpay-signature");
 
   if (!signature) {
@@ -25,6 +34,7 @@ export async function POST(req: NextRequest) {
   }
   if (!verifyRazorpayWebhookSignature({ rawBody, signature })) {
     console.warn("[Webhook] Signature mismatch.");
+    await writeAudit(req, { action: "WEBHOOK_SIGNATURE_FAILED", entityType: "Payment", metadata: { bytes: rawBody.length } });
     return NextResponse.json({ error: "Invalid signature." }, { status: 401 });
   }
 
@@ -40,13 +50,10 @@ export async function POST(req: NextRequest) {
   const eventId = req.headers.get("x-razorpay-event-id") || (paymentEntity?.id ? `${eventType}:${paymentEntity.id}` : null);
 
   try {
-    if (eventId) {
-      const seen = await prisma.auditLog.findFirst({
-        where: { action: "PAYMENT_WEBHOOK_PROCESSED", entityId: eventId },
-        select: { id: true },
-      });
-      if (seen) return NextResponse.json({ success: true, duplicate: true });
-    }
+    // Replays of an event we already processed are acknowledged and ignored.
+    // (Processing itself is idempotent: confirmRazorpayPayment flips an order at most once.)
+    const markerKey = eventId ? `rzp-webhook:${String(eventId).slice(0, 200)}` : null;
+    if (markerKey && (await isClaimed(markerKey))) return NextResponse.json({ success: true, duplicate: true });
 
     if ((eventType === "payment.captured" || eventType === "order.paid") && paymentEntity?.order_id && paymentEntity?.id) {
       const result = await confirmRazorpayPayment({
@@ -59,20 +66,14 @@ export async function POST(req: NextRequest) {
       if (result.outcome === "not_found") {
         console.warn(`[Webhook] No saved order for Razorpay order ${paymentEntity.order_id} (payment ${paymentEntity.id}).`);
       } else if (result.outcome === "confirmed" && result.newlyConfirmed) {
-        void sendOrderEmailFromDb(result.orderId, "Razorpay (UPI / Card / Net Banking)", paymentEntity.id);
+        const orderId = result.orderId;
+        const paymentId = String(paymentEntity.id);
+        after(() => sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", paymentId).then(() => undefined));
       }
     }
 
-    if (eventId) {
-      await prisma.auditLog.create({
-        data: {
-          action: "PAYMENT_WEBHOOK_PROCESSED",
-          entityType: "Payment",
-          entityId: eventId,
-          metadata: { eventType, gatewayOrderId: paymentEntity?.order_id ?? null, gatewayPaymentId: paymentEntity?.id ?? null },
-        },
-      });
-    }
+    // Recorded only after processing succeeded, so a failed attempt is retried by Razorpay.
+    if (markerKey) await claimOnce(markerKey, EVENT_TTL_MS);
 
     return NextResponse.json({ success: true });
   } catch (error) {

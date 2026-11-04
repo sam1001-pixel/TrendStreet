@@ -183,7 +183,7 @@ function ShopContent() {
       </div>
 
       {/* Phones & tablets: sticky category chips + Filter / Sort bar under the header */}
-      <div className="sticky top-16 sm:top-[76px] z-30 -mx-3 space-y-2 border-b border-burgundy/10 bg-ivory/95 px-3 pb-2.5 pt-2 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
+      <div className="sticky top-16 sm:top-[76px] z-30 -mx-3 space-y-2 border-b border-burgundy/10 bg-ivory px-3 pb-2.5 pt-2 shadow-[0_6px_12px_-10px_rgba(0,0,0,0.25)] sm:-mx-6 sm:bg-ivory/95 sm:px-6 sm:backdrop-blur lg:hidden">
         <div className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:-mx-6 sm:px-6" role="tablist" aria-label="Categories">
           {["All", ...ALL_CATEGORIES].map((cat) => {
             const isSelected = selectedCategory === cat;

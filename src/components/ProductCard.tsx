@@ -53,7 +53,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
   };
 
   return (
-    <div data-reveal className="group relative flex h-full flex-col">
+    <div data-reveal className="group relative isolate flex h-full flex-col">
       {/* Image */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-ivory-dark">
         <Link href={`/product/${product.id}`} className="absolute inset-0" aria-label={product.name}>

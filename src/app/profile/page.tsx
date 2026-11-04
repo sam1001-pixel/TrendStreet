@@ -8,6 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import { useUserAuth } from "@/context/UserAuthContext";
 import { useAccount } from "@/context/AccountContext";
 import { OrderCard } from "@/components/orders/OrderCard";
+import { AccountSecurity } from "@/components/AccountSecurity";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states";
 import type { UserProfile } from "@/types/store";
 
@@ -287,6 +288,15 @@ function ProfileContent() {
             Save details
           </button>
         </fieldset></form>
+      )}
+
+      {tab === "details" && isAuthenticated && !isDemo && (
+        <AccountSecurity
+          onSignedOutEverywhere={async () => {
+            await logout();
+            flash("Signed out on every device.");
+          }}
+        />
       )}
 
       {tab === "addresses" && (

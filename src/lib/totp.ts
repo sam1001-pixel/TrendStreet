@@ -59,15 +59,24 @@ export function totpCode(secret: string, timeMs = Date.now(), stepSec = 30): str
 
 /** Accepts the current code and one step either side (phone clocks drift a little). */
 export function verifyTotp(secret: string, code: unknown, timeMs = Date.now()): boolean {
-  if (typeof code !== "string" || !/^\d{6}$/.test(code.trim())) return false;
+  return totpMatchStep(secret, code, timeMs) !== null;
+}
+
+/**
+ * Like verifyTotp, but returns which 30-second step matched (or null). The caller records the
+ * step as used so the same code can't be replayed while it's still inside the window.
+ */
+export function totpMatchStep(secret: string, code: unknown, timeMs = Date.now()): number | null {
+  if (typeof code !== "string" || !/^\d{6}$/.test(code.trim())) return null;
   const c = code.trim();
-  let ok = false;
+  let matched: number | null = null;
   for (const drift of [-1, 0, 1]) {
-    const expected = totpCode(secret, timeMs + drift * 30_000);
+    const t = timeMs + drift * 30_000;
+    const expected = totpCode(secret, t);
     // Compare every candidate (no early exit) in constant time.
-    if (crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(c))) ok = true;
+    if (crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(c))) matched = Math.floor(t / 1000 / 30);
   }
-  return ok;
+  return matched;
 }
 
 export function otpauthUrl(secret: string, account: string, issuer = "OFFVYBE Admin") {

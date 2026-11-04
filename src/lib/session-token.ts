@@ -9,7 +9,7 @@
  *   one kind can never be replayed as the other.
  */
 
-export type TokenScope = "admin" | "customer";
+export type TokenScope = "admin" | "customer" | "admin-device";
 
 const DEV_ONLY_SECRET = "dev-only-insecure-secret-do-not-use-in-production";
 
@@ -41,8 +41,21 @@ function base64UrlToUint8Array(base64url: string): Uint8Array {
   return bytes;
 }
 
+/**
+ * Admin tokens can use their own secret (ADMIN_AUTH_SECRET, 32+ characters), so a leak of the
+ * shared AUTH_SECRET alone can't forge an admin session. Without it, admin keys are derived from
+ * AUTH_SECRET with a different label than customer keys (as before).
+ */
+function secretFor(scope: TokenScope): string | null {
+  if (scope !== "customer") {
+    const adminSecret = process.env.ADMIN_AUTH_SECRET;
+    if (adminSecret && adminSecret.length >= 32 && !/replace_with/i.test(adminSecret)) return adminSecret;
+  }
+  return getAuthSecret();
+}
+
 async function getHmacKey(scope: TokenScope): Promise<CryptoKey | null> {
-  const secret = getAuthSecret();
+  const secret = secretFor(scope);
   if (!secret) return null;
   return crypto.subtle.importKey(
     "raw",

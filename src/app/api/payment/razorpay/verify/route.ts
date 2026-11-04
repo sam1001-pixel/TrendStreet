@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getRazorpayClient, verifyRazorpayPaymentSignature } from "@/lib/razorpay";
+import { NextRequest, NextResponse, after } from "next/server";
+import { fetchCapturedPayment, getRazorpayClient, verifyRazorpayPaymentSignature } from "@/lib/razorpay";
 import { confirmRazorpayPayment, sendOrderEmailFromDb } from "@/lib/orders";
+import { checkDistributedRateLimit, getClientIp, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
+import { writeAudit } from "@/lib/audit";
 
-export const dynamic = "force-dynamic";
-
-/**
- * Browser callback after Razorpay checkout. Confirms the order saved at create-order.
- * Only the three Razorpay fields are read — the cart, customer and prices are never taken from here.
- */
 export async function POST(req: NextRequest) {
+  const limit = await checkDistributedRateLimit(`pay-verify:${getClientIp(req.headers)}`, RATE_LIMIT_CONFIG.PAYMENT_VERIFY);
+  if (!limit.allowed) {
+    return NextResponse.json({ error: "Too many attempts. Please wait a moment — your payment is safe." }, { status: 429 });
+  }
   try {
     const body = await req.json();
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body ?? {};
@@ -23,13 +23,30 @@ export async function POST(req: NextRequest) {
       signature: razorpay_signature,
     });
     if (!isValidSignature) {
-      console.warn(`[Razorpay Signature Verification Failed] Order: ${razorpay_order_id}, Payment: ${razorpay_payment_id}`);
+      console.warn(`[Razorpay Signature Verification Failed] Order: ${razorpay_order_id.slice(0, 40)}`);
+      await writeAudit(req, { action: "PAYMENT_VERIFY_REJECTED", entityType: "Payment", entityId: razorpay_order_id.slice(0, 64), metadata: { reason: "bad_signature" } });
       return NextResponse.json({ error: "Payment verification failed: Invalid cryptographic signature." }, { status: 400 });
     }
 
-    // What was actually charged, straight from Razorpay (not from the browser).
-    const rzpOrder = await getRazorpayClient().orders.fetch(razorpay_order_id);
-    const paidAmountMinor = Number(rzpOrder.amount_paid || rzpOrder.amount);
+    // What was actually charged and whether it was captured — straight from Razorpay, never from the browser.
+    // (Before: an order whose amount_paid was still 0 fell back to the order amount and counted as paid.)
+    const captured = await fetchCapturedPayment(getRazorpayClient(), razorpay_payment_id, razorpay_order_id);
+    if (captured.state === "mismatch") {
+      await writeAudit(req, { action: "PAYMENT_VERIFY_REJECTED", entityType: "Payment", entityId: razorpay_order_id, metadata: { reason: "payment_order_mismatch", paymentId: razorpay_payment_id } });
+      return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
+    }
+    if (captured.state === "pending") {
+      return NextResponse.json(
+        {
+          success: false,
+          verified: true,
+          pending: true,
+          error: "Your bank is still confirming the payment. We'll email you as soon as it's through — please don't pay again.",
+        },
+        { status: 202 }
+      );
+    }
+    const paidAmountMinor = captured.amount;
 
     const result = await confirmRazorpayPayment({
       gatewayOrderId: razorpay_order_id,
@@ -65,7 +82,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (result.outcome === "confirmed" && result.newlyConfirmed) {
-      void sendOrderEmailFromDb(result.orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id);
+      const orderId = result.orderId;
+      // after(): the email is sent once the response is out, and the serverless function waits for it.
+      after(() => sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id).then(() => undefined));
     }
 
     return NextResponse.json({
@@ -78,7 +97,7 @@ export async function POST(req: NextRequest) {
       paymentId: razorpay_payment_id,
     });
   } catch (error: unknown) {
-    console.error("[Razorpay Verify Error]:", error);
+    console.error("[Razorpay Verify Error]:", (error as Error).message);
     return NextResponse.json(
       { error: "We received your payment but couldn't confirm it just now. It will be confirmed automatically shortly — please don't pay again." },
       { status: 500 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { writeAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +28,8 @@ export async function GET(req: NextRequest) {
         maxUses: c.maxUses,
         usedCount: c.usedCount,
         expiresAt: c.expiresAt ? c.expiresAt.toISOString().slice(0, 10) : null,
+        firstOrderOnly: c.firstOrderOnly,
+        perCustomerLimit: c.perCustomerLimit,
       })),
     });
   } catch (err) {
@@ -49,8 +51,15 @@ export async function POST(req: NextRequest) {
     const discountPercent = parseInt(body?.discountPercent, 10);
     const description = typeof body?.description === "string" ? body.description.trim() : null;
     const minSpendRupees = parseInt(body?.minSpend, 10) || 0;
-    const maxUses = body?.maxUses ? parseInt(body.maxUses, 10) : null;
+    const maxUsesRaw = parseInt(body?.maxUses, 10);
+    const maxUses = Number.isFinite(maxUsesRaw) && maxUsesRaw > 0 ? maxUsesRaw : null;
     const expiresAt = body?.expiresAt ? new Date(body.expiresAt) : null;
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) {
+      return NextResponse.json({ error: "Expiry date isn't a valid date." }, { status: 400 });
+    }
+    const firstOrderOnly = body?.firstOrderOnly === true;
+    const perCustomerRaw = parseInt(body?.perCustomerLimit, 10);
+    const perCustomerLimit = Number.isFinite(perCustomerRaw) && perCustomerRaw > 0 ? Math.min(perCustomerRaw, 1000) : null;
 
     if (!code || code.length < 3) {
       return NextResponse.json({ error: "Coupon code must be at least 3 characters." }, { status: 400 });
@@ -75,6 +84,8 @@ export async function POST(req: NextRequest) {
         maxUses,
         expiresAt,
         active: true,
+        firstOrderOnly,
+        perCustomerLimit,
       },
     });
 
@@ -82,7 +93,7 @@ export async function POST(req: NextRequest) {
       action: "COUPON_CREATE",
       entityType: "Coupon",
       entityId: created.id,
-      metadata: { code, discountPercent, minSpendRupees },
+      metadata: { code, discountPercent, minSpendRupees, firstOrderOnly, perCustomerLimit },
     });
 
     return NextResponse.json({

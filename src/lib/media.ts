@@ -141,8 +141,9 @@ export async function deleteMedia(url: string): Promise<boolean> {
     await del(url);
     return true;
   }
-  const m = /^\/uploads\/([A-Za-z0-9._-]+)$/.exec(url);
-  if (m) {
+  // A plain file name only (no "..", no hidden files), so this can never reach outside public/uploads.
+  const m = /^\/uploads\/([A-Za-z0-9_-][A-Za-z0-9._-]*)$/.exec(url);
+  if (m && !m[1].includes("..")) {
     const file = path.join(LOCAL_DIR, m[1]);
     if (fs.existsSync(file)) fs.unlinkSync(file);
     return true;

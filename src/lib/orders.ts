@@ -14,7 +14,7 @@ import { OrderStatus, PaymentProvider, PaymentStatus, Prisma } from "@prisma/cli
 import { prisma } from "@/lib/prisma";
 import { getCatalogForPricing } from "@/lib/catalog";
 import { calculateOrderPricing, PricingItem, PricingSummary, ResolvedCoupon } from "@/lib/pricing";
-import { consumeCoupon, resolveCoupon } from "@/lib/coupons";
+import { consumeCoupon, CouponRuleError, enforceCustomerCouponRules, resolveCoupon } from "@/lib/coupons";
 import { isValidIndianPincode } from "@/lib/pincode";
 import { getStoreConfig } from "@/lib/store-config-server";
 import { shippingRulesFromConfig } from "@/lib/store-config";
@@ -95,9 +95,20 @@ export async function priceOrder(items: OrderLineInput[], promoCode: string | nu
   if (!Array.isArray(items) || items.length === 0) throw new OrderInputError("Your bag is empty.");
   if (items.length > 30) throw new OrderInputError("Your bag has too many lines. Please split the order.");
 
-  const catalog = await getCatalogForPricing(Array.from(new Set(items.map((i) => String(i?.productId)))));
-  const lines: (PricingItem & { productId: string })[] = [];
+  // The same product + size + colour sent as several lines is one line: otherwise the
+  // 10-per-line cap could be dodged by repeating the line.
+  const merged = new Map<string, OrderLineInput>();
   for (const it of items) {
+    const key = `${String(it?.productId)}|${String(it?.size)}|${String(it?.color)}`;
+    const q = Math.floor(Number(it?.quantity));
+    const prev = merged.get(key);
+    merged.set(key, prev ? { ...prev, quantity: Math.floor(Number(prev.quantity)) + q } : { ...it, quantity: q });
+  }
+  const mergedItems = Array.from(merged.values());
+
+  const catalog = await getCatalogForPricing(Array.from(new Set(mergedItems.map((i) => String(i?.productId)))));
+  const lines: (PricingItem & { productId: string })[] = [];
+  for (const it of mergedItems) {
     const product = catalog.find((p) => p.id === it?.productId);
     if (!product || !product.inStock) throw new OrderInputError("An item in your bag is no longer available.");
     if (!product.sizes.includes(it.size)) throw new OrderInputError(`Size ${it.size} isn't offered for ${product.name}.`);
@@ -165,8 +176,16 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
       }
     }
 
-    if (pricing.promoCodeApplied && !(await consumeCoupon(pricing.promoCodeApplied, tx))) {
-      throw new OrderInputError(`The code ${pricing.promoCodeApplied} has just run out. Please remove it and try again.`);
+    if (pricing.promoCodeApplied) {
+      try {
+        await enforceCustomerCouponRules(tx, pricing.promoCodeApplied, { email: customer.email, phone: customer.phone });
+      } catch (e) {
+        if (e instanceof CouponRuleError) throw new OrderInputError(`${e.message} Please remove it and try again.`);
+        throw e;
+      }
+      if (!(await consumeCoupon(pricing.promoCodeApplied, tx))) {
+        throw new OrderInputError(`The code ${pricing.promoCodeApplied} has just run out. Please remove it and try again.`);
+      }
     }
 
     // Never overwrite an existing account's name or phone from a checkout form.

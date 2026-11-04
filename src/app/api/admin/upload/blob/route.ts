@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
+import { checkDistributedRateLimit, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
 import { IMAGE_TYPES, MAX_VIDEO_BYTES, VIDEO_TYPES, blobEnabled } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,9 @@ export async function POST(req: NextRequest) {
   }
   const auth = await requireAdminSession(req);
   if (!auth.authorized) return auth.response;
+
+  const limit = await checkDistributedRateLimit(`admin-upload:${auth.session.email}`, RATE_LIMIT_CONFIG.ADMIN_UPLOAD);
+  if (!limit.allowed) return NextResponse.json({ error: "Too many uploads at once. Please wait a few minutes." }, { status: 429 });
 
   try {
     const body = (await req.json()) as HandleUploadBody;

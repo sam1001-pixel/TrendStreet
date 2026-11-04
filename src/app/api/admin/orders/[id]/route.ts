@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
-import { adminOrderInclude, STATUS_TO_DB, STATUS_TO_UI, toAdminOrder } from "@/lib/admin-orders";
-import { requireAdminSession } from "@/lib/auth";
+import { adminOrderInclude, checkOrderTransition, STATUS_TO_DB, STATUS_TO_UI, toAdminOrder } from "@/lib/admin-orders";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { releaseOrderResources } from "@/lib/orders";
 import type { OrderStatus } from "@/types/store";
 
 export const dynamic = "force-dynamic";
 
 /** Update an order's status and/or courier tracking number. */
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const auth = await requireAdminSession(req);
   if (!auth.authorized) return auth.response;
+  const params = await ctx.params;
 
   try {
     const body = await req.json();
@@ -22,10 +23,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: "Unknown order status." }, { status: 400 });
     }
 
-    const before = await prisma.order.findUnique({ where: { id: params.id }, include: { items: true } });
+    const before = await prisma.order.findUnique({ where: { id: params.id }, include: { items: true, payments: true } });
     if (!before) return NextResponse.json({ error: "Order not found." }, { status: 404 });
 
     const dbStatus = nextStatus ? STATUS_TO_DB[nextStatus] : undefined;
+    const transitionError = dbStatus && dbStatus !== before.status ? checkOrderTransition(before, dbStatus) : null;
+    if (transitionError) return NextResponse.json({ error: transitionError }, { status: 409 });
     const cancelling = dbStatus === "CANCELLED" && before.status !== "CANCELLED";
     const reopening = before.status === "CANCELLED" && dbStatus !== undefined && dbStatus !== "CANCELLED";
 

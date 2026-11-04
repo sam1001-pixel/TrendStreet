@@ -200,6 +200,22 @@ export function AdminSidebar({
               <LogOut className="w-4 h-4 shrink-0" />
               {!collapsed && <span>Log Out</span>}
             </button>
+
+            <button
+              onClick={async () => {
+                if (!window.confirm("Sign out every admin session on every device, including this one?")) return;
+                await fetch("/api/admin/security/revoke-sessions", { method: "POST" }).catch(() => null);
+                window.location.href = "/admin/login";
+              }}
+              type="button"
+              title={collapsed ? "Sign out all admin devices" : undefined}
+              className={`w-full flex items-center rounded-lg text-ivory/60 hover:text-red-300 hover:bg-burgundy/30 transition-colors text-[11px] ${
+                collapsed ? "justify-center p-2.5" : "px-3 py-2 space-x-2"
+              }`}
+            >
+              <LogOut className="w-3.5 h-3.5 shrink-0" />
+              {!collapsed && <span>Sign out all devices</span>}
+            </button>
           </div>
         </div>
       </aside>

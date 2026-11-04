@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
 import { settingsFromDb, settingsToDb } from "@/lib/site-settings";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { refreshStorefront } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";

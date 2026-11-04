@@ -13,8 +13,9 @@ async function findProduct(id: string) {
 const absolute = (src: string) => (src.startsWith("http") ? src : `${SITE_URL}${src.startsWith("/") ? "" : "/"}${src}`);
 
 /** Per-product title, description and share image (the page itself renders in the browser). */
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const product = await findProduct(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const product = await findProduct(id);
   if (!product) return { title: `Product not found | ${SITE_NAME}`, robots: { index: false } };
 
   const title = `${product.name} — ₹${product.price.toLocaleString("en-IN")} | ${SITE_NAME}`;
@@ -30,8 +31,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function ProductLayout({ children, params }: { children: React.ReactNode; params: { id: string } }) {
-  const product = await findProduct(params.id);
+export default async function ProductLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const product = await findProduct(id);
 
   const jsonLd = product && {
     "@context": "https://schema.org",

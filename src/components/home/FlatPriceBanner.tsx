@@ -26,7 +26,7 @@ export function FlatPriceBanner() {
   const collage = live.filter((p) => p.images[0]).slice(0, 3);
 
   return (
-    <section className="mx-auto max-w-[1600px] px-3 sm:px-6 lg:px-8" aria-labelledby="flat-price-heading">
+    <section className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8" aria-labelledby="flat-price-heading">
       <Link
         href="/shop"
         className="group relative block overflow-hidden rounded-3xl bg-burgundy text-ivory ring-1 ring-black/5 transition-transform duration-300 active:scale-[0.99]"
@@ -41,19 +41,19 @@ export function FlatPriceBanner() {
           <div className="absolute inset-0 bg-gradient-to-r from-burgundy via-burgundy/40 to-transparent" />
         </div>
 
-        <div className="relative z-10 max-w-[78%] p-5 sm:max-w-[52%] sm:p-10 lg:p-14">
+        <div className="relative z-10 max-w-[80%] px-6 py-8 sm:max-w-[52%] sm:p-10 lg:p-14">
           <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-gold-light">{flat ? banner.eyebrow : "Prices that make sense"}</p>
-          <h2 id="flat-price-heading" className="mt-2 font-display font-black uppercase leading-[0.82]">
+          <h2 id="flat-price-heading" className="mt-3 font-display font-black uppercase leading-[0.9] sm:mt-2 sm:leading-[0.82]">
             <span className="block text-[2rem] sm:text-5xl">{flat ? banner.headline : "Starting at"}</span>
-            <span className="block text-[4.75rem] text-gold sm:text-[8rem] lg:text-[10rem]">{formatPrice(min)}</span>
+            <span className="mt-2 block text-[4.75rem] text-gold sm:mt-0 sm:text-[8rem] lg:text-[10rem]">{formatPrice(min)}</span>
           </h2>
           {mrp > 0 && (
-            <p className="mt-1 text-sm text-ivory/70">
+            <p className="mt-3 text-sm text-ivory/70 sm:mt-1">
               MRP <span className="line-through">{formatPrice(mrp)}</span>{" "}
               <span className="font-bold text-ivory">· save {Math.round(((mrp - min) / mrp) * 100)}%</span>
             </p>
           )}
-          <ul className="mt-4 space-y-1.5 text-xs text-ivory/80 sm:text-sm">
+          <ul className="mt-6 space-y-2.5 text-xs text-ivory/80 sm:mt-4 sm:space-y-1.5 sm:text-sm">
             {banner.note1 && (
               <li className="flex items-center gap-2">
                 <Truck className="h-4 w-4 flex-shrink-0 text-gold" /> {fillText(banner.note1, config)}
@@ -65,7 +65,7 @@ export function FlatPriceBanner() {
               </li>
             )}
           </ul>
-          <span className="mt-5 inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-5 text-xs font-bold uppercase tracking-[0.14em] text-espresso transition-colors group-hover:bg-gold group-hover:text-white sm:px-7">
+          <span className="mt-7 inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-xs font-bold uppercase tracking-[0.14em] text-espresso transition-colors group-hover:bg-gold group-hover:text-white sm:mt-5 sm:px-7">
             {fillText(banner.cta, config, { count: live.length })} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </span>
         </div>

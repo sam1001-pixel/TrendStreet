@@ -194,3 +194,35 @@ export function verifyRazorpayWebhookSignature({
 
   return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
 }
+
+type RzpPayment = { id: string; order_id: string; status: string; amount: number | string; currency: string };
+
+/**
+ * Asks Razorpay for the payment itself (not the browser): it must belong to this order and be
+ * captured. An authorized-but-not-captured payment is captured here; if that can't happen yet,
+ * the order stays pending and the webhook confirms it when the money is captured.
+ */
+export async function fetchCapturedPayment(
+  client: { payments: { fetch(id: string): Promise<unknown>; capture(id: string, amount: number, currency: string): Promise<unknown> } },
+  paymentId: string,
+  orderId: string
+): Promise<{ state: "captured"; amount: number } | { state: "pending" } | { state: "mismatch" }> {
+  let p = (await client.payments.fetch(paymentId)) as unknown as RzpPayment;
+  if (p.order_id !== orderId) return { state: "mismatch" };
+  if (p.status === "authorized") {
+    try {
+      p = (await client.payments.capture(paymentId, Number(p.amount), p.currency)) as unknown as RzpPayment;
+    } catch {
+      // Already captured by auto-capture, or the bank isn't done yet — read the latest state.
+      p = (await client.payments.fetch(paymentId)) as unknown as RzpPayment;
+    }
+  }
+  return p.status === "captured" ? { state: "captured", amount: Number(p.amount) } : { state: "pending" };
+}
+
+export const dynamic = "force-dynamic";
+
+/**
+ * Browser callback after Razorpay checkout. Confirms the order saved at create-order.
+ * Only the three Razorpay fields are read — the cart, customer and prices are never taken from here.
+ */

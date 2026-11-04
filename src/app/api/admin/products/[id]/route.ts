@@ -3,16 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { getCatalog, refreshStorefront } from "@/lib/catalog";
 import { writeAudit } from "@/lib/audit";
 import { ProductInputError, saveProduct, validateProduct } from "@/lib/admin-products";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { notifyRestock } from "@/lib/stock-alerts";
 
 export const dynamic = "force-dynamic";
 
-type Ctx = { params: { id: string } };
+type Ctx = { params: Promise<{ id: string }> };
 
-export async function PUT(req: NextRequest, { params }: Ctx) {
+export async function PUT(req: NextRequest, ctx: Ctx) {
   const auth = await requireAdminSession(req);
   if (!auth.authorized) return auth.response;
+  const params = await ctx.params;
 
   try {
     const before = (await getCatalog({ includeArchived: true })).products.find((p) => p.id === params.id);
@@ -44,9 +45,10 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: Ctx) {
+export async function DELETE(req: NextRequest, ctx: Ctx) {
   const auth = await requireAdminSession(req);
   if (!auth.authorized) return auth.response;
+  const params = await ctx.params;
 
   try {
     const product = await prisma.product.findUnique({ where: { id: params.id }, select: { name: true } });

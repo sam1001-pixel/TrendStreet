@@ -1,5 +1,5 @@
 import { getCustomerSession } from "@/lib/order-actions";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { getStoreConfig } from "@/lib/store-config-server";
@@ -78,7 +78,8 @@ export async function POST(req: NextRequest) {
       payment: { provider: "CASH_ON_DELIVERY" },
     });
 
-    void sendOrderEmailFromDb(order.id, "Cash on Delivery");
+    const placedId = order.id;
+    after(() => sendOrderEmailFromDb(placedId, "Cash on Delivery").then(() => undefined));
 
     return NextResponse.json({ success: true, orderNumber: order.orderNumber, pricing: order.pricing });
   } catch (err) {

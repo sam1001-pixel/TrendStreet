@@ -57,3 +57,67 @@ export async function consumeCoupon(code: string, tx: Prisma.TransactionClient):
   });
   return res.count === 1;
 }
+
+// ---------------------------------------------------------------------------
+// Per-customer coupon rules (first-order-only, uses per customer)
+// ---------------------------------------------------------------------------
+
+/**
+ * One identity for "the same customer": the email with Gmail's dots and +tags removed (they all
+ * reach the same inbox), and the last 10 digits of the mobile number.
+ */
+export function customerIdentity(email: string, phone: string): { email: string; phoneDigits: string } {
+  let e = email.trim().toLowerCase();
+  const [local, domain] = e.split("@");
+  if (domain === "gmail.com" || domain === "googlemail.com") e = `${local.split("+")[0].replace(/\./g, "")}@gmail.com`;
+  else if (local && domain) e = `${local.split("+")[0]}@${domain}`;
+  return { email: e, phoneDigits: phone.replace(/\D/g, "").slice(-10) };
+}
+
+/** Thrown inside the order transaction when a per-customer coupon rule isn't met. */
+export class CouponRuleError extends Error {}
+
+/**
+ * Enforces firstOrderOnly / perCustomerLimit for `code` inside the order transaction.
+ * Takes per-customer advisory locks first, so two checkouts at the same moment can't both pass.
+ * Orders that count: anything not cancelled/refunded and not a failed online payment
+ * (unpaid online orders still count until they're released).
+ */
+export async function enforceCustomerCouponRules(
+  tx: Prisma.TransactionClient,
+  code: string,
+  customer: { email: string; phone: string }
+): Promise<void> {
+  const rule = await tx.coupon.findUnique({ where: { code }, select: { firstOrderOnly: true, perCustomerLimit: true } });
+  if (!rule || (!rule.firstOrderOnly && rule.perCustomerLimit === null)) return;
+
+  const id = customerIdentity(customer.email, customer.phone);
+  const lockKeys = [`coupon-cust:e:${id.email}`, ...(id.phoneDigits.length === 10 ? [`coupon-cust:p:${id.phoneDigits}`] : [])].sort();
+  for (const k of lockKeys) await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${k}))`;
+
+  // Match the raw email as typed and its canonical form, case-insensitively.
+  const emails = Array.from(new Set([customer.email.trim().toLowerCase(), id.email]));
+  const sameCustomer: Prisma.OrderWhereInput = {
+    OR: [
+      ...emails.map((e) => ({ user: { email: { equals: e, mode: "insensitive" as const } } })),
+      ...(id.phoneDigits.length === 10 ? [{ shippingAddress: { phone: { contains: id.phoneDigits } } }] : []),
+    ],
+  };
+  const counts: Prisma.OrderWhereInput = {
+    status: { notIn: ["CANCELLED", "REFUNDED"] },
+    NOT: { payments: { some: { status: "FAILED" } } },
+  };
+
+  if (rule.firstOrderOnly) {
+    const prior = await tx.order.count({ where: { AND: [sameCustomer, counts] } });
+    if (prior > 0) throw new CouponRuleError(`The code ${code} is only for your first order.`);
+  }
+  if (rule.perCustomerLimit !== null) {
+    const used = await tx.order.count({ where: { AND: [sameCustomer, counts, { promoCode: code }] } });
+    if (used >= rule.perCustomerLimit) {
+      throw new CouponRuleError(
+        rule.perCustomerLimit === 1 ? `You've already used the code ${code}.` : `You've already used the code ${code} ${rule.perCustomerLimit} times.`
+      );
+    }
+  }
+}

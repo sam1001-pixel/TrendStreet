@@ -1,13 +1,54 @@
 /**
- * OFFVYBE — DISTRIBUTED & IN-MEMORY HYBRID RATE LIMITER
+ * OFFVYBE — shared rate limiter.
  *
- * Provides defense-in-depth protection against brute-force, scraping, and resource-exhaustion attacks.
- * Architecture:
- * - High-speed in-memory sliding-window limiter by default
- * - Optional Upstash Redis REST distributed rate limiter when UPSTASH_REDIS_REST_URL is configured
- * - Graceful fallback: Redis connection failures never drop legitimate traffic
- * - Hardened client IP extraction prioritizing trusted CDN & platform proxy headers
+ * Order of backends (the first one that works is used):
+ *   1. Upstash Redis REST — when UPSTASH_REDIS_REST_URL / _TOKEN are set.
+ *   2. PostgreSQL (`rate_limit_buckets` table) — the site's own database, shared by every
+ *      serverless instance. This is the production default when Upstash isn't configured.
+ *   3. In-memory — last resort only (database down, or local tests without DATABASE_URL).
+ *      On serverless each instance has its own memory, so this alone is NOT a real limit.
+ *
+ * All backends use fixed windows: a key may be hit `maxRequests` times per `windowMs`.
+ *
+ * Client IPs: only headers set by our own proxy are trusted (see getClientIp). A client can
+ * never pick its own bucket by sending X-Forwarded-For unless TRUST_PROXY_HEADERS says so.
  */
+
+export interface RateLimitOptions {
+  windowMs: number; // Time window in milliseconds
+  maxRequests: number; // Max requests allowed within the window
+}
+
+export interface RateLimitResult {
+  allowed: boolean;
+  currentCount: number;
+  remaining: number;
+  resetMs: number;
+  isDistributed?: boolean;
+  backend?: "upstash" | "postgres" | "memory";
+}
+
+// Standardized Route Rate Limit Profiles
+export const RATE_LIMIT_CONFIG = {
+  ADMIN_LOGIN: { windowMs: 15 * 60 * 1000, maxRequests: 5 },
+  ORDER_LOOKUP: { windowMs: 15 * 60 * 1000, maxRequests: 10 },
+  COD_ORDER: { windowMs: 10 * 60 * 1000, maxRequests: 5 },
+  CHECKOUT_VALIDATE: { windowMs: 10 * 60 * 1000, maxRequests: 30 },
+  PAYMENT_CREATE: { windowMs: 10 * 60 * 1000, maxRequests: 15 },
+  PAYMENT_VERIFY: { windowMs: 10 * 60 * 1000, maxRequests: 30 },
+  STOREFRONT_SEARCH: { windowMs: 1 * 60 * 1000, maxRequests: 60 },
+  /** Failed customer sign-ins per account (any IP). Only failures count. */
+  CUSTOMER_LOGIN_ACCOUNT: { windowMs: 15 * 60 * 1000, maxRequests: 10 },
+  PASSWORD_RESET_IP: { windowMs: 15 * 60 * 1000, maxRequests: 5 },
+  PASSWORD_RESET_ACCOUNT: { windowMs: 60 * 60 * 1000, maxRequests: 3 },
+  EMAIL_CONFIRM_SEND: { windowMs: 60 * 60 * 1000, maxRequests: 3 },
+  TOKEN_REDEEM: { windowMs: 15 * 60 * 1000, maxRequests: 20 },
+  ADMIN_UPLOAD: { windowMs: 10 * 60 * 1000, maxRequests: 60 },
+};
+
+// ---------------------------------------------------------------------------
+// In-memory fallback
+// ---------------------------------------------------------------------------
 
 interface RateLimitRecord {
   timestamps: number[];
@@ -21,183 +62,261 @@ if (typeof setInterval !== "undefined") {
     const now = Date.now();
     rateLimitStore.forEach((record: RateLimitRecord, key: string) => {
       record.timestamps = record.timestamps.filter((ts: number) => now - ts < 3600000); // retain 1 hr
-      if (record.timestamps.length === 0) {
-        rateLimitStore.delete(key);
-      }
+      if (record.timestamps.length === 0) rateLimitStore.delete(key);
     });
   }, 600000);
-  if (typeof timer.unref === "function") {
-    timer.unref();
-  }
+  if (typeof timer.unref === "function") timer.unref();
 }
 
-export interface RateLimitOptions {
-  windowMs: number; // Time window in milliseconds
-  maxRequests: number; // Max allowed requests per window
-}
-
-export interface RateLimitResult {
-  allowed: boolean;
-  currentCount: number;
-  remaining: number;
-  resetMs: number;
-  isDistributed?: boolean;
-}
-
-// Standardized Route Rate Limit Profiles
-export const RATE_LIMIT_CONFIG = {
-  ADMIN_LOGIN: { windowMs: 15 * 60 * 1000, maxRequests: 5 },
-  ORDER_LOOKUP: { windowMs: 15 * 60 * 1000, maxRequests: 10 },
-  COD_ORDER: { windowMs: 10 * 60 * 1000, maxRequests: 5 },
-  CHECKOUT_VALIDATE: { windowMs: 10 * 60 * 1000, maxRequests: 30 },
-  PAYMENT_CREATE: { windowMs: 10 * 60 * 1000, maxRequests: 15 },
-  STOREFRONT_SEARCH: { windowMs: 1 * 60 * 1000, maxRequests: 60 },
-};
-
-export function resetRateLimit(key: string): void {
-  rateLimitStore.delete(key);
-}
-
-/**
- * Synchronous in-memory sliding-window rate limit check.
- */
+/** Synchronous in-memory sliding-window check (fallback, and used directly by unit tests). */
 export function checkRateLimit(key: string, options: RateLimitOptions): RateLimitResult {
   const now = Date.now();
   const windowStart = now - options.windowMs;
-
   const record = rateLimitStore.get(key) || { timestamps: [] };
-
-  // Filter timestamps within the current sliding window
   const activeTimestamps = record.timestamps.filter((ts) => ts > windowStart);
 
-  // In development, give localhost generous headroom (100 attempts) so developer testing is never blocked
+  // In development, give localhost generous headroom so developer testing is never blocked.
   const effectiveMax =
     process.env.NODE_ENV !== "production" && (key.includes("127.0.0.1") || key.includes("::1") || key.includes("localhost"))
       ? Math.max(options.maxRequests, 100)
       : options.maxRequests;
 
   if (activeTimestamps.length >= effectiveMax) {
-    const oldestTimestamp = activeTimestamps[0];
-    const resetMs = Math.max(0, oldestTimestamp + options.windowMs - now);
-
-    return {
-      allowed: false,
-      currentCount: activeTimestamps.length,
-      remaining: 0,
-      resetMs,
-      isDistributed: false,
-    };
+    const resetMs = Math.max(0, activeTimestamps[0] + options.windowMs - now);
+    return { allowed: false, currentCount: activeTimestamps.length, remaining: 0, resetMs, isDistributed: false, backend: "memory" };
   }
 
-  // Record this request
   activeTimestamps.push(now);
   rateLimitStore.set(key, { timestamps: activeTimestamps });
-
   return {
     allowed: true,
     currentCount: activeTimestamps.length,
     remaining: Math.max(0, effectiveMax - activeTimestamps.length),
     resetMs: options.windowMs,
     isDistributed: false,
+    backend: "memory",
   };
 }
 
+function peekMemory(key: string, options: RateLimitOptions): number {
+  const windowStart = Date.now() - options.windowMs;
+  return (rateLimitStore.get(key)?.timestamps || []).filter((ts) => ts > windowStart).length;
+}
+
+// ---------------------------------------------------------------------------
+// Upstash Redis REST
+// ---------------------------------------------------------------------------
+
+function upstashConfig(): { url: string; token: string } | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token || /replace_with/i.test(url)) return null;
+  return { url, token };
+}
+
+async function upstash(commands: (string | number)[][]): Promise<{ result: unknown }[] | null> {
+  const cfg = upstashConfig();
+  if (!cfg) return null;
+  try {
+    const res = await fetch(`${cfg.url}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${cfg.token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(commands),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as { result: unknown }[];
+  } catch (err) {
+    console.warn("[RateLimit] Upstash unavailable:", (err as Error).message);
+    return null;
+  }
+}
+
+function windowKey(key: string, windowMs: number) {
+  const slot = Math.floor(Date.now() / windowMs);
+  return { redisKey: `ratelimit:${key}:${slot}`, resetMs: (slot + 1) * windowMs - Date.now() };
+}
+
+// ---------------------------------------------------------------------------
+// PostgreSQL (rate_limit_buckets)
+// ---------------------------------------------------------------------------
+
+let pgDisabledUntil = 0;
+
+function postgresAvailable() {
+  return Boolean(process.env.DATABASE_URL) && Date.now() > pgDisabledUntil;
+}
+
+async function pgHit(key: string, options: RateLimitOptions): Promise<{ count: number; resetAt: Date } | null> {
+  if (!postgresAvailable()) return null;
+  try {
+    const { prisma } = await import("./prisma");
+    const resetAt = new Date(Date.now() + options.windowMs);
+    // One atomic statement: create the bucket, or count up — or start a fresh window if the old one ended.
+    const rows = await prisma.$queryRaw<{ count: number; reset_at: Date }[]>`
+      INSERT INTO rate_limit_buckets (key, count, reset_at)
+      VALUES (${key}, 1, ${resetAt})
+      ON CONFLICT (key) DO UPDATE SET
+        count = CASE WHEN rate_limit_buckets.reset_at <= NOW() THEN 1 ELSE rate_limit_buckets.count + 1 END,
+        reset_at = CASE WHEN rate_limit_buckets.reset_at <= NOW() THEN EXCLUDED.reset_at ELSE rate_limit_buckets.reset_at END
+      RETURNING count, reset_at`;
+    // Opportunistic cleanup of long-expired buckets (about 1 call in 200).
+    if (Math.random() < 0.005) {
+      void prisma.$executeRaw`DELETE FROM rate_limit_buckets WHERE reset_at < NOW() - INTERVAL '1 day'`.catch(() => {});
+    }
+    const row = rows[0];
+    return row ? { count: Number(row.count), resetAt: new Date(row.reset_at) } : null;
+  } catch (err) {
+    // Table missing (schema not pushed yet) or database down: stop trying for a minute.
+    pgDisabledUntil = Date.now() + 60_000;
+    console.warn("[RateLimit] PostgreSQL limiter unavailable, using in-memory fallback:", (err as Error).message);
+    return null;
+  }
+}
+
+async function pgPeek(key: string): Promise<{ count: number; resetAt: Date } | null | undefined> {
+  if (!postgresAvailable()) return undefined;
+  try {
+    const { prisma } = await import("./prisma");
+    const row = await prisma.rateLimitBucket.findUnique({ where: { key } });
+    if (!row || row.resetAt.getTime() <= Date.now()) return null;
+    return { count: row.count, resetAt: row.resetAt };
+  } catch {
+    return undefined;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
 /**
- * Async rate limiter that uses Upstash Redis REST when configured,
- * seamlessly falling back to in-memory sliding window if Redis is unconfigured or fails.
+ * Counts one request against `key` and says whether it's allowed.
+ * Uses Upstash, then PostgreSQL, then memory (see top of file).
  */
-export async function checkDistributedRateLimit(
-  key: string,
-  options: RateLimitOptions
-): Promise<RateLimitResult> {
-  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-  if (redisUrl && redisToken && !redisUrl.includes("replace_with")) {
-    try {
-      const windowSeconds = Math.ceil(options.windowMs / 1000);
-      const redisKey = `ratelimit:${key}:${Math.floor(Date.now() / options.windowMs)}`;
-
-      // Atomic INCR with pipeline EXPIRE via Upstash REST
-      const res = await fetch(`${redisUrl}/pipeline`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${redisToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify([
-          ["INCR", redisKey],
-          ["EXPIRE", redisKey, windowSeconds],
-        ]),
-      });
-
-      if (res.ok) {
-        const results = await res.json();
-        const currentCount = Number(results[0]?.result || 1);
-
-        const allowed = currentCount <= options.maxRequests;
-        return {
-          allowed,
-          currentCount,
-          remaining: Math.max(0, options.maxRequests - currentCount),
-          resetMs: options.windowMs,
-          isDistributed: true,
-        };
-      }
-    } catch (redisErr) {
-      console.warn("[RateLimit Distributed Warning]: Redis unavailable, falling back to in-memory limiter.", redisErr);
+export async function checkDistributedRateLimit(key: string, options: RateLimitOptions): Promise<RateLimitResult> {
+  if (upstashConfig()) {
+    const { redisKey, resetMs } = windowKey(key, options.windowMs);
+    const out = await upstash([
+      ["INCR", redisKey],
+      ["PEXPIRE", redisKey, options.windowMs],
+    ]);
+    if (out) {
+      const currentCount = Number(out[0]?.result || 1);
+      return {
+        allowed: currentCount <= options.maxRequests,
+        currentCount,
+        remaining: Math.max(0, options.maxRequests - currentCount),
+        resetMs,
+        isDistributed: true,
+        backend: "upstash",
+      };
     }
   }
 
-  // In-memory fallback
+  const pg = await pgHit(key, options);
+  if (pg) {
+    return {
+      allowed: pg.count <= options.maxRequests,
+      currentCount: pg.count,
+      remaining: Math.max(0, options.maxRequests - pg.count),
+      resetMs: Math.max(0, pg.resetAt.getTime() - Date.now()),
+      isDistributed: true,
+      backend: "postgres",
+    };
+  }
+
   return checkRateLimit(key, options);
 }
 
 /**
- * Hardened client IP extraction.
- * Prioritizes trusted CDN and platform headers (Cloudflare CF-Connecting-IP, Vercel Forwarded-For),
- * followed by X-Real-IP and sanitized X-Forwarded-For.
+ * Reads the current count for `key` without adding to it. Use with recordFailure() for
+ * "only failures count" limits (e.g. wrong passwords per account).
  */
-export function getClientIp(headers: Headers): string {
-  // 1. Cloudflare connecting IP — only when the site really sits behind Cloudflare.
-  //    Otherwise any client can set this header and get a fresh rate-limit bucket per request.
-  if (process.env.TRUST_CLOUDFLARE_IP === "true") {
-    const cfIp = headers.get("cf-connecting-ip");
-    if (cfIp && isValidIp(cfIp)) return cfIp.trim();
+export async function peekRateLimit(key: string, options: RateLimitOptions): Promise<{ blocked: boolean; count: number; resetMs: number }> {
+  if (upstashConfig()) {
+    const { redisKey, resetMs } = windowKey(key, options.windowMs);
+    const out = await upstash([["GET", redisKey]]);
+    if (out) {
+      const count = Number(out[0]?.result || 0);
+      return { blocked: count >= options.maxRequests, count, resetMs };
+    }
   }
-
-  // 2. Vercel edge trusted forwarder (set by Vercel, not by the client)
-  const vercelIp = headers.get("x-vercel-forwarded-for");
-  if (vercelIp && isValidIp(vercelIp)) return vercelIp.split(",")[0].trim();
-
-  // 3. Nginx / AWS ALB direct real IP
-  const realIp = headers.get("x-real-ip");
-  if (realIp && isValidIp(realIp)) return realIp.trim();
-
-  // 4. Standard X-Forwarded-For (take the client-origin first entry, sanitized)
-  const forwardedFor = headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(",")[0].trim();
-    if (isValidIp(firstIp)) return firstIp;
+  const pg = await pgPeek(key);
+  if (pg !== undefined) {
+    const count = pg?.count ?? 0;
+    return { blocked: count >= options.maxRequests, count, resetMs: pg ? Math.max(0, pg.resetAt.getTime() - Date.now()) : 0 };
   }
-
-  return "127.0.0.1";
+  const count = peekMemory(key, options);
+  return { blocked: count >= options.maxRequests, count, resetMs: options.windowMs };
 }
 
+/** Adds one failure to `key` (same counter peekRateLimit reads). */
+export async function recordFailure(key: string, options: RateLimitOptions): Promise<void> {
+  await checkDistributedRateLimit(key, options);
+}
+
+/** Clears a counter (e.g. after a successful sign-in) in every backend. */
+export async function resetRateLimit(key: string): Promise<void> {
+  rateLimitStore.delete(key);
+  if (upstashConfig()) {
+    // Fixed windows: clear the current and previous slot for the common window sizes.
+    const slots = [60_000, 10 * 60_000, 15 * 60_000, 60 * 60_000].map((w) => windowKey(key, w).redisKey);
+    await upstash([["DEL", ...slots]]);
+  }
+  if (postgresAvailable()) {
+    try {
+      const { prisma } = await import("./prisma");
+      await prisma.rateLimitBucket.deleteMany({ where: { key } });
+    } catch {
+      /* best effort */
+    }
+  }
+}
+
+/** Which shared backend is in use — reported by the production configuration check. */
+export function rateLimitBackend(): "upstash" | "postgres" | "memory" {
+  if (upstashConfig()) return "upstash";
+  if (process.env.DATABASE_URL) return "postgres";
+  return "memory";
+}
+
+// ---------------------------------------------------------------------------
+// Client IP
+// ---------------------------------------------------------------------------
+
 /**
- * Validates whether an IP address is syntactically IPv4 or IPv6.
+ * The client's IP, taken only from headers our own proxy sets:
+ * - On Vercel (VERCEL is set), Vercel overwrites X-Real-IP / X-Forwarded-For with the real client
+ *   address, so they can't be forged by the client.
+ * - Behind Cloudflare, set TRUST_CLOUDFLARE_IP=true to use CF-Connecting-IP.
+ * - Behind another reverse proxy, set TRUST_PROXY_HEADERS=true (the proxy must overwrite the header).
+ * - Otherwise the headers are ignored and every request shares one "unknown" bucket — safe, just strict.
  */
+export function getClientIp(headers: Headers): string {
+  if (process.env.TRUST_CLOUDFLARE_IP === "true") {
+    const cfIp = headers.get("cf-connecting-ip");
+    if (cfIp && isValidIp(cfIp.trim())) return cfIp.trim();
+  }
+
+  const trustProxy = Boolean(process.env.VERCEL) || process.env.TRUST_PROXY_HEADERS === "true";
+  if (trustProxy) {
+    const realIp = headers.get("x-real-ip")?.trim();
+    if (realIp && isValidIp(realIp)) return realIp;
+    const vercelIp = headers.get("x-vercel-forwarded-for")?.split(",")[0].trim();
+    if (vercelIp && isValidIp(vercelIp)) return vercelIp;
+    const forwardedFor = headers.get("x-forwarded-for")?.split(",")[0].trim();
+    if (forwardedFor && isValidIp(forwardedFor)) return forwardedFor;
+  }
+
+  // Local development: keep the old behaviour so the dev-only headroom for localhost applies.
+  if (process.env.NODE_ENV !== "production") return "127.0.0.1";
+  return "unknown";
+}
+
 function isValidIp(ip: string): boolean {
-  if (!ip || typeof ip !== "string") return false;
-  const clean = ip.trim();
-  // IPv4 regex
-  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(clean)) {
-    const parts = clean.split(".").map(Number);
-    return parts.every((p) => p >= 0 && p <= 255);
-  }
-  // IPv6 basic regex
-  if (/^[a-fA-F0-9:]{2,39}$/.test(clean) && clean.includes(":")) {
-    return true;
-  }
-  return false;
+  if (!ip || ip.length > 45) return false;
+  const ipv4 = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
+  const ipv6 = /^[0-9a-fA-F:]+$/;
+  return ipv4.test(ip) || (ip.includes(":") && ipv6.test(ip));
 }

@@ -57,9 +57,15 @@ model User {
   name          String?
   phone         String?
   role          Role         @default(CUSTOMER)
+  /// Customer sessions carry this number. Bumping it (password change, password reset,
+  /// "sign out everywhere") makes every existing session for the account invalid.
+  sessionVersion  Int        @default(0)
+  /// Set once the customer proves they own the email (confirmation or password-reset link).
+  emailVerifiedAt DateTime?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
+  authTokens    AuthToken[]
   addresses     Address[]
   orders        Order[]
   cart          Cart?
@@ -342,6 +348,10 @@ model Coupon {
   maxUses         Int?
   usedCount       Int      @default(0)
   expiresAt       DateTime?
+  /// Only for a customer's first order (matched by email or mobile number).
+  firstOrderOnly  Boolean  @default(false)
+  /// How many orders one customer (email or mobile number) may use this code on. Null = no limit.
+  perCustomerLimit Int?
 
   @@map("coupons")
 }
@@ -372,6 +382,8 @@ model SiteSettings {
   nextDropTitle      String?
   /// Delivery charges, COD rules, offers, banner text, social links, trust badges (see src/lib/store-config.ts).
   config             Json?
+  /// Admin sessions signed in before this moment are rejected ("sign out all admin devices").
+  adminSessionsRevokedAt DateTime?
   updatedAt          DateTime @updatedAt
 
   @@map("site_settings")
@@ -450,4 +462,54 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ------------------------------------------------------------------
+// Security tables (added 2026-11-05)
+// ------------------------------------------------------------------
+
+enum AuthTokenPurpose {
+  PASSWORD_RESET
+  EMAIL_VERIFY
+}
+
+/// One-time links sent by email. Only a SHA-256 hash of the token is stored; the token itself
+/// exists only in the email. Single use (usedAt) and short-lived (expiresAt).
+model AuthToken {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   AuthTokenPurpose
+  tokenHash String           @unique
+  /// EMAIL_VERIFY only: the details typed at sign-up, applied when the link is opened
+  /// (so nothing changes on the account until the email owner confirms).
+  payload   Json?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, purpose])
+  @@map("auth_tokens")
+}
+
+/// Shared rate-limit counters, used when Upstash Redis isn't configured, so limits hold
+/// across every serverless instance (an in-memory counter resets per instance).
+model RateLimitBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime @map("reset_at") @db.Timestamptz(3)
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
+}
+
+/// "First time only" markers: an insert succeeds once per key. Used for used TOTP codes,
+/// used recovery codes and processed webhook events.
+model SecurityMarker {
+  key       String   @id
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([expiresAt])
+  @@map("security_markers")
 }

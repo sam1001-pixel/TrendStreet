@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { notifyRestock } from "@/lib/stock-alerts";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { adjustInventoryTransactional, StockAdjustmentReason } from "@/lib/stock-movements";
 import { generateSafeCsv, getSafeExportFilename } from "@/lib/csv-security";
 import { DB_TO_CATEGORY } from "@/lib/catalog";

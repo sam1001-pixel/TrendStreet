@@ -29,6 +29,8 @@ interface Coupon {
   maxUses: number | null;
   usedCount: number;
   expiresAt: string | null;
+  firstOrderOnly?: boolean;
+  perCustomerLimit?: number | null;
 }
 
 export default function AdminDiscountsPage() {
@@ -45,6 +47,8 @@ export default function AdminDiscountsPage() {
     minSpend: 1999,
     maxUses: 100,
     expiresAt: "",
+    firstOrderOnly: false,
+    perCustomerLimit: 1 as number | null,
   });
 
   const fetchCoupons = async () => {
@@ -86,6 +90,8 @@ export default function AdminDiscountsPage() {
         minSpend: 1999,
         maxUses: 100,
         expiresAt: "",
+        firstOrderOnly: false,
+        perCustomerLimit: 1,
       });
       fetchCoupons();
     } catch (err) {
@@ -233,6 +239,11 @@ export default function AdminDiscountsPage() {
                       {" "}
                       / {c.maxUses ? c.maxUses : "∞"}
                     </span>
+                    {(c.firstOrderOnly || c.perCustomerLimit) && (
+                      <span className="mt-1 block text-[10px] font-semibold text-burgundy">
+                        {c.firstOrderOnly ? "First order only" : `${c.perCustomerLimit}× per customer`}
+                      </span>
+                    )}
                   </td>
 
                   <td className="p-3.5 text-center font-mono text-espresso/70 text-[11px]">
@@ -377,6 +388,35 @@ export default function AdminDiscountsPage() {
                     onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
                     className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex min-h-[44px] items-center gap-2 font-bold uppercase tracking-wider text-espresso/80">
+                  <input
+                    type="checkbox"
+                    checked={formData.firstOrderOnly}
+                    onChange={(e) => setFormData({ ...formData, firstOrderOnly: e.target.checked })}
+                    className="h-4 w-4"
+                  />
+                  First order only
+                </label>
+                <div className="space-y-1">
+                  <label htmlFor="per-customer" className="font-bold uppercase tracking-wider text-espresso/80">
+                    Uses per customer
+                  </label>
+                  <input
+                    id="per-customer"
+                    type="number"
+                    min={0}
+                    value={formData.perCustomerLimit ?? 0}
+                    onChange={(e) => {
+                      const n = parseInt(e.target.value, 10);
+                      setFormData({ ...formData, perCustomerLimit: n > 0 ? n : null });
+                    }}
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
+                  />
+                  <p className="text-[10px] text-espresso/60">0 = no limit. Matched by email and mobile number.</p>
                 </div>
               </div>
 

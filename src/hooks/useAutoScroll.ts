@@ -11,7 +11,7 @@ import { RefObject, useEffect } from "react";
  * - Off entirely for visitors who ask their device to reduce motion.
  */
 export function useAutoScroll(
-  ref: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement | null>,
   { interval = 3500, resumeAfter = 5000, enabled = true }: { interval?: number; resumeAfter?: number; enabled?: boolean } = {}
 ) {
   useEffect(() => {

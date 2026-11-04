@@ -11,7 +11,7 @@ import type { NextRequest } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { adminOrderInclude, toAdminOrder } from "@/lib/admin-orders";
-import { CUSTOMER_SESSION_COOKIE, verifyCustomerToken } from "@/lib/customer-auth";
+import { CUSTOMER_SESSION_COOKIE, getValidCustomerSession } from "@/lib/customer-auth";
 import { RETURN_REASONS } from "@/lib/order-client";
 
 export const RETURN_WINDOW_DAYS = 30;
@@ -91,8 +91,16 @@ export function toCustomerOrder(o: CustomerDbOrder) {
 
 export type CustomerOrder = ReturnType<typeof toCustomerOrder>;
 
+/**
+ * The signed-in customer's session, or null. Checks the account in the database too, so a session
+ * ended by a password change or "sign out everywhere" stops working immediately.
+ */
 export async function getCustomerSession(req: NextRequest) {
-  return verifyCustomerToken(req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value);
+  try {
+    return (await getValidCustomerSession(req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value))?.session ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /** Loads an order the caller is allowed to act on, or null (same answer for "missing" and "not yours"). */

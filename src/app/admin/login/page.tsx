@@ -15,6 +15,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState("");
+  const [useRecovery, setUseRecovery] = useState(false);
   const [twoFactor, setTwoFactor] = useState(false);
 
   // Ask for the authenticator code only when two-step login is switched on.
@@ -136,18 +137,42 @@ export default function AdminLoginPage() {
                 <label htmlFor="admin-code" className="text-xs font-bold uppercase tracking-wider text-espresso/70">
                   Authenticator code
                 </label>
-                <input
-                  id="admin-code"
-                  required
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  pattern="[0-9]{6}"
-                  maxLength={6}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="6-digit code"
-                  className="w-full bg-white px-3.5 py-2.5 rounded-xl border border-burgundy/20 text-sm font-mono tracking-[0.4em] text-espresso focus:outline-none focus:border-burgundy"
-                />
+                {useRecovery ? (
+                  <input
+                    id="admin-code"
+                    required
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    maxLength={19}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 19))}
+                    placeholder="XXXX-XXXX-XXXX-XXXX"
+                    className="w-full bg-white px-3.5 py-2.5 rounded-xl border border-burgundy/20 text-sm font-mono tracking-[0.15em] text-espresso focus:outline-none focus:border-burgundy"
+                  />
+                ) : (
+                  <input
+                    id="admin-code"
+                    required
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="6-digit code"
+                    className="w-full bg-white px-3.5 py-2.5 rounded-xl border border-burgundy/20 text-sm font-mono tracking-[0.4em] text-espresso focus:outline-none focus:border-burgundy"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUseRecovery(!useRecovery);
+                    setCode("");
+                  }}
+                  className="min-h-[40px] text-[11px] font-semibold text-burgundy underline"
+                >
+                  {useRecovery ? "Use the 6-digit code instead" : "Lost your phone? Use a recovery code"}
+                </button>
               </div>
             )}
 

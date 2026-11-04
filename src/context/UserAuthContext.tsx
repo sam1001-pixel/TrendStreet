@@ -14,7 +14,7 @@ interface UserAuthContextType {
     email: string;
     phone?: string;
     password: string;
-  }) => Promise<{ success: boolean; message: string }>;
+  }) => Promise<{ success: boolean; message: string; pendingConfirmation?: boolean }>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -133,7 +133,7 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     email: string;
     phone?: string;
     password: string;
-  }): Promise<{ success: boolean; message: string }> => {
+  }): Promise<{ success: boolean; message: string; pendingConfirmation?: boolean }> => {
     try {
       const res = await fetch("/api/auth/customer/register", {
         method: "POST",
@@ -142,6 +142,11 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
 
       const resData = await res.json();
+
+      // Email confirmation is on: nothing is signed in until the link in the email is opened.
+      if (res.ok && resData.success && resData.pendingConfirmation) {
+        return { success: true, pendingConfirmation: true, message: resData.message };
+      }
 
       if (res.ok && resData.success && resData.user) {
         setUser(resData.user);

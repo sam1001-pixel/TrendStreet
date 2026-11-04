@@ -106,7 +106,7 @@ export const Header: React.FC = () => {
 
       <header
         className={`sticky top-0 z-40 w-full border-b transition-all duration-300 ${
-          isScrolled ? "border-burgundy/15 bg-ivory/90 shadow-sm backdrop-blur-md" : "border-transparent bg-ivory"
+          isScrolled ? "border-burgundy/15 bg-ivory shadow-sm sm:bg-ivory/90 sm:backdrop-blur-md" : "border-transparent bg-ivory"
         }`}
       >
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-2 sm:h-[76px] sm:px-6 lg:px-8">

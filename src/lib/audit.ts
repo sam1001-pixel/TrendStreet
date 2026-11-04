@@ -30,7 +30,21 @@ export type AuditAction =
   | "STOCK_ALERTS_SENT"
   | "ORDER_CANCELLED_BY_CUSTOMER"
   | "RETURN_REQUESTED"
-  | "RETURN_STATUS_UPDATE";
+  | "RETURN_STATUS_UPDATE"
+  // Security events (added 2026-11-05)
+  | "ADMIN_LOGIN_BLOCKED"
+  | "ADMIN_RECOVERY_CODE_USED"
+  | "ADMIN_NEW_DEVICE_LOGIN"
+  | "ADMIN_SESSIONS_REVOKED"
+  | "ADMIN_REAUTH_REQUIRED"
+  | "CUSTOMER_PASSWORD_CHANGED"
+  | "CUSTOMER_PASSWORD_RESET_REQUESTED"
+  | "CUSTOMER_PASSWORD_RESET"
+  | "CUSTOMER_SIGNED_OUT_EVERYWHERE"
+  | "CUSTOMER_EMAIL_CONFIRMED"
+  | "CUSTOMER_LOGIN_LOCKED"
+  | "WEBHOOK_SIGNATURE_FAILED"
+  | "PAYMENT_VERIFY_REJECTED";
 
 /** Email of the signed-in admin for this request, or null. */
 export async function getAdminEmail(req: NextRequest): Promise<string | null> {
@@ -40,11 +54,23 @@ export async function getAdminEmail(req: NextRequest): Promise<string | null> {
 
 export async function writeAudit(
   req: NextRequest,
-  entry: { action: AuditAction; entityType: string; entityId?: string | null; metadata?: Record<string, unknown>; actorEmail?: string | null }
+  entry: {
+    action: AuditAction;
+    entityType: string;
+    entityId?: string | null;
+    metadata?: Record<string, unknown>;
+    actorEmail?: string | null;
+    /** For customer security events: the customer's user id (their email isn't copied into the log). */
+    userId?: string | null;
+  }
 ) {
   try {
-    const actorEmail = entry.actorEmail ?? (await getAdminEmail(req));
-    const actor = actorEmail ? await prisma.user.findUnique({ where: { email: actorEmail }, select: { id: true } }) : null;
+    const actorEmail = entry.userId ? null : entry.actorEmail ?? (await getAdminEmail(req));
+    const actor = entry.userId
+      ? { id: entry.userId }
+      : actorEmail
+        ? await prisma.user.findUnique({ where: { email: actorEmail }, select: { id: true } })
+        : null;
     await prisma.auditLog.create({
       data: {
         userId: actor?.id ?? null,

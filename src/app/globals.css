@@ -67,7 +67,7 @@ body {
 }
 
 /* ---- Premium motion layer ---- */
-.font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+.font-display { font-family: var(--font-display); letter-spacing: -0.01em; font-variation-settings: "opsz" 72; }
 /* Film grain: desktop only — a full-screen blended layer is expensive to repaint on phones. */
 @media (min-width: 640px) {
 .grain::after {

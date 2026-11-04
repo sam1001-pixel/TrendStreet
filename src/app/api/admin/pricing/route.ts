@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth";
+import { requireRecentAdminAuth } from "@/lib/admin-guard";
 import { writeAudit } from "@/lib/audit";
 import { refreshStorefront } from "@/lib/catalog";
 
@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic";
  * Body: { price: number (₹), mrp?: number (₹, 0 or below price = no MRP) }
  */
 export async function POST(req: NextRequest) {
-  const auth = await requireAdminSession(req);
+  // Re-prices every product: only within 30 minutes of signing in.
+  const auth = await requireRecentAdminAuth(req);
   if (!auth.authorized) return auth.response;
 
   try {

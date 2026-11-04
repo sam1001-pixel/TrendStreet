@@ -80,3 +80,27 @@ export function toAdminOrder(o: DbOrder): Order {
     estimatedDelivery: o.estimatedDelivery ? o.estimatedDelivery.toISOString().slice(0, 10) : "",
   };
 }
+
+const FULFILMENT = new Set(["CONFIRMED", "PROCESSING", "IN_TRANSIT", "SHIPPED", "DELIVERED"]);
+
+/**
+ * Order status rules (server-side, whatever the admin UI sends):
+ * - an online (Razorpay) order can't move past Pending, or be re-opened, unless the payment was captured;
+ * - refunded orders are final; delivered orders go through Returns instead of being cancelled;
+ * - back to Pending only from Confirmed (undo) or Cancelled (re-open a cash-on-delivery order).
+ * Returns an error message, or null if the move is allowed.
+ */
+export function checkOrderTransition(
+  order: { status: string; payments: { provider: string; status: string }[] },
+  to: string
+): string | null {
+  const online = order.payments.some((p) => p.provider === "RAZORPAY");
+  const paid = order.payments.some((p) => p.status === "CAPTURED");
+  if (order.status === "REFUNDED") return "This order was refunded, so its status can't be changed.";
+  if (to === "CANCELLED" && order.status === "DELIVERED") return "Delivered orders can't be cancelled — use a return instead.";
+  if (to === "PENDING" && !["CONFIRMED", "CANCELLED"].includes(order.status)) return "An order can only go back to Pending from Confirmed or Cancelled.";
+  if ((FULFILMENT.has(to) || (order.status === "CANCELLED" && to !== "CANCELLED")) && online && !paid) {
+    return "This online order hasn't been paid, so it can't be confirmed, shipped or re-opened.";
+  }
+  return null;
+}

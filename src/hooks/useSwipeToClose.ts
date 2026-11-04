@@ -11,7 +11,7 @@ type Direction = "left" | "right" | "down";
  * and a bottom sheet only drags down when its content is scrolled to the top.
  */
 export function useSwipeToClose(
-  ref: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement | null>,
   { direction, onClose, enabled = true }: { direction: Direction; onClose: () => void; enabled?: boolean }
 ) {
   useEffect(() => {

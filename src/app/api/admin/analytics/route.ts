@@ -1,7 +1,7 @@
 import { PLACED_ORDERS_WHERE } from "@/lib/admin-orders";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { generateSafeCsv, getSafeExportFilename } from "@/lib/csv-security";
 import { DB_TO_CATEGORY } from "@/lib/catalog";
 

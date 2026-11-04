@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { writeAudit } from "@/lib/audit";
 import { refreshStorefront } from "@/lib/catalog";
 import { ReviewInputError, validateReview } from "@/lib/admin-reviews";
@@ -8,11 +8,12 @@ import { deleteMedia } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
-type Ctx = { params: { id: string } };
+type Ctx = { params: Promise<{ id: string }> };
 
-export async function PUT(req: NextRequest, { params }: Ctx) {
+export async function PUT(req: NextRequest, ctx: Ctx) {
   const auth = await requireAdminSession(req);
   if (!auth.authorized) return auth.response;
+  const params = await ctx.params;
   try {
     const data = validateReview(await req.json());
     const exists = await prisma.review.findUnique({ where: { id: params.id }, select: { id: true } });
@@ -29,9 +30,10 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 }
 
 /** Deletes the review. `?deleteMedia=1` also removes its video and cover from storage. */
-export async function DELETE(req: NextRequest, { params }: Ctx) {
+export async function DELETE(req: NextRequest, ctx: Ctx) {
   const auth = await requireAdminSession(req);
   if (!auth.authorized) return auth.response;
+  const params = await ctx.params;
   try {
     const review = await prisma.review.findUnique({ where: { id: params.id } });
     if (!review) return NextResponse.json({ error: "Review not found." }, { status: 404 });

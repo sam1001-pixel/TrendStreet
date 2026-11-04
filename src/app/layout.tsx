@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat, Big_Shoulders_Display } from "next/font/google";
+import { Montserrat, Big_Shoulders } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
@@ -14,10 +14,16 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
-const display = Big_Shoulders_Display({
+// Google merged "Big Shoulders Display" into the "Big Shoulders" family (an optical-size axis);
+// Next.js 15 only knows the new name. globals.css pins opsz to 72, which is the old Display cut.
+const display = Big_Shoulders({
   subsets: ["latin"],
+  axes: ["opsz"],
   variable: "--font-display",
   display: "swap",
+  // Next has no fallback metrics for the renamed family yet; use the same fallbacks as globals.css.
+  adjustFontFallback: false,
+  fallback: ["Impact", "sans-serif"],
 });
 import { StoreProvider } from "@/context/StoreContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";

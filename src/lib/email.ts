@@ -11,10 +11,8 @@
  * - Strict PII redaction in logs (customer emails, addresses, phones are masked)
  */
 
-import { PrismaClient } from "@prisma/client";
-
-// Global Prisma instance for audit log deduplication
-const prisma = new PrismaClient();
+// Shared client: a second PrismaClient here opened its own connection pool on every serverless instance.
+import { prisma } from "./prisma";
 
 // In-memory deduplication cache: Set<orderNumber> with 1-hour expiration
 const inMemorySentOrders = new Map<string, number>();

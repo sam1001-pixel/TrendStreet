@@ -29,12 +29,43 @@ function isCrossSiteWrite(req: NextRequest, pathname: string): boolean {
   return req.headers.get("sec-fetch-site") === "cross-site";
 }
 
+/** Endpoints that legitimately receive non-JSON or large bodies. */
+const MULTIPART_ROUTES = new Set(["/api/admin/upload"]);
+const PUBLIC_BODY_LIMIT = 64 * 1024; // 64 KB: a full bag + address is a few KB
+const ADMIN_BODY_LIMIT = 1024 * 1024; // 1 MB: product and settings editors
+
+/**
+ * Cheap checks before any API code runs:
+ * - JSON endpoints only accept `Content-Type: application/json` (form/text posts from other
+ *   sites — a CSRF trick — and odd parsers never reach the handlers);
+ * - bodies over the size limit are refused (Content-Length), instead of being parsed.
+ * File uploads have their own type/size checks in the route.
+ */
+function badBody(req: NextRequest, pathname: string): NextResponse | null {
+  if (!UNSAFE_METHODS.has(req.method)) return null;
+  if (MULTIPART_ROUTES.has(pathname)) return null;
+  const length = Number(req.headers.get("content-length") || 0);
+  const limit = pathname.startsWith("/api/admin/") ? ADMIN_BODY_LIMIT : PUBLIC_BODY_LIMIT;
+  if (length > limit) return NextResponse.json({ error: "Request too large." }, { status: 413 });
+  const hasBody = length > 0 || req.headers.has("transfer-encoding");
+  const type = (req.headers.get("content-type") || "").toLowerCase();
+  if (hasBody && !type.startsWith("application/json")) {
+    return NextResponse.json({ error: "Send the request as JSON." }, { status: 415 });
+  }
+  return null;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const cleanPath = pathname.replace(/\/+$/, "") || "/";
 
   if (cleanPath.startsWith("/api/") && isCrossSiteWrite(req, cleanPath)) {
     return NextResponse.json({ error: "Cross-site request blocked." }, { status: 403 });
+  }
+
+  if (cleanPath.startsWith("/api/")) {
+    const rejected = badBody(req, cleanPath);
+    if (rejected) return rejected;
   }
 
   // Administrative API routes

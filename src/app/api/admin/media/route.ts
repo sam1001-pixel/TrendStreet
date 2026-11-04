@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 import { writeAudit } from "@/lib/audit";
 import { MediaError, blobEnabled, deleteMedia, listMedia } from "@/lib/media";
 

@@ -76,7 +76,7 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
   // Catalogue Component (Clothes Grid)
   const CatalogueSection = (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-labelledby="cat-grid">
-      <div className="sticky top-[64px] z-20 -mx-4 mb-5 space-y-3 border-b border-burgundy/10 bg-ivory/95 px-4 py-3 backdrop-blur sm:top-[76px] sm:mx-0 sm:rounded-2xl sm:border sm:px-4">
+      <div className="sticky top-[64px] z-30 -mx-4 mb-5 space-y-3 border-b border-burgundy/10 bg-ivory px-4 py-3 shadow-[0_6px_12px_-10px_rgba(0,0,0,0.25)] sm:top-[76px] sm:mx-0 sm:rounded-2xl sm:border sm:bg-ivory/95 sm:px-4 sm:shadow-none sm:backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <h2 id="cat-grid" className="font-serif text-lg font-bold text-espresso sm:text-xl">
             {shown.length} {config.category}

@@ -1,3 +1,8 @@
+// Admin uploads are served from Vercel Blob. Set BLOB_PUBLIC_HOSTNAME to your store's host
+// (e.g. "abc123xyz.public.blob.vercel-storage.com") so images from *other* people's Blob stores
+// can't be pushed through this site's image optimizer or shown on its pages.
+const BLOB_HOST = (process.env.BLOB_PUBLIC_HOSTNAME || "").trim() || "*.public.blob.vercel-storage.com";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -19,7 +24,7 @@ const nextConfig = {
       // Admin uploads (Vercel Blob)
       {
         protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
+        hostname: BLOB_HOST,
       },
     ],
   },
@@ -50,8 +55,8 @@ const nextConfig = {
       default-src 'self';
       script-src 'self' ${devEval} 'unsafe-inline' https://checkout.razorpay.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      img-src 'self' blob: data: https://images.unsplash.com https://plus.unsplash.com https://*.public.blob.vercel-storage.com;
-      media-src 'self' blob: https://*.public.blob.vercel-storage.com;
+      img-src 'self' blob: data: https://images.unsplash.com https://plus.unsplash.com https://${BLOB_HOST};
+      media-src 'self' blob: https://${BLOB_HOST};
       font-src 'self' https://fonts.gstatic.com data:;
       frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com;
       connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.com https://*.blob.vercel-storage.com;
@@ -113,9 +118,13 @@ const nextConfig = {
         headers: rootHeaders,
       },
       {
-        // Admin screens and API responses never belong in search results.
+        // Admin screens and API responses never belong in search results, and other sites
+        // can't load them as images/scripts (Cross-Origin-Resource-Policy).
         source: "/(admin|api)/:path*",
-        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+        ],
       },
       {
         // The service worker must always be re-checked so new versions roll out straight away.
@@ -126,7 +135,7 @@ const nextConfig = {
         ],
       },
       {
-        source: "/(api/admin/:path*|api/orders/:path*|api/auth/:path*|api/payment/:path*|admin/:path*|checkout|bag|profile|saved)",
+        source: "/(api/admin/:path*|api/orders/:path*|api/auth/:path*|api/account/:path*|api/payment/:path*|admin/:path*|checkout|bag|profile|saved|reset-password|verify-email)",
         headers: [
           {
             key: "Cache-Control",

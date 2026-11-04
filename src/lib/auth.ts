@@ -10,6 +10,8 @@ export interface SessionPayload {
   expiresAt: number;
   /** Fingerprint of the admin login settings when the session started (see adminCredentialVersion). */
   cv?: string;
+  /** Random session id, so one session can be revoked on sign-out (see lib/admin-guard.ts). */
+  sid?: string;
 }
 
 /**
@@ -40,6 +42,7 @@ export async function signSessionToken(email: string): Promise<string> {
     issuedAt: Date.now(),
     expiresAt: Date.now() + SESSION_MAX_AGE * 1000,
     cv: await adminCredentialVersion(),
+    sid: randomId(),
   };
   return signToken(payload, "admin");
 }
@@ -52,6 +55,30 @@ export async function verifySessionToken(token: string | undefined): Promise<Ses
   if (payload.cv !== (await adminCredentialVersion())) return null;
   if (payload.email !== (process.env.ADMIN_EMAIL || "").toLowerCase().trim()) return null;
   return payload;
+}
+
+function randomId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ---------------------------------------------------------------------------
+// Trusted admin browsers ("device cookie")
+// After a successful sign-in the browser gets a signed, httpOnly cookie. When many failed
+// sign-ins hit the admin account from around the internet, browsers without this cookie are
+// paused — so attackers can't lock the real admin out of the browser they normally use.
+// ---------------------------------------------------------------------------
+
+export const ADMIN_DEVICE_COOKIE = "ts_admin_device";
+export const ADMIN_DEVICE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
+export async function signAdminDeviceToken(email: string): Promise<string> {
+  return signToken({ email, d: randomId(), issuedAt: Date.now(), expiresAt: Date.now() + ADMIN_DEVICE_MAX_AGE * 1000 }, "admin-device");
+}
+
+export async function verifyAdminDeviceToken(token: string | undefined): Promise<boolean> {
+  const p = await verifyToken<{ email: string; expiresAt: number }>(token, "admin-device");
+  return Boolean(p && p.email === (process.env.ADMIN_EMAIL || "").toLowerCase().trim());
 }
 
 /**
@@ -82,28 +109,4 @@ export function timingSafeEqualStr(a: string, b: string): boolean {
 // Admin credential checks live in ./admin-credentials (Node-only: they use PBKDF2), so this module
 // stays safe to import from the Edge middleware.
 
-/**
- * Route-level authorization check for admin API routes, independent of the Edge middleware.
- * Only the httpOnly session cookie is accepted.
- */
-export async function requireAdminSession(
-  req: import("next/server").NextRequest
-): Promise<
-  | { authorized: true; session: SessionPayload }
-  | { authorized: false; response: import("next/server").NextResponse }
-> {
-  const session = await verifySessionToken(req.cookies.get(SESSION_COOKIE_NAME)?.value);
-
-  if (!session) {
-    const { NextResponse } = await import("next/server");
-    return {
-      authorized: false,
-      response: NextResponse.json(
-        { error: "Unauthorized: Valid administrative session token required." },
-        { status: 401 }
-      ),
-    };
-  }
-
-  return { authorized: true, session };
-}
+// Route-level admin checks (with session revocation) live in ./admin-guard (Node runtime only).

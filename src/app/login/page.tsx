@@ -78,7 +78,10 @@ function LoginForm() {
     });
     setLoading(false);
 
-    if (res.success) {
+    if (res.success && res.pendingConfirmation) {
+      setSuccessMsg(res.message);
+      setPassword("");
+    } else if (res.success) {
       setSuccessMsg("Account created — welcome to OFFVYBE!");
       setTimeout(() => {
         window.location.href = callbackUrl;
@@ -198,6 +201,11 @@ function LoginForm() {
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
+              </div>
+              <div className="mt-1.5 text-right">
+                <a href="/reset-password" className="inline-block py-2 text-[11px] font-semibold text-burgundy underline-offset-2 hover:underline">
+                  Forgot password?
+                </a>
               </div>
             </div>
 

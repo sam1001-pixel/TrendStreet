@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCatalog, refreshStorefront } from "@/lib/catalog";
 import { writeAudit } from "@/lib/audit";
 import { ProductInputError, saveProduct, validateProduct } from "@/lib/admin-products";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 
 export const dynamic = "force-dynamic";
 

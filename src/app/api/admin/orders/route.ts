@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { adminOrderInclude, PLACED_ORDERS_WHERE, toAdminOrder } from "@/lib/admin-orders";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
 
 export const dynamic = "force-dynamic";
 

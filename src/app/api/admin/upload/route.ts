@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/auth";
+import { requireAdminSession } from "@/lib/admin-guard";
+import { checkDistributedRateLimit, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
 import {
   MAX_IMAGE_BYTES,
   MAX_SERVER_UPLOAD_BYTES,
@@ -30,6 +31,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const auth = await requireAdminSession(req);
   if (!auth.authorized) return auth.response;
+
+  const limit = await checkDistributedRateLimit(`admin-upload:${auth.session.email}`, RATE_LIMIT_CONFIG.ADMIN_UPLOAD);
+  if (!limit.allowed) return NextResponse.json({ error: "Too many uploads at once. Please wait a few minutes." }, { status: 429 });
+  // Refuse oversized bodies before reading them into memory.
+  const declared = Number(req.headers.get("content-length") || 0);
+  if (declared > (blobEnabled() ? MAX_SERVER_UPLOAD_BYTES : MAX_VIDEO_BYTES) + 1024 * 1024) {
+    return NextResponse.json({ error: "File is too big for this upload method." }, { status: 413 });
+  }
 
   try {
     if (!(req.headers.get("content-type") || "").includes("multipart/form-data")) {

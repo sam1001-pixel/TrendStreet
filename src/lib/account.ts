@@ -51,8 +51,8 @@ export async function requireCustomer(req: NextRequest, writeKey?: string) {
   if (!session) {
     return { ok: false as const, response: NextResponse.json({ error: "Please sign in again." }, { status: 401 }) };
   }
-  const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { id: true, email: true, name: true, phone: true, role: true, passwordHash: true } });
-  if (!user || user.role !== "CUSTOMER" || !user.passwordHash) {
+  const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { id: true, email: true, name: true, phone: true, role: true, passwordHash: true, sessionVersion: true } });
+  if (!user || user.role !== "CUSTOMER" || !user.passwordHash || user.sessionVersion !== (session.sv ?? 0)) {
     return { ok: false as const, response: NextResponse.json({ error: "Please sign in again." }, { status: 401 }) };
   }
   if (writeKey) {
