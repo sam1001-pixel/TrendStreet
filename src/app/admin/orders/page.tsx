@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Package,
@@ -41,8 +42,10 @@ export default function AdminOrdersPage() {
   const [trackingDrafts, setTrackingDrafts] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [search, setSearch] = useState<string>("");
-  // Deep link from Exchanges & returns: /admin/orders?q=TS-…
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const q = new URLSearchParams(window.location.search).get("q");
     if (q) setSearch(q.slice(0, 40));
   }, []);
@@ -429,12 +432,12 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* PRINTABLE PACKING SLIP MODAL */}
-      {activeSlipOrder && (
-        <div className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+      {mounted && activeSlipOrder && createPortal(
+        <div className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-4 overscroll-contain">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-burgundy/15">
               <div>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-burgundy">OFFVYBE Dispatch Manifest</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-burgundy">Trend Street Dispatch Manifest</span>
                 <h3 className="font-serif text-xl font-bold text-espresso">
                   Packing Slip #{activeSlipOrder.orderNumber}
                 </h3>
@@ -507,7 +510,8 @@ export default function AdminOrdersPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

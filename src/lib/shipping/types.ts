@@ -1,5 +1,5 @@
 /**
- * OFFVYBE — CARRIER-AGNOSTIC SHIPPING & LOGISTICS ADAPTER INTERFACES
+ * Trend Street — CARRIER-AGNOSTIC SHIPPING & LOGISTICS ADAPTER INTERFACES
  *
  * Designed to provide a unified logistics interface across domestic carriers in India
  * (Shiprocket, Delhivery, Blue Dart Apex) with full support for serviceability checks,

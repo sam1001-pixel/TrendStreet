@@ -3,8 +3,8 @@ import Link from "next/link";
 import { ShieldCheck, Lock, FileText, Mail, MapPin, ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "Privacy Policy | OFFVYBE",
-  description: "OFFVYBE Privacy Policy in compliance with the Digital Personal Data Protection Act 2023 (DPDP Act) and international data privacy benchmarks.",
+  title: "Privacy Policy | Trend Street",
+  description: "Trend Street Privacy Policy in compliance with the Digital Personal Data Protection Act 2023 (DPDP Act) and international data privacy benchmarks.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
           Effective Date: January 1, 2026 • Last Updated: October 2026
         </p>
         <p className="text-xs text-espresso/80 leading-relaxed">
-          At <strong>OFFVYBE</strong> (&ldquo;OFFVYBE&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;),
+          At <strong>Trend Street</strong> (&ldquo;Trend Street&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;),
           safeguarding your privacy and managing personal data responsibly is foundational to our atelier philosophy.
           This Privacy Policy details how we collect, process, secure, and honor your personal data across our digital platforms
           in compliance with the <strong>Digital Personal Data Protection Act 2023 (DPDP Act, India)</strong>,
@@ -93,7 +93,7 @@ export default function PrivacyPolicyPage() {
             <span>3. Technical Security Safeguards</span>
           </h2>
           <p>
-            OFFVYBE enforces bank-grade defense-in-depth security measures to protect your personal data from unauthorized access, alteration, or disclosure:
+            Trend Street enforces bank-grade defense-in-depth security measures to protect your personal data from unauthorized access, alteration, or disclosure:
           </p>
           <ul className="list-disc pl-5 space-y-2 text-xs text-espresso/75">
             <li><strong>Transport Security:</strong> 256-Bit TLS 1.3 encryption across all public and internal administrative network pathways.</li>
@@ -114,7 +114,7 @@ export default function PrivacyPolicyPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="p-3.5 bg-ivory rounded-xl border border-burgundy/15">
               <strong className="text-burgundy block text-xs">Right to Access Summary:</strong>
-              <span className="text-xs text-espresso/75">Request a summary of your personal data processed by OFFVYBE and third-party identities with whom data was shared.</span>
+              <span className="text-xs text-espresso/75">Request a summary of your personal data processed by Trend Street and third-party identities with whom data was shared.</span>
             </div>
             <div className="p-3.5 bg-ivory rounded-xl border border-burgundy/15">
               <strong className="text-burgundy block text-xs">Right to Correction & Erasure:</strong>
@@ -143,9 +143,9 @@ export default function PrivacyPolicyPage() {
           <div className="p-4 bg-ivory rounded-xl border border-burgundy/10 text-xs space-y-1.5 text-espresso/80">
             <p><strong>Designated Grievance Officer:</strong> Rohan Kulkarni</p>
             <p><strong>Designation:</strong> Head of Legal, Compliance & Information Security</p>
-            <p><strong>Entity:</strong> OFFVYBE</p>
+            <p><strong>Entity:</strong> Trend Street</p>
             <p><strong>Atelier Address:</strong> Plot 42, Waterfield Road, Pali Hill, Bandra West, Mumbai, Maharashtra 400050, India</p>
-            <p><strong>Dedicated Email:</strong> <a href="mailto:grievance@offvybe.in" className="text-burgundy underline font-semibold">grievance@offvybe.in</a></p>
+            <p><strong>Dedicated Email:</strong> <a href="mailto:grievance@trendstreet.in" className="text-burgundy underline font-semibold">grievance@trendstreet.in</a></p>
             <p><strong>Support phone:</strong> +91 98200 12345 (Monday to Saturday, 10:00 AM – 7:00 PM IST)</p>
             <p className="pt-1 text-[11px] text-espresso/60">
               Response SLA: All formal privacy grievances are acknowledged within 24 hours and fully investigated within 15 working days.

@@ -19,9 +19,9 @@ const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
     ],
   },
   {
-    title: "OFFVYBE",
+    title: "Trend Street",
     links: [
-      { label: "Why OFFVYBE", href: "/why-offvybe" },
+      { label: "Why Trend Street", href: "/why-trend-street" },
       { label: "Our story", href: "/about" },
       { label: "Contact us", href: "/contact" },
     ],
@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const phone = siteSettings.contactInfo?.phone || "+91 98200 12345";
-  const mail = siteSettings.contactInfo?.email || "concierge@offvybe.in";
+  const mail = siteSettings.contactInfo?.email || "concierge@trendstreet.in";
   const pathname = usePathname();
   const config = useStoreConfig();
   // Badges and social links come from Admin → Settings; empty social links are simply not shown.
@@ -195,7 +195,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom bar */}
         <div className="flex flex-col-reverse items-center gap-5 border-t border-white/10 pt-6 text-[11px] text-ivory/60 md:flex-row md:justify-between">
-          <p className="text-center">© {new Date().getFullYear()} OFFVYBE</p>
+          <p className="text-center">© {new Date().getFullYear()} Trend Street</p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             <Link href="/privacy-policy" className="py-3 hover:text-gold-light">Privacy</Link>
             <Link href="/terms" className="py-3 hover:text-gold-light">Terms</Link>

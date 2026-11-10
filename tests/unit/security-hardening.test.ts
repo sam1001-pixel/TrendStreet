@@ -59,11 +59,31 @@ const db: any = {
       const e = state.markers.get(where.key);
       return e === undefined ? null : { key: where.key, expiresAt: new Date(e) };
     },
+    upsert: async ({ where, create, update }: Row) => {
+      const val = state.markers.has(where.key) ? update.expiresAt : create.expiresAt;
+      state.markers.set(where.key, new Date(val).getTime());
+      return { key: where.key, expiresAt: new Date(val) };
+    },
+    deleteMany: async () => ({ count: 0 }),
   },
   rateLimitBucket: {
     findUnique: async ({ where }: Row) => {
       const b = state.buckets.get(where.key);
       return b ? { key: where.key, count: b.count, resetAt: new Date(b.resetAt) } : null;
+    },
+    upsert: async ({ where, create, update }: Row) => {
+      const count = state.buckets.has(where.key) ? update.count : create.count;
+      const resetAt = state.buckets.has(where.key) ? update.resetAt : create.resetAt;
+      state.buckets.set(where.key, { count, resetAt: new Date(resetAt).getTime() });
+      return { key: where.key, count, resetAt: new Date(resetAt) };
+    },
+    update: async ({ where, data }: Row) => {
+      const b = state.buckets.get(where.key);
+      if (b) {
+        b.count = data.count;
+        return { key: where.key, count: b.count, resetAt: new Date(b.resetAt) };
+      }
+      return null;
     },
     deleteMany: async ({ where }: Row) => {
       state.buckets.delete(where.key);

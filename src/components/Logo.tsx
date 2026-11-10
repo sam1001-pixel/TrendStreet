@@ -12,21 +12,19 @@ interface LogoProps {
   href?: string;
 }
 
-// PNG lockups made from the OFFVYBE brand sheet (public/brand).
-const HORIZONTAL = { w: 1360, h: 216 };
-const STACKED = { w: 1361, h: 668 };
-
-const HORIZONTAL_HEIGHT = {
-  sm: "h-[18px] sm:h-5",
-  md: "h-[22px] sm:h-7",
-  lg: "h-8 sm:h-9",
-  xl: "h-10 sm:h-12",
+// Trend Street authentic logo lockups
+const LOGO_SRC_MAP = {
+  burgundy: "/trend-street-logo-burgundy.png",
+  crimson: "/trend-street-logo-burgundy.png",
+  ivory: "/trend-street-logo-white.png",
+  gold: "/trend-street-logo-gold.png",
 };
-const STACKED_HEIGHT = {
-  sm: "h-12",
-  md: "h-16 sm:h-20",
-  lg: "h-20 sm:h-24",
-  xl: "h-28 sm:h-32",
+
+const LOGO_HEIGHT = {
+  sm: "h-7 sm:h-8",
+  md: "h-9 sm:h-11",
+  lg: "h-12 sm:h-14",
+  xl: "h-16 sm:h-20",
 };
 
 export const Logo: React.FC<LogoProps> = ({
@@ -36,29 +34,25 @@ export const Logo: React.FC<LogoProps> = ({
   className = "",
   href = "/",
 }) => {
-  const tone = variant === "ivory" || variant === "gold" ? "light" : "dark";
-  const stacked = showTagline;
-  const dim = stacked ? STACKED : HORIZONTAL;
-  const src = stacked ? `/brand/offvybe-logo-stacked-${tone}.png` : `/brand/offvybe-logo-${tone}.png`;
-  const heightClass = (stacked ? STACKED_HEIGHT : HORIZONTAL_HEIGHT)[size] || HORIZONTAL_HEIGHT.md;
+  const src = LOGO_SRC_MAP[variant] || LOGO_SRC_MAP.burgundy;
+  const heightClass = LOGO_HEIGHT[size] || LOGO_HEIGHT.md;
 
   const content = (
     <span className={`inline-flex items-center justify-center select-none ${className}`}>
       <Image
         src={src}
-        alt="OFFVYBE"
-        width={dim.w}
-        height={dim.h}
-        className={`${heightClass} w-auto object-contain`}
+        alt="Trend Street - The Style Hub"
+        width={1179}
+        height={779}
+        className={`${heightClass} w-auto object-contain transition-transform duration-200 hover:scale-[1.02]`}
         priority
-        unoptimized
       />
     </span>
   );
 
   if (href) {
     return (
-      <Link href={href} aria-label="OFFVYBE home" className="inline-flex items-center justify-center">
+      <Link href={href} aria-label="Trend Street home" className="inline-flex items-center justify-center">
         {content}
       </Link>
     );

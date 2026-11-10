@@ -52,7 +52,7 @@ export function OrderCard({ order, email, onUpdated, defaultOpen = false }: { or
 
   const waDigits = config.social.whatsapp || siteSettings.contactInfo?.phone?.replace(/\D/g, "").slice(-10) || "";
   const helpHref = waDigits
-    ? `https://wa.me/91${waDigits}?text=${encodeURIComponent(`Hi OFFVYBE, I need help with order ${order.orderNumber}.`)}`
+    ? `https://wa.me/91${waDigits}?text=${encodeURIComponent(`Hi Trend Street, I need help with order ${order.orderNumber}.`)}`
     : "/contact";
 
   const copyTracking = async () => {
@@ -170,7 +170,7 @@ export function OrderCard({ order, email, onUpdated, defaultOpen = false }: { or
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${RETURN_STYLE[r.status] ?? ""}`}>{r.statusLabel}</span>
               </p>
               <p className="mt-1 text-espresso/60">{r.reason} · {fmtDate(r.createdAt)}</p>
-              {r.adminNote && <p className="mt-1 rounded-lg bg-white p-2 text-espresso">OFFVYBE: {r.adminNote}</p>}
+              {r.adminNote && <p className="mt-1 rounded-lg bg-white p-2 text-espresso">Trend Street: {r.adminNote}</p>}
             </li>
           ))}
         </ul>

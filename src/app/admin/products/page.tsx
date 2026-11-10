@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Plus,
@@ -35,6 +36,11 @@ export default function AdminProductsPage() {
   const [stockFilter, setStockFilter] = useState<"All" | "InStock" | "LowStock" | "OutOfStock" | "Hidden">("All");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Quick inline stock increment/decrement
   const handleStockAdjust = (p: Product, delta: number) => {
@@ -472,12 +478,12 @@ export default function AdminProductsPage() {
       </div>
 
       {/* ADD PRODUCT MODAL */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      {mounted && isAddModalOpen && createPortal(
+        <div className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overscroll-contain">
           <div className="bg-ivory rounded-3xl max-w-2xl w-full p-5 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
               <h3 className="font-serif text-xl font-bold text-espresso">
-                Add New Garment to OFFVYBE
+                Add New Garment to Trend Street
               </h3>
               <button onClick={() => setIsAddModalOpen(false)} className="text-espresso/60 hover:text-burgundy">
                 <X className="w-5 h-5" />
@@ -745,12 +751,13 @@ export default function AdminProductsPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* EDIT PRODUCT MODAL */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      {mounted && editingProduct && createPortal(
+        <div className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overscroll-contain">
           <div className="bg-ivory rounded-3xl max-w-2xl w-full p-5 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
               <h3 className="font-serif text-xl font-bold text-espresso">
@@ -1052,7 +1059,8 @@ export default function AdminProductsPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

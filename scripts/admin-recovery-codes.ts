@@ -8,7 +8,7 @@
 import { generateRecoveryCodes, hashRecoveryCode } from "../src/lib/admin-mfa";
 
 const codes = generateRecoveryCodes(10);
-console.log("\nOFFVYBE — admin recovery codes (each works once)\n");
+console.log("\nTrend Street — admin recovery codes (each works once)\n");
 codes.forEach((c, i) => console.log(`  ${String(i + 1).padStart(2, " ")}. ${c}`));
 console.log("\nSave these somewhere safe (password manager or printed). They are NOT stored anywhere else.\n");
 console.log("Add this to Vercel → Settings → Environment Variables (Production), then redeploy:\n");

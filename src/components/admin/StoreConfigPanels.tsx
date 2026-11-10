@@ -249,10 +249,10 @@ export function SocialPanel({ config, onChange }: Props) {
   const so = config.social;
   const set = (patch: Partial<StoreConfig["social"]>) => onChange({ ...config, social: { ...so, ...patch } });
   const fields: [keyof StoreConfig["social"], string, string][] = [
-    ["instagram", "Instagram", "https://instagram.com/offvybe"],
-    ["facebook", "Facebook", "https://facebook.com/offvybe"],
-    ["x", "X / Twitter", "https://x.com/offvybe"],
-    ["youtube", "YouTube", "https://youtube.com/@offvybe"],
+    ["instagram", "Instagram", "https://instagram.com/trendstreet"],
+    ["facebook", "Facebook", "https://facebook.com/trendstreet"],
+    ["x", "X / Twitter", "https://x.com/trendstreet"],
+    ["youtube", "YouTube", "https://youtube.com/@trendstreet"],
   ];
   return (
     <div className={box}>

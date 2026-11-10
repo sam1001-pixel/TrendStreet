@@ -19,7 +19,7 @@ interface AdminAuthContextType {
 const INITIAL_ACCESS_REGISTER: AdminAccessRecord[] = [
   {
     adminId: 1,
-    systemOrTool: "OFFVYBE Core Storefront & CMS",
+    systemOrTool: "Trend Street Core Storefront & CMS",
     category: "Operations",
     mainAdmin: "Sujal Solanki",
     backupAdmin: "Radha Solanki",
@@ -32,7 +32,7 @@ const INITIAL_ACCESS_REGISTER: AdminAccessRecord[] = [
     renewalDate: "2027-01-15",
     companyOwnedAccount: true,
     sharedLogin: false,
-    passwordManagerEntry: "1Password Atelier Vault / OFFVYBE Root",
+    passwordManagerEntry: "1Password Atelier Vault / Trend Street Root",
     twoFactorOn: true,
     lastAccessReview: "2026-10-01",
     nextAccessReview: "2027-01-01",
@@ -50,7 +50,7 @@ const INITIAL_ACCESS_REGISTER: AdminAccessRecord[] = [
     department: "Supply Chain",
     accessLevel: "Full",
     numberOfAdminUsers: 3,
-    billingOwner: "OFFVYBE",
+    billingOwner: "Trend Street",
     plan: "Global Freight Pro",
     seats: 6,
     renewalDate: "2027-03-30",

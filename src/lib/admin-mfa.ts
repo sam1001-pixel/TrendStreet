@@ -33,6 +33,10 @@ export function normalizeRecoveryCode(raw: string): string {
 }
 
 export function hashRecoveryCode(raw: string): string {
+  return crypto.createHash("sha256").update(`trendstreet-admin-recovery:${normalizeRecoveryCode(raw)}`).digest("hex");
+}
+
+function hashRecoveryCodeLegacy(raw: string): string {
   return crypto.createHash("sha256").update(`offvybe-admin-recovery:${normalizeRecoveryCode(raw)}`).digest("hex");
 }
 
@@ -73,9 +77,10 @@ export async function verifySecondFactor(code: unknown): Promise<SecondFactorRes
   const normalized = normalizeRecoveryCode(trimmed);
   if (normalized.length !== 16) return { ok: false };
   const candidate = hashRecoveryCode(normalized);
+  const legacyCandidate = hashRecoveryCodeLegacy(normalized);
   let match: string | null = null;
   for (const h of configuredRecoveryHashes()) {
-    if (crypto.timingSafeEqual(Buffer.from(h), Buffer.from(candidate))) match = h;
+    if (crypto.timingSafeEqual(Buffer.from(h), Buffer.from(candidate)) || crypto.timingSafeEqual(Buffer.from(h), Buffer.from(legacyCandidate))) match = h;
   }
   if (!match) return { ok: false };
   return (await claimOnce(`admin-recovery:${match}`, FOREVER_MS)) ? { ok: true, method: "recovery" } : { ok: false };

@@ -357,7 +357,7 @@ export function TrackOrder() {
                         {r.kind === "EXCHANGE" ? "Exchange" : "Return"} request · <span className="text-burgundy">{r.statusLabel}</span>
                       </p>
                       <p className="mt-0.5 text-espresso/60">{r.reason}</p>
-                      {r.adminNote && <p className="mt-1 rounded-lg bg-white p-2 text-espresso">OFFVYBE: {r.adminNote}</p>}
+                      {r.adminNote && <p className="mt-1 rounded-lg bg-white p-2 text-espresso">Trend Street: {r.adminNote}</p>}
                     </li>
                   ))}
                 </ul>

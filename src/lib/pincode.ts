@@ -1,5 +1,5 @@
 /**
- * OFFVYBE — India-First Postal Logistics & PIN Code Serviceability Engine
+ * Trend Street — India-First Postal Logistics & PIN Code Serviceability Engine
  * Supports 6-digit Indian PIN codes, postal circle detection, courier transit estimation,
  * and Cash-on-Delivery (COD) eligibility validation.
  */

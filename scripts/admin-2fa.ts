@@ -9,7 +9,7 @@ import { generateTotpSecret, otpauthUrl, totpCode } from "../src/lib/totp";
 const account = (process.env.ADMIN_EMAIL || process.argv[2] || "admin").toLowerCase();
 const secret = generateTotpSecret();
 
-console.log("\nOFFVYBE — two-step admin login\n");
+console.log("\nTrend Street — two-step admin login\n");
 console.log("1. In your authenticator app choose “Enter a setup key” and type:");
 console.log(`     Account: ${account}`);
 console.log(`     Key:     ${secret.match(/.{1,4}/g)!.join(" ")}`);

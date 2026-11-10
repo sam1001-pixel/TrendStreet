@@ -1,5 +1,5 @@
 /**
- * OFFVYBE — "Notify me" restock alerts and "Remind me" next-drop alerts.
+ * Trend Street — "Notify me" restock alerts and "Remind me" next-drop alerts.
  *
  * Shoppers leave an email and/or WhatsApp number. Emails go out automatically through Resend
  * (when RESEND_API_KEY is set); WhatsApp-only sign-ups are listed in Admin → Drop alerts with a
@@ -69,7 +69,7 @@ function emailHtml(heading: string, body: string, cta: string, url: string, imag
 <table role="presentation" width="100%" style="max-width:480px;background:#fff;border-radius:16px;overflow:hidden">
 ${image ? `<tr><td><img src="${escapeHtml(image)}" alt="" width="480" style="display:block;width:100%;height:auto"></td></tr>` : ""}
 <tr><td style="padding:24px">
-<p style="margin:0 0 4px;font-size:12px;letter-spacing:3px;color:#b30015;font-weight:bold">OFFVYBE</p>
+<p style="margin:0 0 4px;font-size:12px;letter-spacing:3px;color:#b30015;font-weight:bold">Trend Street</p>
 <h1 style="margin:0 0 12px;font-size:22px">${escapeHtml(heading)}</h1>
 <p style="margin:0 0 20px;font-size:15px;line-height:1.5;color:#333">${escapeHtml(body)}</p>
 <a href="${escapeHtml(url)}" style="display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px;font-size:14px">${escapeHtml(cta)}</a>

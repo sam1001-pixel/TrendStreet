@@ -95,7 +95,7 @@ export async function createRazorpayOrder({
     notes: {
       ...notes,
       environment: env.isTestMode ? "test" : "live",
-      platform: "OFFVYBE",
+      platform: "Trend Street",
     },
   };
 

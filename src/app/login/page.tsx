@@ -82,7 +82,7 @@ function LoginForm() {
       setSuccessMsg(res.message);
       setPassword("");
     } else if (res.success) {
-      setSuccessMsg("Account created — welcome to OFFVYBE!");
+      setSuccessMsg("Account created — welcome to Trend Street!");
       setTimeout(() => {
         window.location.href = callbackUrl;
       }, 500);

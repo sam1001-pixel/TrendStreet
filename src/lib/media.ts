@@ -1,5 +1,5 @@
 /**
- * OFFVYBE — media storage for admin uploads (product photos, product videos, video reviews).
+ * Trend Street — media storage for admin uploads (product photos, product videos, video reviews).
  *
  * Production: Vercel Blob (set BLOB_READ_WRITE_TOKEN — create a Blob store in the Vercel dashboard
  * and connect it to the project; Vercel adds the token automatically). Large videos are uploaded

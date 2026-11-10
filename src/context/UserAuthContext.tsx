@@ -111,7 +111,7 @@ export const UserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         } catch (_) {}
         return {
           success: true,
-          message: data.message || "Welcome back to OFFVYBE.",
+          message: data.message || "Welcome back to Trend Street.",
         };
       }
 

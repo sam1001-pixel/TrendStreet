@@ -88,8 +88,8 @@ const DEFAULT_USER: UserProfile = {
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   config: DEFAULT_STORE_CONFIG,
   offerCoupon: null,
-  storeName: "OFFVYBE",
-  storeTagline: "Wear Your Own Vibe",
+  storeName: "Trend Street",
+  storeTagline: "The Style Hub",
   topAnnouncement: {
     enabled: true,
     text: "Autumn / Winter 2026 Drops Live • Complimentary Express Courier Across India on Orders Above ₹1,999 • All-Inclusive GST",
@@ -101,7 +101,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     titleLine1: "Oversized Silhouettes.",
     titleLine2: "Modern Distinction.",
     subtitle:
-      "OFFVYBE redefines contemporary Indian menswear through heavyweight drape, architectural boxy fits, Okayama selvedge denim jeans, and handcrafted flight jackets.",
+      "Trend Street redefines contemporary Indian menswear through heavyweight drape, architectural boxy fits, Okayama selvedge denim jeans, and handcrafted flight jackets.",
     primaryBtnText: "Explore The Drops",
     primaryBtnLink: "/shop",
     secondaryBtnText: "New Arrivals",
@@ -134,7 +134,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     { code: "FREESHIP", discountPercent: 0, description: "Complimentary priority courier delivery across India." },
   ],
   contactInfo: {
-    email: "concierge@offvybe.in",
+    email: "concierge@trendstreet.in",
     phone: "+91 98200 12345",
     address: "Atelier 4, Pali Hill Road, Bandra West, Mumbai 400050, India",
     hours: "Monday – Saturday: 10:00 AM – 8:00 PM IST",
@@ -190,7 +190,7 @@ const INITIAL_ORDERS: Order[] = [
     promoCode: "TREND10",
     customer: {
       fullName: "Aarav Sharma",
-      email: "aarav.sharma@offvybe.in",
+      email: "aarav.sharma@trendstreet.in",
       phone: "+91 98200 12345",
       address: "Flat 402, Sea Green Apartments, Bandra West",
       city: "Mumbai",
@@ -225,7 +225,7 @@ const INITIAL_ORDERS: Order[] = [
     total: 8999,
     customer: {
       fullName: "Aarav Sharma",
-      email: "aarav.sharma@offvybe.in",
+      email: "aarav.sharma@trendstreet.in",
       phone: "+91 98200 12345",
       address: "Flat 402, Sea Green Apartments, Bandra West",
       city: "Mumbai",
@@ -309,7 +309,7 @@ export const StoreProvider: React.FC<{
       if (storedUser) {
         const parsed = JSON.parse(storedUser) as UserProfile;
         // Older builds stored a sample profile ("Aarav Sharma") in every browser; discard it.
-        const isSample = parsed?.email === "aarav.sharma@offvybe.in";
+        const isSample = parsed?.email === "aarav.sharma@offvybe.in" || parsed?.email === "aarav.sharma@trendstreet.in";
         if (!isSample) setUser({ ...DEFAULT_USER, ...parsed, measurements: { ...DEFAULT_USER.measurements, ...(parsed.measurements || {}) } });
       }
     } catch (e) {
@@ -542,11 +542,11 @@ export const StoreProvider: React.FC<{
       reviews: [
         {
           id: `rev-${Date.now()}`,
-          author: "OFFVYBE",
+          author: "Trend Street",
           rating: 5,
           date: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
           title: "Craftsmanship Certified",
-          comment: "Inspected and certified by OFFVYBE.",
+          comment: "Inspected and certified by Trend Street.",
           verified: true,
         },
       ],

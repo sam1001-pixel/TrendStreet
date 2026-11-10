@@ -164,7 +164,7 @@ export function AdminSidebar({
                   {adminName || "Atelier Admin"}
                 </span>
                 <span className="text-[10px] text-gold font-mono truncate block">
-                  {adminEmail || "admin@offvybe.in"}
+                  {adminEmail || "admin@trendstreet.in"}
                 </span>
               </div>
             </div>

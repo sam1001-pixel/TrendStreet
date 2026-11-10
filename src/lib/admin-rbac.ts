@@ -1,5 +1,5 @@
 /**
- * OFFVYBE — Role-Based Access Control (RBAC) System
+ * Trend Street — Role-Based Access Control (RBAC) System
  * Provides least-privilege permissions matrix for atelier staff and administrators.
  */
 

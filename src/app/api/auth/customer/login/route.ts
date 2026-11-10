@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     const token = await signCustomerToken({ id: customer.id, email: customer.email, name: customer.name, sessionVersion: customer.sessionVersion });
     const response = NextResponse.json({
       success: true,
-      message: "Welcome back to OFFVYBE.",
+      message: "Welcome back to Trend Street.",
       user: { id: customer.id, email: customer.email, name: customer.name, phone: customer.phone, role: "CUSTOMER" },
     });
     setCustomerSessionCookie(response, req, token);

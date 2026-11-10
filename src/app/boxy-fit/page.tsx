@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CategoryLanding, type CategoryConfig } from "@/components/CategoryLanding";
 
 export const metadata: Metadata = {
-  title: "Boxy Fit Shirts, Knits & Tees | OFFVYBE",
+  title: "Boxy Fit Shirts, Knits & Tees | Trend Street",
   description: "Cropped, square-cut boxy shirts, knits and tees with wide bodies and structured collars.",
   alternates: { canonical: "/boxy-fit" },
 };

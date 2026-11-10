@@ -1,5 +1,5 @@
 /**
- * OFFVYBE — Transactional Stock Adjustment & Movement Ledger Helper
+ * Trend Street — Transactional Stock Adjustment & Movement Ledger Helper
  */
 import { Prisma } from "@prisma/client";
 

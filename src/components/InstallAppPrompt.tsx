@@ -28,7 +28,7 @@ const write = (k: string, v: string) => {
 
 /**
  * Registers the service worker and, for returning phone visitors, offers
- * "Add OFFVYBE to your home screen". Android/Chrome gets the real install button;
+ * "Add Trend Street to your home screen". Android/Chrome gets the real install button;
  * iPhone Safari (which has no install button) gets the two-step Share → Add to Home Screen hint.
  * Shown from the 2nd visit, never on product/checkout pages, and snoozed for 3 weeks when closed.
  */
@@ -103,13 +103,13 @@ export function InstallAppPrompt() {
   return (
     <div
       role="dialog"
-      aria-label="Add OFFVYBE to your home screen"
+      aria-label="Add Trend Street to your home screen"
       className="fixed inset-x-3 bottom-[calc(64px+env(safe-area-inset-bottom))] z-[45] animate-in fade-in slide-in-from-bottom-4 duration-300 md:hidden"
     >
       <div className="flex items-center gap-3 rounded-2xl bg-espresso p-3 text-ivory shadow-2xl ring-1 ring-white/10">
         <Image src="/icons/icon-192.png" alt="" width={44} height={44} className="h-11 w-11 flex-shrink-0 rounded-xl" />
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-bold">Get the OFFVYBE app</p>
+          <p className="text-[13px] font-bold">Get the Trend Street app</p>
           {mode === "android" ? (
             <p className="text-xs text-ivory/75">One tap from your home screen. First to know about drops.</p>
           ) : (

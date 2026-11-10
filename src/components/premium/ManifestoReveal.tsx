@@ -24,7 +24,7 @@ export function ManifestoReveal() {
 
   return (
     <section ref={ref} className="mx-auto max-w-6xl px-4 sm:px-8">
-      <p className="mb-6 font-mono text-xs text-burgundy">Why OFFVYBE</p>
+      <p className="mb-6 font-mono text-xs text-burgundy">Why Trend Street</p>
       <p className="font-serif text-3xl leading-[1.2] text-stone-950 sm:text-5xl lg:text-6xl">
         {reduce
           ? TEXT

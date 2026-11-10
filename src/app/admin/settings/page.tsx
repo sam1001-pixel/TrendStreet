@@ -120,7 +120,7 @@ export default function AdminSettingsPage() {
   const handleReset = () => {
     if (
       window.confirm(
-        "Are you sure you want to restore the default settings for OFFVYBE? All custom hero headlines, announcement bar, and promotional codes will be reset."
+        "Are you sure you want to restore the default settings for Trend Street? All custom hero headlines, announcement bar, and promotional codes will be reset."
       )
     ) {
       void resetSiteSettings();

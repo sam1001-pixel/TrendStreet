@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
               <Shield className="w-3.5 h-3.5 text-gold" /> Atelier Administrator Portal
             </span>
             <p className="text-xs text-ivory/60 mt-1">
-              Restricted executive access for OFFVYBE operations & access register
+              Restricted executive access for Trend Street operations & access register
             </p>
           </div>
         </div>

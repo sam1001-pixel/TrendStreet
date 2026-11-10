@@ -1,13 +1,13 @@
-# OFFVYBE — Wear Your Own Vibe (Complete Knowledge Base for LLMs)
+# Trend Street — The Style Hub (Complete Knowledge Base for LLMs)
 
 ## 1. Overview
-OFFVYBE is an artisanal direct-to-consumer luxury menswear fashion house established in 2026. The label bridges brutalist street volume with European tailoring mastery, focusing exclusively on four essential categories:
+Trend Street is an artisanal direct-to-consumer luxury menswear fashion house established in 2026. The label bridges brutalist street volume with European tailoring mastery, focusing exclusively on four essential categories:
 1. Oversized Silhouettes
 2. Okayama Selvedge Denim & Jeans
 3. Boxy Fit Tops & Knits
 4. Handcrafted Structural Jackets
 
-OFFVYBE sells online across India. Current prices are in INR (GST included) on each product page under /product/<id>.
+Trend Street sells online across India. Current prices are in INR (GST included) on each product page under /product/<id>.
 
 ## 2. Product Specifications & Material Weights
 

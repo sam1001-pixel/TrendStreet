@@ -3,8 +3,8 @@ import Link from "next/link";
 import { RotateCcw, CheckCircle, PackageCheck, AlertCircle, ArrowLeft, RefreshCw } from "lucide-react";
 
 export const metadata = {
-  title: "30-Day Return & Exchange Policy | OFFVYBE",
-  description: "Complimentary 30-day doorstep return and size exchange policy for OFFVYBE menswear across India.",
+  title: "30-Day Return & Exchange Policy | Trend Street",
+  description: "Complimentary 30-day doorstep return and size exchange policy for Trend Street menswear across India.",
 };
 
 export default function ReturnsPolicyPage() {
@@ -32,7 +32,7 @@ export default function ReturnsPolicyPage() {
           Doorstep Reverse Pickup across India • Zero Reverse Logistics Fees
         </p>
         <p className="text-xs text-espresso/80 leading-relaxed">
-          We want you to be entirely satisfied with the drape, silhouette, and tactile feel of every OFFVYBE garment.
+          We want you to be entirely satisfied with the drape, silhouette, and tactile feel of every Trend Street garment.
           If a size is not ideal or a piece does not suit your sartorial vision, we offer complimentary 30-day doorstep returns and exchanges.
         </p>
       </div>
@@ -50,7 +50,7 @@ export default function ReturnsPolicyPage() {
               <span className="w-7 h-7 rounded-full bg-burgundy text-gold font-bold text-xs flex items-center justify-center">1</span>
               <h3 className="font-serif font-bold text-espresso text-sm">Initiate Request</h3>
               <p className="text-xs text-espresso/70">
-                Log into your client profile or email concierge@offvybe.in with your order number and requested size swap or return.
+                Log into your client profile or email concierge@trendstreet.in with your order number and requested size swap or return.
               </p>
             </div>
 
@@ -145,10 +145,10 @@ export default function ReturnsPolicyPage() {
               Go to Profile & Orders
             </Link>
             <a
-              href="mailto:returns@offvybe.in"
+              href="mailto:returns@trendstreet.in"
               className="py-2.5 px-5 border border-burgundy text-burgundy hover:bg-burgundy/5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
             >
-              Email returns@offvybe.in
+              Email returns@trendstreet.in
             </a>
           </div>
         </section>

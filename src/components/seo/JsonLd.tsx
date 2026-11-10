@@ -10,11 +10,11 @@ export const StoreJsonLd: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "OnlineStore",
     name: SITE_NAME,
-    alternateName: "Wear Your Own Vibe",
+    alternateName: "The Style Hub",
     description:
       "Indian menswear label for oversized tees and hoodies, boxy fit shirts, denim and jackets, shipped across India.",
     url: SITE_URL,
-    logo: `${SITE_URL}/brand/offvybe-logo-dark.png`,
+    logo: `${SITE_URL}/trend-street-logo-burgundy.png`,
     currenciesAccepted: "INR",
     paymentAccepted: "UPI, Credit Card, Debit Card, Net Banking, Cash on Delivery",
     areaServed: { "@type": "Country", name: "India" },
