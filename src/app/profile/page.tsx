@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { User, Package, MapPin, Ruler, Check, Trash2, Plus, Truck, Heart, ShoppingBag, Sparkles, LogOut, LogIn, Cloud, Smartphone } from "lucide-react";
+import { User, Package, MapPin, Check, Trash2, Plus, Truck, Heart, ShoppingBag, Sparkles, LogOut, LogIn, Cloud, Smartphone } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { useUserAuth } from "@/context/UserAuthContext";
 import { useAccount } from "@/context/AccountContext";
@@ -12,7 +12,7 @@ import { AccountSecurity } from "@/components/AccountSecurity";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states";
 import type { UserProfile } from "@/types/store";
 
-type Tab = "orders" | "details" | "addresses" | "fit";
+type Tab = "orders" | "details" | "addresses";
 type Address = UserProfile["savedAddresses"][number];
 
 const input =
@@ -25,9 +25,8 @@ function ProfileContent() {
   const { user: authUser, isAuthenticated, logout } = useUserAuth();
   const params = useSearchParams();
   const initialTab = (params.get("tab") as Tab) || "orders";
-  const [tab, setTab] = useState<Tab>(["orders", "details", "addresses", "fit"].includes(initialTab) ? initialTab : "orders");
+  const [tab, setTab] = useState<Tab>(["orders", "details", "addresses"].includes(initialTab) ? initialTab : "orders");
   const [details, setDetails] = useState({ name: user.name, email: user.email, phone: user.phone });
-  const [fit, setFit] = useState(user.measurements);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,8 +39,7 @@ function ProfileContent() {
     const activeEmail = authUser?.email || user.email;
     const activePhone = authUser?.phone || user.phone;
     setDetails({ name: activeName, email: activeEmail, phone: activePhone });
-    setFit(user.measurements);
-  }, [user.name, user.email, user.phone, user.measurements, authUser]);
+  }, [user.name, user.email, user.phone, authUser]);
 
   const flash = (m: string) => {
     setSavedMsg(m);
@@ -101,7 +99,6 @@ function ProfileContent() {
     { id: "orders", label: `Orders (${orders.length})`, icon: Package },
     { id: "details", label: "Details", icon: User },
     { id: "addresses", label: `Addresses (${user.savedAddresses.length})`, icon: MapPin },
-    { id: "fit", label: "My sizes", icon: Ruler },
   ];
 
   return (
@@ -126,7 +123,7 @@ function ProfileContent() {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="font-serif text-2xl font-bold sm:text-3xl">{user.name ? `Hi, ${user.name.split(" ")[0]}` : "Your account"}</h1>
-            <p className={`mt-0.5 text-xs text-ivory/70 ${user.email ? "truncate" : ""}`}>{user.email || (isAuthenticated || isDemo ? "Add your details once and checkout fills itself in." : "Sign in to track orders, save your sizes and check out faster.")}</p>
+            <p className={`mt-0.5 text-xs text-ivory/70 ${user.email ? "truncate" : ""}`}>{user.email || (isAuthenticated || isDemo ? "Add your details once and checkout fills itself in." : "Sign in to track orders and check out faster.")}</p>
           </div>
           {isAuthenticated ? (
             <div className="flex flex-col gap-2 sm:items-end">
@@ -197,12 +194,11 @@ function ProfileContent() {
       )}
 
       {/* Quick actions */}
-      <nav aria-label="Account shortcuts" className="grid grid-cols-4 gap-2">
+      <nav aria-label="Account shortcuts" className="grid grid-cols-3 gap-2">
         {[
           { label: "Track", href: "/track", icon: Truck, n: 0 },
           { label: "Saved", href: "/saved", icon: Heart, n: wishlist.length },
           { label: "Bag", action: () => setIsCartOpen(true), icon: ShoppingBag, n: cartItemsCount },
-          { label: "Sizes", action: () => setTab("fit"), icon: Ruler, n: 0 },
         ].map(({ label: l, href, action, icon: Icon, n }) => {
           const inner = (
             <>
@@ -388,34 +384,6 @@ function ProfileContent() {
         </div>
       )}
 
-      {tab === "fit" && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            updateUserProfile({ measurements: fit });
-            flash("Sizes saved.");
-          }}
-          className="rounded-2xl border border-burgundy/15 bg-white p-5 sm:p-6"
-        ><fieldset disabled={isDemo} className="grid gap-4 sm:grid-cols-2">
-          {([
-            ["oversizedFit", "Oversized tee size", "e.g. L"],
-            ["boxyFit", "Boxy fit size", "e.g. M"],
-            ["jacketSize", "Jacket size", "e.g. L"],
-            ["chest", "Chest", "e.g. 40 in"],
-            ["denimWaist", "Denim waist", "e.g. 32"],
-            ["denimLength", "Denim length", "e.g. 32"],
-          ] as const).map(([key, l, ph]) => (
-            <div key={key}>
-              <label htmlFor={`f-${key}`} className={label}>{l}</label>
-              <input id={`f-${key}`} value={fit[key]} placeholder={ph} onChange={(e) => setFit({ ...fit, [key]: e.target.value })} className={input} />
-            </div>
-          ))}
-          <p className="text-xs text-espresso/60 sm:col-span-2">Kept on this device. Product pages highlight your size so it&apos;s one tap to pick.</p>
-          <button className="rounded-lg bg-burgundy px-6 py-3 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson sm:col-span-2 sm:justify-self-start">
-            Save sizes
-          </button>
-        </fieldset></form>
-      )}
     </div>
   );
 }

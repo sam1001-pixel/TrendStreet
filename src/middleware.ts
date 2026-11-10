@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth";
-
-/** Only the httpOnly session cookie is accepted — never a header a script could set. */
-function extractAdminToken(req: NextRequest): string | undefined {
-  return req.cookies.get(SESSION_COOKIE_NAME)?.value || undefined;
-}
+import { verifySessionToken, extractAdminToken } from "@/lib/auth";
 
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 

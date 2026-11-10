@@ -8,7 +8,7 @@
  * - sensitive actions can demand a recent sign-in (requireRecentAdminAuth).
  */
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE_NAME, verifySessionToken, type SessionPayload } from "./auth";
+import { extractAdminToken, verifySessionToken, type SessionPayload } from "./auth";
 import { prisma } from "./prisma";
 import { isClaimed } from "./security-marker";
 
@@ -34,7 +34,7 @@ export function adminSessionRevocationKey(sid: string) {
 
 /** Full check of the admin session for this request. */
 export async function requireAdminSession(req: NextRequest): Promise<Guard> {
-  const session = await verifySessionToken(req.cookies.get(SESSION_COOKIE_NAME)?.value);
+  const session = await verifySessionToken(extractAdminToken(req));
   if (!session) return unauthorized();
 
   try {

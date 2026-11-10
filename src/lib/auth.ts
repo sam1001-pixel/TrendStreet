@@ -1,7 +1,69 @@
 import { signToken, verifyToken } from "./session-token";
 
 export const SESSION_COOKIE_NAME = "ts_admin_session";
+export const SECURE_SESSION_COOKIE_NAME = "__Host-ts_admin_session";
 export const SESSION_MAX_AGE = 60 * 60 * 8; // 8 hours in seconds
+
+export function getAdminSessionCookieName(secure: boolean): string {
+  return secure ? SECURE_SESSION_COOKIE_NAME : SESSION_COOKIE_NAME;
+}
+
+export function extractAdminToken(req: { cookies: { get(name: string): { value: string } | undefined } }): string | undefined {
+  return req.cookies.get(SECURE_SESSION_COOKIE_NAME)?.value || req.cookies.get(SESSION_COOKIE_NAME)?.value || undefined;
+}
+
+export function setAdminSessionCookie(
+  res: { cookies: { set(opts: { name: string; value: string; httpOnly: boolean; secure: boolean; sameSite: "strict"; path: string; maxAge: number }): void } },
+  req: { nextUrl?: { protocol: string }; headers: Headers },
+  token: string
+) {
+  const secure = isRequestSecure(req);
+  const name = getAdminSessionCookieName(secure);
+  res.cookies.set({
+    name,
+    value: token,
+    httpOnly: true,
+    secure,
+    sameSite: "strict",
+    path: "/",
+    maxAge: SESSION_MAX_AGE,
+  });
+  if (secure) {
+    res.cookies.set({
+      name: SESSION_COOKIE_NAME,
+      value: "",
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 0,
+    });
+  }
+}
+
+export function clearAdminSessionCookie(
+  res: { cookies: { set(opts: { name: string; value: string; httpOnly: boolean; secure: boolean; sameSite: "strict"; path: string; maxAge: number }): void } },
+  req?: { nextUrl?: { protocol: string }; headers: Headers }
+) {
+  res.cookies.set({
+    name: SESSION_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+    path: "/",
+    maxAge: 0,
+  });
+  res.cookies.set({
+    name: SECURE_SESSION_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/",
+    maxAge: 0,
+  });
+}
 
 export interface SessionPayload {
   email: string;

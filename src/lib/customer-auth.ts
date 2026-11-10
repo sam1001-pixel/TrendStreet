@@ -6,6 +6,13 @@ import { signToken, verifyToken } from "./session-token";
 const pbkdf2Async = promisify(crypto.pbkdf2);
 
 export const CUSTOMER_SESSION_COOKIE = "ts_customer_session";
+export const SECURE_CUSTOMER_SESSION_COOKIE = "__Host-ts_customer_session";
+
+/** Helper to extract customer session token checking __Host- prefix first */
+export function extractCustomerToken(req: { cookies: { get(name: string): { value: string } | undefined } }): string | undefined {
+  return req.cookies.get(SECURE_CUSTOMER_SESSION_COOKIE)?.value || req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value || undefined;
+}
+
 /** Cookie / token lifetime. Sessions are re-issued (rotated) while in use; see shouldRotateCustomerSession. */
 export const CUSTOMER_SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days in seconds
 /** However often a session is rotated, the customer signs in again after this long. */

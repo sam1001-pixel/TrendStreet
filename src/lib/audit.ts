@@ -5,7 +5,7 @@
 import type { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
-import { SESSION_COOKIE_NAME, verifySessionToken } from "./auth";
+import { extractAdminToken, verifySessionToken } from "./auth";
 import { getClientIp } from "./rate-limit";
 
 export type AuditAction =
@@ -43,12 +43,13 @@ export type AuditAction =
   | "CUSTOMER_SIGNED_OUT_EVERYWHERE"
   | "CUSTOMER_EMAIL_CONFIRMED"
   | "CUSTOMER_LOGIN_LOCKED"
+  | "CUSTOMER_ACCOUNT_DELETED"
   | "WEBHOOK_SIGNATURE_FAILED"
   | "PAYMENT_VERIFY_REJECTED";
 
 /** Email of the signed-in admin for this request, or null. */
 export async function getAdminEmail(req: NextRequest): Promise<string | null> {
-  const session = await verifySessionToken(req.cookies.get(SESSION_COOKIE_NAME)?.value);
+  const session = await verifySessionToken(extractAdminToken(req));
   return session?.email ?? null;
 }
 

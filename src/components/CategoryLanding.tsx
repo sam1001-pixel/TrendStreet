@@ -145,8 +145,7 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
       )}
 
       <p className="mt-6 rounded-2xl bg-ivory-dark/60 p-4 text-xs leading-relaxed text-espresso/80">
-        <strong className="text-espresso">Fit tip:</strong> {config.fitTip}{" "}
-        <Link href="/profile?tab=fit" className="font-semibold text-burgundy underline">Save your sizes</Link>
+        <strong className="text-espresso">Fit tip:</strong> {config.fitTip}
       </p>
     </section>
   );

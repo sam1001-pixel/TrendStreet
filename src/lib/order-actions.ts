@@ -11,7 +11,7 @@ import type { NextRequest } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { adminOrderInclude, toAdminOrder } from "@/lib/admin-orders";
-import { CUSTOMER_SESSION_COOKIE, getValidCustomerSession } from "@/lib/customer-auth";
+import { extractCustomerToken, getValidCustomerSession } from "@/lib/customer-auth";
 import { RETURN_REASONS } from "@/lib/order-client";
 
 export const RETURN_WINDOW_DAYS = 30;
@@ -97,7 +97,7 @@ export type CustomerOrder = ReturnType<typeof toCustomerOrder>;
  */
 export async function getCustomerSession(req: NextRequest) {
   try {
-    return (await getValidCustomerSession(req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value))?.session ?? null;
+    return (await getValidCustomerSession(extractCustomerToken(req)))?.session ?? null;
   } catch {
     return null;
   }

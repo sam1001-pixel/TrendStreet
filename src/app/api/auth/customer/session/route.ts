@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { CUSTOMER_SESSION_COOKIE, getValidCustomerSession, shouldRotateCustomerSession, signCustomerToken } from "@/lib/customer-auth";
+import { extractCustomerToken, getValidCustomerSession, shouldRotateCustomerSession, signCustomerToken } from "@/lib/customer-auth";
 import { clearCustomerSessionCookie, setCustomerSessionCookie } from "@/lib/customer-session-cookie";
 
 export const dynamic = "force-dynamic";
@@ -10,10 +10,11 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: NextRequest) {
   try {
-    const valid = await getValidCustomerSession(req.cookies.get(CUSTOMER_SESSION_COOKIE)?.value);
+    const rawToken = extractCustomerToken(req);
+    const valid = await getValidCustomerSession(rawToken);
     if (!valid) {
       const res = NextResponse.json({ authenticated: false, user: null }, { status: 200 });
-      if (req.cookies.get(CUSTOMER_SESSION_COOKIE)) clearCustomerSessionCookie(res, req);
+      if (rawToken) clearCustomerSessionCookie(res, req);
       return res;
     }
 

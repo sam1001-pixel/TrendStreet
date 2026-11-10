@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import {
   signSessionToken,
-  SESSION_COOKIE_NAME,
-  SESSION_MAX_AGE,
   isRequestSecure,
+  setAdminSessionCookie,
   ADMIN_DEVICE_COOKIE,
   ADMIN_DEVICE_MAX_AGE,
   signAdminDeviceToken,
@@ -95,15 +94,7 @@ export async function POST(req: NextRequest) {
       const token = await signSessionToken(validatedEmail);
       // The token lives only in the httpOnly cookie — never in the response body.
       const response = NextResponse.json({ success: true, email: validatedEmail, message: "Authentication successful." }, { status: 200 });
-      response.cookies.set({
-        name: SESSION_COOKIE_NAME,
-        value: token,
-        httpOnly: true,
-        secure: isRequestSecure(req),
-        sameSite: "strict",
-        path: "/",
-        maxAge: SESSION_MAX_AGE,
-      });
+      setAdminSessionCookie(response, req, token);
       if (!knownDevice) {
         response.cookies.set({
           name: ADMIN_DEVICE_COOKIE,

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Check, ShoppingBag, Sparkles, Tag, ArrowRight, Ruler } from "lucide-react";
+import { Check, ShoppingBag, Sparkles, Tag, ArrowRight } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/lib/pricing";
 import { CURATED_LOOKS, BUNDLE_PERCENT, BUNDLE_CODE, type CuratedLook } from "@/data/looks";
@@ -152,9 +152,6 @@ export function CompleteTheFit({ initialLookId }: { initialLookId?: string }) {
                 <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-espresso/60">In this look</p>
                 <p className="text-sm text-espresso/80">{look.vibe}</p>
               </div>
-              <Link href="/profile?tab=fit" className="hidden items-center gap-1 text-[11px] font-semibold text-burgundy hover:underline sm:inline-flex">
-                <Ruler className="h-3.5 w-3.5" /> Save my sizes
-              </Link>
             </div>
 
             <ul className="space-y-3">

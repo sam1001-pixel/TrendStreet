@@ -40,6 +40,10 @@ export function validateAdminCredentials(
     }
     isPassValid = verifyPassword(pass, passwordHash);
   } else {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[Auth] Plain-text ADMIN_PASSWORD is forbidden in production. Configure ADMIN_PASSWORD_HASH instead (`npm run hash-password`).");
+      return { isValid: false, email: "" };
+    }
     if (plainPassword.length < MIN_ADMIN_PASSWORD_LENGTH) {
       console.error(`[Auth] ADMIN_PASSWORD is shorter than ${MIN_ADMIN_PASSWORD_LENGTH} characters; admin login is disabled.`);
       return { isValid: false, email: "" };
