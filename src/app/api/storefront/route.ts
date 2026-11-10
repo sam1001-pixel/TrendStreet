@@ -19,6 +19,11 @@ export async function GET() {
 
   return NextResponse.json(
     { products, videoReviews, settings: { ...settings, offerCoupon }, source },
-    { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=300" } }
+    {
+      headers: {
+        "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate",
+        Pragma: "no-cache",
+      },
+    }
   );
 }

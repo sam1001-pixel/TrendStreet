@@ -18,6 +18,7 @@ import {
   Eye,
   EyeOff,
   Film,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
@@ -88,6 +89,10 @@ export default function AdminProductsPage() {
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newForm.images || newForm.images.length === 0) {
+      alert("Please upload at least 1 photo for this garment before publishing.");
+      return;
+    }
     const created = await addProduct({
       name: newForm.name,
       subtitle: newForm.subtitle,
@@ -101,7 +106,7 @@ export default function AdminProductsPage() {
       images: newForm.images,
       videos: newForm.videos,
       sizes: newForm.sizes.split(",").map((s) => s.trim()),
-      colors: [{ name: newForm.colorName, hex: newForm.colorHex }],
+      colors: [{ name: newForm.colorName || "Black", hex: newForm.colorHex || "#0A0A0A" }],
       featured: newForm.featured,
       inStock: newForm.inStock,
       stockCount: Number(newForm.stockCount),
@@ -121,7 +126,7 @@ export default function AdminProductsPage() {
       fabric: "520gsm Japanese Loopback Terry",
       careInstructions: "Machine wash cold inside out\nAir dry flat",
       images: [] as string[],
-    videos: [] as string[],
+      videos: [] as string[],
       sizes: "S, M, L, XL",
       colorName: "Black",
       colorHex: "#0A0A0A",
@@ -131,10 +136,14 @@ export default function AdminProductsPage() {
     });
   };
 
-  const handleUpdateProduct = (e: React.FormEvent) => {
+  const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
-    updateProduct(editingProduct);
+    if (!editingProduct.images || editingProduct.images.length === 0) {
+      alert("Please keep or upload at least 1 photo for this garment before saving.");
+      return;
+    }
+    await updateProduct(editingProduct);
     setEditingProduct(null);
   };
 
@@ -567,6 +576,98 @@ export default function AdminProductsPage() {
                   />
                 </div>
 
+                {/* Dedicated Photo Removal & Management Section */}
+                <div className="sm:col-span-2 rounded-2xl border-2 border-burgundy/15 bg-white p-4 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-burgundy/10 pb-3 mb-3 gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-espresso flex items-center gap-1.5">
+                        <ImageIcon className="w-4 h-4 text-crimson" />
+                        Uploaded Pictures ({newForm.images.length})
+                      </h4>
+                      <p className="text-[11px] text-espresso/60 mt-0.5">
+                        Remove unwanted pictures individually or clear all photos with one click.
+                      </p>
+                    </div>
+                    {newForm.images.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setNewForm((f) => ({ ...f, images: [] }))}
+                        className="self-start sm:self-auto px-3 py-1.5 text-xs font-bold text-white bg-crimson hover:bg-black rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove All Pictures ({newForm.images.length})
+                      </button>
+                    )}
+                  </div>
+
+                  {newForm.images.length === 0 ? (
+                    <div className="py-6 text-center rounded-xl border border-dashed border-burgundy/20 bg-ivory/50">
+                      <p className="text-xs text-crimson font-medium">No pictures uploaded yet.</p>
+                      <p className="text-[11px] text-espresso/50 mt-1">
+                        Upload at least 1 garment photo above before saving.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                      {newForm.images.map((imgUrl, idx) => (
+                        <div
+                          key={`${imgUrl}-${idx}`}
+                          className="flex items-center justify-between p-2.5 rounded-xl border border-burgundy/15 bg-ivory/40 hover:bg-white transition-colors"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="relative w-12 h-14 rounded-lg overflow-hidden border border-burgundy/20 flex-shrink-0 bg-espresso/5">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={imgUrl} alt={`Garment view ${idx + 1}`} className="w-full h-full object-cover" />
+                              {idx === 0 && (
+                                <span className="absolute bottom-0 inset-x-0 bg-crimson text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-wider">
+                                  Cover
+                                </span>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-espresso">
+                                  Picture #{idx + 1}
+                                  {idx === 0 && " — Primary Cover"}
+                                </span>
+                                {idx !== 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setNewForm((f) => {
+                                        const next = [...f.images];
+                                        const [picked] = next.splice(idx, 1);
+                                        next.unshift(picked);
+                                        return { ...f, images: next };
+                                      });
+                                    }}
+                                    className="text-[10px] font-bold text-burgundy hover:text-crimson underline"
+                                  >
+                                    Make Cover
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-espresso/50 truncate max-w-xs sm:max-w-md">
+                                {imgUrl}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setNewForm((f) => ({ ...f, images: f.images.filter((_, k) => k !== idx) }))}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-crimson hover:bg-black text-white text-xs font-bold transition-all shadow-sm flex-shrink-0 ml-2"
+                            title={`Remove Picture ${idx + 1}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Remove Picture</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className="sm:col-span-2">
                   <MediaUploader
                     kind="video"
@@ -575,6 +676,35 @@ export default function AdminProductsPage() {
                     onChange={(vids) => setNewForm((f) => ({ ...f, videos: vids }))}
                     label="Videos (optional)"
                   />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-espresso mb-1">Garment Colour Name</label>
+                  <input
+                    type="text"
+                    value={newForm.colorName}
+                    onChange={(e) => setNewForm({ ...newForm, colorName: e.target.value })}
+                    placeholder="e.g. Deep Burgundy"
+                    className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-espresso mb-1">Colour Hex Code</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={newForm.colorHex}
+                      onChange={(e) => setNewForm({ ...newForm, colorHex: e.target.value })}
+                      className="w-10 h-10 rounded-lg border border-burgundy/20 cursor-pointer p-0.5 bg-white"
+                    />
+                    <input
+                      type="text"
+                      value={newForm.colorHex}
+                      onChange={(e) => setNewForm({ ...newForm, colorHex: e.target.value })}
+                      className="flex-1 bg-white px-3 py-2 rounded-xl border border-burgundy/20 font-mono text-xs"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -739,6 +869,99 @@ export default function AdminProductsPage() {
                   />
                 </div>
 
+                {/* Dedicated Photo Removal & Management Section in Edit Modal */}
+                <div className="sm:col-span-2 rounded-2xl border-2 border-burgundy/15 bg-white p-4 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-burgundy/10 pb-3 mb-3 gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-espresso flex items-center gap-1.5">
+                        <ImageIcon className="w-4 h-4 text-crimson" />
+                        Current Garment Pictures ({(editingProduct.images || []).length})
+                      </h4>
+                      <p className="text-[11px] text-espresso/60 mt-0.5">
+                        Remove unwanted pictures individually or clear all photos with one click.
+                      </p>
+                    </div>
+                    {(editingProduct.images || []).length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingProduct((p) => (p ? { ...p, images: [] } : p))}
+                        className="self-start sm:self-auto px-3 py-1.5 text-xs font-bold text-white bg-crimson hover:bg-black rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Remove All Pictures ({(editingProduct.images || []).length})
+                      </button>
+                    )}
+                  </div>
+
+                  {(editingProduct.images || []).length === 0 ? (
+                    <div className="py-6 text-center rounded-xl border border-dashed border-burgundy/20 bg-ivory/50">
+                      <p className="text-xs text-crimson font-medium">No pictures attached to this garment.</p>
+                      <p className="text-[11px] text-espresso/50 mt-1">
+                        Upload or select at least 1 photo above before saving changes.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                      {(editingProduct.images || []).map((imgUrl, idx) => (
+                        <div
+                          key={`${imgUrl}-${idx}`}
+                          className="flex items-center justify-between p-2.5 rounded-xl border border-burgundy/15 bg-ivory/40 hover:bg-white transition-colors"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="relative w-12 h-14 rounded-lg overflow-hidden border border-burgundy/20 flex-shrink-0 bg-espresso/5">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={imgUrl} alt={`Garment view ${idx + 1}`} className="w-full h-full object-cover" />
+                              {idx === 0 && (
+                                <span className="absolute bottom-0 inset-x-0 bg-crimson text-white text-[8px] font-bold text-center py-0.5 uppercase tracking-wider">
+                                  Cover
+                                </span>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-espresso">
+                                  Picture #{idx + 1}
+                                  {idx === 0 && " — Primary Cover"}
+                                </span>
+                                {idx !== 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingProduct((p) => {
+                                        if (!p) return p;
+                                        const next = [...(p.images || [])];
+                                        const [picked] = next.splice(idx, 1);
+                                        next.unshift(picked);
+                                        return { ...p, images: next };
+                                      });
+                                    }}
+                                    className="text-[10px] font-bold text-burgundy hover:text-crimson underline"
+                                  >
+                                    Make Cover
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-espresso/50 truncate max-w-xs sm:max-w-md">
+                                {imgUrl}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setEditingProduct((p) => (p ? { ...p, images: (p.images || []).filter((_, k) => k !== idx) } : p))}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-crimson hover:bg-black text-white text-xs font-bold transition-all shadow-sm flex-shrink-0 ml-2"
+                            title={`Remove Picture ${idx + 1}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Remove Picture</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className="sm:col-span-2">
                   <MediaUploader
                     kind="video"
@@ -747,6 +970,47 @@ export default function AdminProductsPage() {
                     onChange={(vids) => setEditingProduct((p) => (p ? { ...p, videos: vids } : p))}
                     label="Videos (optional)"
                   />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-espresso mb-1">Garment Colour Name</label>
+                  <input
+                    type="text"
+                    value={editingProduct.colors?.[0]?.name || ""}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      const hex = editingProduct.colors?.[0]?.hex || "#1A1A1A";
+                      setEditingProduct({ ...editingProduct, colors: [{ name, hex }] });
+                    }}
+                    placeholder="e.g. Deep Burgundy"
+                    className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-espresso mb-1">Colour Hex Code</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={editingProduct.colors?.[0]?.hex || "#1A1A1A"}
+                      onChange={(e) => {
+                        const hex = e.target.value;
+                        const name = editingProduct.colors?.[0]?.name || "Primary";
+                        setEditingProduct({ ...editingProduct, colors: [{ name, hex }] });
+                      }}
+                      className="w-10 h-10 rounded-lg border border-burgundy/20 cursor-pointer p-0.5 bg-white"
+                    />
+                    <input
+                      type="text"
+                      value={editingProduct.colors?.[0]?.hex || "#1A1A1A"}
+                      onChange={(e) => {
+                        const hex = e.target.value;
+                        const name = editingProduct.colors?.[0]?.name || "Primary";
+                        setEditingProduct({ ...editingProduct, colors: [{ name, hex }] });
+                      }}
+                      className="flex-1 bg-white px-3 py-2 rounded-xl border border-burgundy/20 font-mono text-xs"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-6 sm:col-span-2 pt-1 border-t border-burgundy/10">

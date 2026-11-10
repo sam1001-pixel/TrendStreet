@@ -322,7 +322,7 @@ export const StoreProvider: React.FC<{
   // Live catalog + CMS settings from the database (edited in /admin).
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/storefront")
+    fetch("/api/storefront", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data: { products: Product[]; videoReviews?: Review[]; source?: string; settings: Partial<SiteSettings> }) => {
         if (cancelled) return;

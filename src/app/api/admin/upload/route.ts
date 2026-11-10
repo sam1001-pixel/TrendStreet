@@ -48,7 +48,18 @@ export async function POST(req: NextRequest) {
     const file = form.get("file");
     if (!(file instanceof File)) return NextResponse.json({ error: "No file received." }, { status: 400 });
 
-    const mime = (file.type || "").toLowerCase();
+    let mime = (file.type || "").toLowerCase();
+    if (!kindOf(mime)) {
+      const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || "").toLowerCase();
+      if (ext === ".jpg" || ext === ".jpeg") mime = "image/jpeg";
+      else if (ext === ".png") mime = "image/png";
+      else if (ext === ".webp") mime = "image/webp";
+      else if (ext === ".gif") mime = "image/gif";
+      else if (ext === ".avif") mime = "image/avif";
+      else if (ext === ".mp4") mime = "video/mp4";
+      else if (ext === ".webm") mime = "video/webm";
+      else if (ext === ".mov") mime = "video/quicktime";
+    }
     const kind = kindOf(mime);
     if (!kind) {
       return NextResponse.json({ error: "Use a JPG, PNG, WEBP, AVIF or GIF image, or an MP4, WEBM or MOV video." }, { status: 400 });

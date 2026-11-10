@@ -99,6 +99,7 @@ export function useAdminData({ orders: wantOrders = false, products: wantProduct
     try {
       const { product } = await api<{ product: Product }>("/api/admin/products", { method: "POST", body: JSON.stringify(input) });
       setProducts((ps) => [product, ...ps]);
+      store.addProduct(product);
       flash(`Added ${product.name}`);
       return product;
     } catch (e) {
@@ -113,6 +114,7 @@ export function useAdminData({ orders: wantOrders = false, products: wantProduct
     try {
       const { product } = await api<{ product: Product }>(`/api/admin/products/${input.id}`, { method: "PUT", body: JSON.stringify(input) });
       setProducts((ps) => ps.map((p) => (p.id === product.id ? product : p)));
+      store.updateProduct(product);
       flash(`Saved ${product.name}`);
     } catch (e) {
       setProducts(prev);
@@ -124,6 +126,7 @@ export function useAdminData({ orders: wantOrders = false, products: wantProduct
     try {
       await api(`/api/admin/products/${productId}`, { method: "DELETE" });
       setProducts((ps) => ps.filter((p) => p.id !== productId));
+      store.deleteProduct(productId);
       flash("Product deleted");
     } catch (e) {
       fail(e);

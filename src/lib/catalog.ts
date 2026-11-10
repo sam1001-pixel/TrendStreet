@@ -4,7 +4,7 @@
  * (all editable in /admin). If the database is unreachable, the code catalog is served so the shop stays browsable.
  */
 import { ProductCategory as DbCategory } from "@prisma/client";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { INITIAL_PRODUCTS } from "@/data/products";
 import { settingsFromDb } from "@/lib/site-settings";
@@ -170,4 +170,10 @@ export function refreshStorefront() {
   } catch {
     // Outside a request (scripts/tests) there is nothing to revalidate.
   }
+  try {
+    revalidatePath("/", "layout");
+  } catch {}
+  try {
+    revalidatePath("/shop");
+  } catch {}
 }

@@ -15,7 +15,10 @@ import { del, list, put } from "@vercel/blob";
 export const IMAGE_TYPES: Record<string, string> = {
   "image/jpeg": ".jpg",
   "image/jpg": ".jpg",
+  "image/pjpeg": ".jpg",
+  "image/jfif": ".jpg",
   "image/png": ".png",
+  "image/x-png": ".png",
   "image/webp": ".webp",
   "image/avif": ".avif",
   "image/gif": ".gif",
@@ -30,7 +33,7 @@ export const VIDEO_TYPES: Record<string, string> = {
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8 MB
 export const MAX_VIDEO_BYTES = 200 * 1024 * 1024; // 200 MB
 /** Uploads that pass through our own server are capped by the hosting request limit (≈4.5 MB on Vercel). */
-export const MAX_SERVER_UPLOAD_BYTES = 4 * 1024 * 1024;
+export const MAX_SERVER_UPLOAD_BYTES = 4.5 * 1024 * 1024;
 
 const UPLOAD_PREFIX = "media/";
 const LOCAL_DIR = path.join(process.cwd(), "public", "uploads");
@@ -57,8 +60,12 @@ export function hasValidMagicBytes(buf: Buffer, mime: string): boolean {
   if (buf.length < 12) return false;
   const m = mime.toLowerCase();
   const ascii = (a: number, b: number) => buf.toString("ascii", a, b);
-  if (m === "image/jpeg" || m === "image/jpg") return buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
-  if (m === "image/png") return buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  if (m === "image/jpeg" || m === "image/jpg" || m === "image/pjpeg" || m === "image/jfif") {
+    return buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+  }
+  if (m === "image/png" || m === "image/x-png") {
+    return buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  }
   if (m === "image/gif") return ascii(0, 4) === "GIF8";
   if (m === "image/webp") return ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP";
   if (m === "image/avif" || m === "video/mp4" || m === "video/quicktime") return ascii(4, 8) === "ftyp";

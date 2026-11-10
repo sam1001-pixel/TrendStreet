@@ -120,24 +120,36 @@ export function MediaUploader({ kind, value, onChange, max = 12, label, helperTe
           <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-espresso">
             <Icon className="h-4 w-4 text-crimson" /> {label}
           </span>
-          {!single && (
-            <span className="text-[11px] text-espresso/50">
-              {value.length}/{max}
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {value.length > 0 && (
+              <button
+                type="button"
+                onClick={() => onChange([])}
+                className="text-[11px] font-bold text-crimson hover:text-burgundy flex items-center gap-1 transition-colors"
+                title={`Remove all ${value.length} ${noun}s`}
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Remove All ({value.length})
+              </button>
+            )}
+            {!single && (
+              <span className="text-[11px] text-espresso/50">
+                {value.length}/{max}
+              </span>
+            )}
+          </div>
         </div>
       )}
 
       {(value.length > 0 || pending.length > 0) && (
-        <div className={`grid gap-2 ${kind === "video" ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-3 sm:grid-cols-4"}`}>
+        <div className={`grid gap-2.5 ${kind === "video" ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
           {value.map((url, i) => (
-            <div key={`${url}-${i}`} className="group relative overflow-hidden rounded-xl border border-burgundy/15 bg-espresso/5">
+            <div key={`${url}-${i}`} className="group relative overflow-hidden rounded-xl border-2 border-burgundy/15 bg-espresso/5 shadow-sm hover:border-burgundy/40 transition-all">
               <div className={kind === "video" ? "aspect-[9/16] max-h-56 w-full" : "aspect-[4/5] w-full"}>
                 {kind === "video" || isVideoUrl(url) ? (
                   <video src={url} muted playsInline preload="metadata" className="h-full w-full object-cover" />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={url} alt="" className="h-full w-full object-cover" />
+                  <img src={url} alt={`Upload ${i + 1}`} className="h-full w-full object-cover" />
                 )}
               </div>
               {kind === "video" && (
@@ -146,25 +158,46 @@ export function MediaUploader({ kind, value, onChange, max = 12, label, helperTe
                 </span>
               )}
               {i === 0 && !single && kind === "image" && (
-                <span className="absolute left-1.5 top-1.5 rounded bg-crimson px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-                  Cover
+                <span className="absolute left-1.5 top-1.5 rounded-md bg-crimson px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-md z-10">
+                  Cover Photo
                 </span>
               )}
-              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-black/75 to-transparent p-1.5">
+
+              {/* Prominent top-right Quick-Remove (X) badge button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  remove(i);
+                }}
+                aria-label={`Remove ${noun} ${i + 1}`}
+                title={`Remove this ${noun}`}
+                className="absolute right-1.5 top-1.5 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-crimson text-white shadow-lg transition-transform hover:scale-110 active:scale-95 hover:bg-black"
+              >
+                <X className="h-4 w-4 stroke-[2.5]" />
+              </button>
+
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-2">
                 {!single ? (
                   <span className="flex gap-1">
-                    <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move earlier" className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 text-espresso disabled:opacity-30">
-                      <ArrowLeft className="h-4 w-4" />
+                    <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move earlier" title="Move earlier" className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-espresso hover:bg-white disabled:opacity-30">
+                      <ArrowLeft className="h-3.5 w-3.5" />
                     </button>
-                    <button type="button" onClick={() => move(i, 1)} disabled={i === value.length - 1} aria-label="Move later" className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 text-espresso disabled:opacity-30">
-                      <ArrowRight className="h-4 w-4" />
+                    <button type="button" onClick={() => move(i, 1)} disabled={i === value.length - 1} aria-label="Move later" title="Move later" className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-espresso hover:bg-white disabled:opacity-30">
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </button>
                   </span>
                 ) : (
                   <span />
                 )}
-                <button type="button" onClick={() => remove(i)} aria-label={`Remove ${noun}`} className="flex h-8 w-8 items-center justify-center rounded-lg bg-crimson text-white">
-                  <Trash2 className="h-4 w-4" />
+                <button
+                  type="button"
+                  onClick={() => remove(i)}
+                  aria-label={`Remove ${noun}`}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-crimson hover:bg-black text-white text-[11px] font-bold transition-colors shadow-sm"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Remove</span>
                 </button>
               </div>
             </div>

@@ -27,44 +27,51 @@ function getConfig(): Promise<UploadConfig> {
   return configPromise;
 }
 
-const IMAGE_MIME = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
-const VIDEO_MIME = ["video/mp4", "video/webm", "video/quicktime"];
+const IMAGE_MIME = [
+  "image/jpeg",
+  "image/jpg",
+  "image/pjpeg",
+  "image/jfif",
+  "image/png",
+  "image/x-png",
+  "image/webp",
+  "image/avif",
+  "image/gif",
+];
+const VIDEO_MIME = [
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/mov",
+  "video/x-matroska",
+];
 
 export const ACCEPT: Record<UploadKind, string> = {
-  image: IMAGE_MIME.join(","),
-  video: VIDEO_MIME.join(","),
+  image: "image/jpeg,image/png,image/webp,image/avif,image/gif,image/*",
+  video: "video/mp4,video/webm,video/quicktime,video/*",
 };
 
 export const mb = (bytes: number) => `${Math.round(bytes / 1024 / 1024)} MB`;
 
-/** Uploads one file and resolves to its public URL. `onProgress` gets 0–100. */
-export async function uploadMedia(file: File, kind: UploadKind, onProgress?: (pct: number) => void): Promise<string> {
-  const mime = (file.type || "").toLowerCase();
-  if (!(kind === "image" ? IMAGE_MIME : VIDEO_MIME).includes(mime)) {
-    throw new Error(kind === "image" ? "Use a JPG, PNG, WEBP, AVIF or GIF photo." : "Use an MP4, WEBM or MOV video.");
-  }
-  const cfg = await getConfig();
-  const max = kind === "image" ? cfg.maxImageBytes : cfg.maxVideoBytes;
-  if (file.size > max) throw new Error(`${file.name} is too big (max ${mb(max)}).`);
-
-  if (cfg.blob) {
+function resolveMime(file: File, kind: UploadKind): string {
+  let mime = (file.type || "").toLowerCase();
+  if (!mime || mime === "application/octet-stream") {
     const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || "").toLowerCase();
-    const base = file.name.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 40) || kind;
-    const blob = await upload(`media/${base}${ext}`, file, {
-      access: "public",
-      handleUploadUrl: "/api/admin/upload/blob",
-      contentType: mime,
-      multipart: file.size > 20 * 1024 * 1024,
-      onUploadProgress: ({ percentage }) => onProgress?.(Math.round(percentage)),
-    });
-    return blob.url;
+    if (ext === ".jpg" || ext === ".jpeg") mime = "image/jpeg";
+    else if (ext === ".png") mime = "image/png";
+    else if (ext === ".webp") mime = "image/webp";
+    else if (ext === ".gif") mime = "image/gif";
+    else if (ext === ".avif") mime = "image/avif";
+    else if (ext === ".mp4") mime = "video/mp4";
+    else if (ext === ".webm") mime = "video/webm";
+    else if (ext === ".mov") mime = "video/quicktime";
   }
+  if (mime === "image/jpg" || mime === "image/pjpeg" || mime === "image/jfif") mime = "image/jpeg";
+  if (mime === "image/x-png") mime = "image/png";
+  return mime;
+}
 
-  if (file.size > cfg.maxServerBytes) {
-    throw new Error(`Files over ${mb(cfg.maxServerBytes)} need Vercel Blob storage connected to the project.`);
-  }
-
-  // XHR (not fetch) so we can show upload progress.
+function uploadViaServer(file: File, onProgress?: (pct: number) => void): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/admin/upload");
@@ -85,6 +92,43 @@ export async function uploadMedia(file: File, kind: UploadKind, onProgress?: (pc
     form.append("file", file);
     xhr.send(form);
   });
+}
+
+/** Uploads one file and resolves to its public URL. `onProgress` gets 0–100. */
+export async function uploadMedia(file: File, kind: UploadKind, onProgress?: (pct: number) => void): Promise<string> {
+  const mime = resolveMime(file, kind);
+  const allowed = kind === "image" ? IMAGE_MIME : VIDEO_MIME;
+  if (!mime || !allowed.includes(mime)) {
+    throw new Error(kind === "image" ? "Use a JPG, PNG, WEBP, AVIF or GIF photo." : "Use an MP4, WEBM or MOV video.");
+  }
+  const cfg = await getConfig().catch(() => ({
+    blob: true,
+    maxImageBytes: 8 * 1024 * 1024,
+    maxVideoBytes: 200 * 1024 * 1024,
+    maxServerBytes: 4.5 * 1024 * 1024,
+  }));
+  const max = kind === "image" ? cfg.maxImageBytes : cfg.maxVideoBytes;
+  if (file.size > max) throw new Error(`${file.name} is too big (max ${mb(max)}).`);
+
+  if (cfg.blob) {
+    try {
+      const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || "").toLowerCase() || (kind === "video" ? ".mp4" : ".jpg");
+      const base = file.name.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 40) || kind;
+      const blob = await upload(`media/${base}${ext}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/admin/upload/blob",
+        contentType: mime,
+        multipart: file.size > 20 * 1024 * 1024,
+        onUploadProgress: ({ percentage }) => onProgress?.(Math.round(percentage)),
+      });
+      if (blob?.url) return blob.url;
+    } catch (clientBlobErr) {
+      console.warn("[uploadMedia] Client blob upload failed, attempting fallback to server upload:", clientBlobErr);
+    }
+  }
+
+  // Fallback to server route (which uses server BLOB_READ_WRITE_TOKEN directly)
+  return await uploadViaServer(file, onProgress);
 }
 
 export const isVideoUrl = (url: string) => /\.(mp4|webm|mov)(\?|#|$)/i.test(url);
