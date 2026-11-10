@@ -54,7 +54,7 @@ export function CinematicHero() {
   return (
     <section
       ref={ref}
-      className="relative h-[74svh] min-h-[500px] max-h-[760px] w-full overflow-hidden bg-stone-950 text-white sm:h-[100svh] sm:max-h-none sm:min-h-[560px] grain"
+      className="relative h-[74svh] min-h-[500px] max-h-[760px] w-full overflow-hidden bg-stone-950 text-white sm:h-[88svh] sm:min-h-[560px] sm:max-h-[820px] lg:h-[90svh] lg:max-h-[880px] grain"
       aria-label="Featured silhouettes"
     >
       {/* Image stage */}
@@ -162,7 +162,7 @@ export function CinematicHero() {
       {/* Giant kinetic wordmark */}
       <motion.h1
         style={{ y: reduce ? 0 : wordY }}
-        className="pointer-events-none absolute inset-x-0 top-[14%] sm:top-[10%] z-[5] select-none whitespace-nowrap px-4 text-center font-display font-black uppercase leading-[0.8] text-white/95 text-[21vw] sm:text-[19vw]"
+        className="pointer-events-none absolute inset-x-0 top-[14%] sm:top-[10%] z-[5] select-none whitespace-nowrap px-4 text-center font-display font-black uppercase leading-[0.8] text-white/95 text-[clamp(4.5rem,18vw,14rem)]"
         aria-label="OFFVYBE"
       >
         {WORD.map((ch, i) => (

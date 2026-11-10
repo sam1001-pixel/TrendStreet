@@ -15,7 +15,7 @@ const SHOW_FOR_MS = 4000;
  * Also nudges towards free delivery.
  */
 export function AddedToBagToast() {
-  const { lastAdded, dismissLastAdded, setIsCartOpen, isCartOpen, cartSubtotal, cartDiscount, cartItemsCount } = useStore();
+  const { lastAdded, dismissLastAdded, setIsCartOpen, isCartOpen, cartSubtotal, cartDiscount, cartItemsCount, siteSettings } = useStore();
   const pathname = usePathname();
   const config = useStoreConfig();
   const [paused, setPaused] = useState(false);
@@ -35,6 +35,7 @@ export function AddedToBagToast() {
   const { product, size, quantity } = lastAdded;
   const freeAt = config.shipping.freeOver;
   const left = Math.max(0, freeAt - (cartSubtotal - cartDiscount));
+  const hasAnnouncement = Boolean(siteSettings?.topAnnouncement?.enabled);
 
   return (
     <div
@@ -45,7 +46,9 @@ export function AddedToBagToast() {
       onMouseLeave={() => setPaused(false)}
       onTouchStart={() => setPaused(true)}
       onTouchEnd={() => setPaused(false)}
-      className="fixed inset-x-3 top-[72px] z-[70] mx-auto max-w-md animate-in fade-in slide-in-from-top-4 duration-300 sm:inset-x-auto sm:right-6 sm:top-24 sm:w-[380px]"
+      className={`fixed inset-x-3 z-[70] mx-auto max-w-md animate-in fade-in slide-in-from-top-4 duration-300 sm:inset-x-auto sm:right-6 sm:w-[380px] ${
+        hasAnnouncement ? "top-[104px] sm:top-28" : "top-[72px] sm:top-24"
+      }`}
     >
       <div className="flex items-center gap-3 rounded-2xl bg-espresso p-2.5 pr-2 text-ivory shadow-2xl ring-1 ring-white/10">
         <div className="relative h-14 w-11 flex-shrink-0 overflow-hidden rounded-lg bg-ivory/10">

@@ -72,8 +72,8 @@ export const QuickViewModal: React.FC = () => {
         className="fixed inset-0 bg-espresso/70 backdrop-blur-xs transition-opacity"
       />
 
-      <div className="min-h-full flex items-center justify-center p-4">
-        <div className="relative bg-ivory rounded-2xl max-w-4xl w-full overflow-hidden shadow-2xl border border-burgundy/20 animate-in zoom-in-95 duration-200">
+      <div className="min-h-full flex items-center justify-center p-3 sm:p-4">
+        <div className="relative bg-ivory rounded-2xl max-w-4xl w-full max-h-[90dvh] overflow-y-auto shadow-2xl border border-burgundy/20 animate-in zoom-in-95 duration-200">
           {/* Close Button */}
           <button
             onClick={() => setQuickViewProduct(null)}

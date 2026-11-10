@@ -41,6 +41,18 @@ body {
   color: #FFFFFF;
 }
 
+/* Touch & Gesture enhancements across Android & iPhone */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS momentum scrolling on scrollable containers */
+.overflow-x-auto,
+.overflow-y-auto,
+.no-scrollbar {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Universal Scrollbar Line Removal - Seamless fluid scrolling without visible scroll lines */
 * {
   scrollbar-width: none !important;

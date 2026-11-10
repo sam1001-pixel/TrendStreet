@@ -111,27 +111,27 @@ export const Header: React.FC = () => {
       >
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-2 sm:h-[76px] sm:px-6 lg:px-8">
           {/* Left */}
-          <div className="flex items-center gap-1">
+          <div className="flex min-w-0 items-center gap-1">
             <button
               onClick={() => setIsMenuOpen(true)}
-              className={`${iconBtn} lg:hidden`}
+              className={`${iconBtn} md:hidden`}
               aria-label="Open menu"
               aria-expanded={isMenuOpen}
               aria-controls="site-menu"
             >
               <Menu className="h-6 w-6" />
             </button>
-            <button onClick={() => setIsCommandMenuOpen(true)} className={`${iconBtn} lg:hidden`} aria-label="Search">
+            <button onClick={() => setIsCommandMenuOpen(true)} className={`${iconBtn} md:hidden`} aria-label="Search">
               <Search className="h-5 w-5" />
             </button>
-            <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
+            <nav className="hidden min-w-0 items-center gap-3 md:flex lg:gap-5 xl:gap-6" aria-label="Primary">
               {CATEGORIES.map((c) => {
                 const active = pathname === c.href;
                 return (
                   <Link
                     key={c.href}
                     href={c.href}
-                    className={`relative py-2 text-xs font-bold uppercase tracking-[0.16em] transition-colors ${
+                    className={`relative py-2 text-[11px] font-bold uppercase tracking-[0.1em] transition-colors md:text-xs lg:tracking-[0.14em] xl:tracking-[0.16em] ${
                       active ? "text-crimson" : "text-espresso/85 hover:text-crimson"
                     } after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:origin-left after:bg-crimson after:transition-transform ${
                       active ? "after:scale-x-100" : "after:scale-x-0 hover:after:scale-x-100"
@@ -150,14 +150,14 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Right */}
-          <div className="flex items-center justify-end gap-0.5 sm:gap-1">
+          <div className="flex min-w-0 items-center justify-end gap-0.5 sm:gap-1">
             <button
               onClick={() => setIsCommandMenuOpen(true)}
-              className="mr-1 hidden items-center gap-2 rounded-full bg-white px-3 py-2 text-xs text-espresso/70 ring-1 ring-burgundy/15 transition-all hover:text-espresso hover:ring-burgundy/40 lg:flex"
+              className="mr-1 hidden items-center gap-1.5 rounded-full bg-white px-2.5 py-1.5 text-xs text-espresso/70 ring-1 ring-burgundy/15 transition-all hover:text-espresso hover:ring-burgundy/40 lg:flex xl:px-3 xl:py-2 xl:gap-2"
               aria-label="Search"
             >
               <Search className="h-3.5 w-3.5 text-burgundy" />
-              <span className="font-medium">Search</span>
+              <span className="hidden font-medium xl:inline">Search</span>
               <kbd className="rounded bg-ivory px-1.5 py-0.5 font-mono text-[10px] font-bold text-burgundy">⌘K</kbd>
             </button>
             <Link href="/track" className={`${iconBtn} hidden lg:flex`} aria-label="Track order" title="Track order">
@@ -188,7 +188,7 @@ export const Header: React.FC = () => {
 
       {/* Menu drawer — rendered outside <header> so the header's backdrop blur can't trap it */}
       {isMenuOpen && (
-        <div id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" className="fixed inset-0 z-[60] lg:hidden">
+        <div id="site-menu" role="dialog" aria-modal="true" aria-label="Menu" className="fixed inset-0 z-[60] md:hidden">
           <div className="absolute inset-0 bg-espresso/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
           <div ref={menuRef} className="absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col overflow-y-auto overscroll-contain bg-ivory shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="flex h-16 items-center justify-between border-b border-burgundy/10 px-4">

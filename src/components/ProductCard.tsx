@@ -109,7 +109,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
           <Heart className={`h-4 w-4 ${isFavorited ? "fill-current" : ""}`} />
         </button>
 
-        {/* Mobile quick add → opens quick view to choose size */}
+        {/* Touch quick add → opens quick view to choose size (visible on phones and touchscreens) */}
         <button
           type="button"
           onClick={(e) => {
@@ -117,13 +117,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
             setQuickViewProduct(product);
           }}
           aria-label={`Quick add ${product.name}`}
-          className="hit-44 absolute bottom-2 right-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-burgundy text-gold shadow-lg active:scale-90 sm:hidden"
+          className="hit-44 absolute bottom-2 right-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-burgundy text-gold shadow-lg active:scale-90 [@media(hover:hover)]:sm:hidden"
         >
           <Plus className="h-4 w-4" />
         </button>
 
-        {/* Desktop hover: quick view + 1-tap size add */}
-        <div className="absolute inset-x-2 bottom-2 z-20 hidden translate-y-2 flex-col gap-1.5 rounded-xl bg-white/95 p-2 opacity-0 shadow-lg backdrop-blur transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:flex">
+        {/* Desktop pointer hover: quick view + 1-tap size add (only on devices with true mouse hover) */}
+        <div className="absolute inset-x-2 bottom-2 z-20 hidden translate-y-2 flex-col gap-1.5 rounded-xl bg-white/95 p-2 opacity-0 shadow-lg backdrop-blur transition-all duration-300 [@media(hover:hover)]:group-hover:translate-y-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:sm:flex">
           <div className="flex items-center justify-between px-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-espresso/60">
               {addedSize ? `Size ${addedSize} added` : "Quick add"}

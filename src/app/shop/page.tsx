@@ -239,7 +239,7 @@ function ShopContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Desktop Sidebar Filters */}
-        <aside className="hidden lg:block space-y-8 p-6 bg-white rounded-2xl border border-burgundy/10 shadow-xs h-fit sticky top-28">
+        <aside className="hidden lg:block space-y-8 p-6 bg-white rounded-2xl border border-burgundy/10 shadow-xs max-h-[calc(100vh-8rem)] overflow-y-auto no-scrollbar overscroll-contain sticky top-28">
           <div className="flex items-center justify-between pb-3 border-b border-burgundy/15">
             <span className="text-xs font-bold uppercase tracking-widest text-burgundy flex items-center gap-1.5">
               <Filter className="w-3.5 h-3.5 text-gold" /> Filter Collection

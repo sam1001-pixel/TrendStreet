@@ -298,7 +298,7 @@ export default function AdminProductsPage() {
       {/* Products Table with Inline Stock Adjustments */}
       <div className="bg-white rounded-2xl border border-burgundy/15 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
+          <table className="w-full min-w-[720px] text-xs text-left">
             <thead>
               <tr className="bg-ivory text-espresso/80 border-b border-burgundy/15 uppercase font-bold text-[10px] tracking-wider">
                 <th className="p-3.5">Garment</th>
@@ -473,8 +473,8 @@ export default function AdminProductsPage() {
 
       {/* ADD PRODUCT MODAL */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-ivory rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-ivory rounded-3xl max-w-2xl w-full p-5 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
               <h3 className="font-serif text-xl font-bold text-espresso">
                 Add New Garment to OFFVYBE
@@ -750,8 +750,8 @@ export default function AdminProductsPage() {
 
       {/* EDIT PRODUCT MODAL */}
       {editingProduct && (
-        <div className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-ivory rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-ivory rounded-3xl max-w-2xl w-full p-5 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[92dvh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
               <h3 className="font-serif text-xl font-bold text-espresso">
                 Edit Garment: {editingProduct.name}
