@@ -46,3 +46,68 @@ test("pricing uses the admin's delivery charges", () => {
 test("fillText - placeholders", () => {
   assert.equal(fillText("Free over {freeOver} · {count} styles", DEFAULT_STORE_CONFIG, { count: 24 }), "Free over ₹1,999 · 24 styles");
 });
+
+test("sanitizeStoreConfig - cleans hero presentation details and looks", () => {
+  const c = sanitizeStoreConfig({
+    hero: {
+      badgeText: "Special Edition Drop",
+      wordmark: "offvybe",
+      secondaryCtaText: "Explore Atelier",
+      secondaryCtaLink: "javascript:evil()",
+      looks: [
+        {
+          key: "Custom Oversized",
+          line: "Architectural drape built to last.",
+          href: "/oversized",
+          image: "https://images.unsplash.com/custom-photo",
+        },
+        {
+          key: "Bad Look",
+          line: "Test",
+          href: "javascript:alert(1)",
+          image: "not-a-valid-url",
+        },
+      ],
+    },
+  });
+
+  assert.equal(c.hero.badgeText, "Special Edition Drop");
+  assert.equal(c.hero.wordmark, "OFFVYBE"); // uppercase enforced
+  assert.equal(c.hero.secondaryCtaText, "Explore Atelier");
+  assert.equal(c.hero.secondaryCtaLink, "/shop"); // unsafe link discarded to fallback
+  assert.equal(c.hero.looks.length, 2);
+  assert.equal(c.hero.looks[0].key, "Custom Oversized");
+  assert.equal(c.hero.looks[0].image, "https://images.unsplash.com/custom-photo");
+  assert.equal(c.hero.looks[1].href, "/boxy-fit"); // unsafe href falls back to def.href
+  assert.equal(c.hero.looks[1].image, DEFAULT_STORE_CONFIG.hero.looks[1].image); // invalid image discarded to default
+});
+
+test("sanitizeStoreConfig - cleans silhouettes section copy and panels", () => {
+  const c = sanitizeStoreConfig({
+    silhouettes: {
+      eyebrow: "New Architecture",
+      titleLine1: "Six cuts.",
+      titleLine2: "Zero compromise.",
+      subtitle: "Every garment conforms to uncompromising streetwear geometry.",
+      panels: [
+        {
+          no: "01",
+          name: "Hoodies",
+          href: "/shop?category=Oversized",
+          shortTag: "520gsm heavy drape",
+          copy: "Crafted for effortless silhouettes.",
+          image: "/brand/custom-hoodie.jpg",
+        },
+      ],
+    },
+  });
+
+  assert.equal(c.silhouettes.eyebrow, "New Architecture");
+  assert.equal(c.silhouettes.titleLine1, "Six cuts.");
+  assert.equal(c.silhouettes.titleLine2, "Zero compromise.");
+  assert.equal(c.silhouettes.subtitle, "Every garment conforms to uncompromising streetwear geometry.");
+  assert.equal(c.silhouettes.panels.length, 1);
+  assert.equal(c.silhouettes.panels[0].name, "Hoodies");
+  assert.equal(c.silhouettes.panels[0].image, "/brand/custom-hoodie.jpg");
+});
+

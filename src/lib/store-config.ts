@@ -8,6 +8,24 @@
  * falls back to the defaults below. Pure module — safe on the server and in the browser.
  */
 
+import { safeHref } from "@/lib/safe-redirect";
+
+export interface HeroLook {
+  key: string;
+  line: string;
+  href: string;
+  image: string;
+}
+
+export interface SilhouettePanel {
+  no: string;
+  name: string;
+  href: string;
+  shortTag: string;
+  copy: string;
+  image: string;
+}
+
 export interface StoreConfig {
   shipping: {
     /** Free delivery when the bag (after discount) reaches this many rupees. 0 = always free. */
@@ -57,6 +75,22 @@ export interface StoreConfig {
   trust: { title: string; note: string }[];
   /** Line under each category title on its landing page. */
   categoryTaglines: Record<"Oversized" | "Jeans" | "Boxy Fit" | "Jackets", string>;
+  /** Hero presentation details including rotating looks, images, copy, and kinetic typography. */
+  hero: {
+    badgeText: string;
+    wordmark: string;
+    secondaryCtaText: string;
+    secondaryCtaLink: string;
+    looks: HeroLook[];
+  };
+  /** Architectural Silhouettes / Four Cuts section on the homepage. */
+  silhouettes: {
+    eyebrow: string;
+    titleLine1: string;
+    titleLine2: string;
+    subtitle: string;
+    panels: SilhouettePanel[];
+  };
 }
 
 export const DEFAULT_STORE_CONFIG: StoreConfig = {
@@ -91,6 +125,72 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
     "Boxy Fit": "Cropped, wide-body shirts & knits",
     Jackets: "Bombers, chores & shells",
   },
+  hero: {
+    badgeText: "Drop 04 — live now",
+    wordmark: "OFFVYBE",
+    secondaryCtaText: "Shop all",
+    secondaryCtaLink: "/shop",
+    looks: [
+      {
+        key: "Oversized",
+        href: "/oversized",
+        image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2000&auto=format&fit=crop",
+        line: "520gsm loopback. Built to hang, not cling.",
+      },
+      {
+        key: "Boxy Fit",
+        href: "/boxy-fit",
+        image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=2000&auto=format&fit=crop",
+        line: "Cropped hem, wide body, 3cm collar.",
+      },
+      {
+        key: "Jackets",
+        href: "/jackets",
+        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=2000&auto=format&fit=crop",
+        line: "Suede bombers and duck canvas chore cuts.",
+      },
+    ],
+  },
+  silhouettes: {
+    eyebrow: "Architectural Foundations",
+    titleLine1: "Four cuts.",
+    titleLine2: "Nothing else.",
+    subtitle: "No suits, no formal shoes. Every piece belongs to one of four silhouettes.",
+    panels: [
+      {
+        name: "Oversized",
+        href: "/oversized",
+        no: "01",
+        shortTag: "520gsm Loopback Hoodies & Dropped Tees",
+        image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1400&auto=format&fit=crop",
+        copy: "Heavyweight loopback hoodies and 320gsm drop-shoulder tees engineered with relaxed architectural drape.",
+      },
+      {
+        name: "Jeans",
+        href: "/shop?category=Jeans",
+        no: "02",
+        shortTag: "Baggy, Carpenter & Selvedge Denim",
+        image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1400&auto=format&fit=crop",
+        copy: "Relaxed baggy and carpenter cuts in heavyweight denim, made to stack and wear in over years.",
+      },
+      {
+        name: "Boxy Fit",
+        href: "/boxy-fit",
+        no: "03",
+        shortTag: "Cropped Waist & Wide-Body Knits",
+        image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1400&auto=format&fit=crop",
+        copy: "Cropped, wide-body knits and structured flannel overshirts that sit precisely at the natural beltline.",
+      },
+      {
+        name: "Jackets",
+        href: "/jackets",
+        no: "04",
+        shortTag: "Handcrafted Flight Bombers & Shells",
+        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1400&auto=format&fit=crop",
+        copy: "Suede flight bombers, Melton overcoats, and Japanese duck canvas chores built for generational longevity.",
+      },
+    ],
+  },
 };
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
@@ -109,6 +209,12 @@ const https = (v: unknown) => {
   if (typeof v !== "string") return "";
   const u = v.trim();
   return /^https:\/\/[^\s"'<>]{3,300}$/i.test(u) ? u : "";
+};
+const mediaUrl = (v: unknown, fallback: string) => {
+  if (typeof v !== "string") return fallback;
+  const u = v.trim();
+  if (/^https?:\/\/[^\s"'<>]{3,800}$/i.test(u) || /^\/[^\s"'<>]{1,800}$/.test(u)) return u;
+  return fallback;
 };
 const phone = (v: unknown) => {
   if (typeof v !== "string") return "";
@@ -175,6 +281,56 @@ export function sanitizeStoreConfig(raw: unknown): StoreConfig {
       const out = { ...d.categoryTaglines };
       for (const k of Object.keys(out) as (keyof typeof out)[]) out[k] = str(ct[k], d.categoryTaglines[k], 80) || d.categoryTaglines[k];
       return out;
+    })(),
+    hero: (() => {
+      const hr = isObj(r.hero) ? (r.hero as Record<string, unknown>) : {};
+      const looksIn = Array.isArray(hr.looks) ? hr.looks : d.hero.looks;
+      const cleanLooks: HeroLook[] = looksIn
+        .filter(isObj)
+        .slice(0, 10)
+        .map((l: any, i: number) => {
+          const def = d.hero.looks[i] || d.hero.looks[0];
+          return {
+            key: str(l.key, def.key, 40) || def.key,
+            line: str(l.line, def.line, 140) || def.line,
+            href: safeHref(l.href, def.href),
+            image: mediaUrl(l.image, def.image),
+          };
+        });
+
+      return {
+        badgeText: str(hr.badgeText, d.hero.badgeText, 60),
+        wordmark: str(hr.wordmark, d.hero.wordmark, 20).toUpperCase() || d.hero.wordmark,
+        secondaryCtaText: str(hr.secondaryCtaText, d.hero.secondaryCtaText, 30) || d.hero.secondaryCtaText,
+        secondaryCtaLink: safeHref(hr.secondaryCtaLink, d.hero.secondaryCtaLink),
+        looks: cleanLooks.length ? cleanLooks : d.hero.looks,
+      };
+    })(),
+    silhouettes: (() => {
+      const sil = isObj(r.silhouettes) ? (r.silhouettes as Record<string, unknown>) : {};
+      const panelsIn = Array.isArray(sil.panels) ? sil.panels : d.silhouettes.panels;
+      const cleanPanels: SilhouettePanel[] = panelsIn
+        .filter(isObj)
+        .slice(0, 8)
+        .map((p: any, i: number) => {
+          const def = d.silhouettes.panels[i] || d.silhouettes.panels[0];
+          return {
+            no: str(p.no, def.no, 6) || def.no,
+            name: str(p.name, def.name, 40) || def.name,
+            href: safeHref(p.href, def.href),
+            shortTag: str(p.shortTag, def.shortTag, 100) || def.shortTag,
+            copy: str(p.copy, def.copy, 300) || def.copy,
+            image: mediaUrl(p.image, def.image),
+          };
+        });
+
+      return {
+        eyebrow: str(sil.eyebrow, d.silhouettes.eyebrow, 60) || d.silhouettes.eyebrow,
+        titleLine1: str(sil.titleLine1, d.silhouettes.titleLine1, 50) || d.silhouettes.titleLine1,
+        titleLine2: str(sil.titleLine2, d.silhouettes.titleLine2, 50) || d.silhouettes.titleLine2,
+        subtitle: str(sil.subtitle, d.silhouettes.subtitle, 250) || d.silhouettes.subtitle,
+        panels: cleanPanels.length ? cleanPanels : d.silhouettes.panels,
+      };
     })(),
   };
 }

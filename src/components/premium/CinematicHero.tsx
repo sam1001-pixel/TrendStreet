@@ -6,29 +6,8 @@ import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } fr
 import { ArrowRight, ArrowDown } from "lucide-react";
 import { MagneticButton } from "./MagneticButton";
 import { useStore } from "@/context/StoreContext";
+import { DEFAULT_STORE_CONFIG } from "@/lib/store-config";
 
-const LOOKS = [
-  {
-    key: "Oversized",
-    href: "/oversized",
-    image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2000&auto=format&fit=crop",
-    line: "520gsm loopback. Built to hang, not cling.",
-  },
-  {
-    key: "Boxy Fit",
-    href: "/boxy-fit",
-    image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=2000&auto=format&fit=crop",
-    line: "Cropped hem, wide body, 3cm collar.",
-  },
-  {
-    key: "Jackets",
-    href: "/jackets",
-    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=2000&auto=format&fit=crop",
-    line: "Suede bombers and duck canvas chore cuts.",
-  },
-] as const;
-
-const WORD = "OFFVYBE".split("");
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function CinematicHero() {
@@ -38,6 +17,24 @@ export function CinematicHero() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
 
+  const cfg = siteSettings.config ?? DEFAULT_STORE_CONFIG;
+  const heroConfig = cfg.hero ?? DEFAULT_STORE_CONFIG.hero;
+  const looks = heroConfig.looks && heroConfig.looks.length > 0 ? heroConfig.looks : DEFAULT_STORE_CONFIG.hero.looks;
+  const safeActive = active >= looks.length ? 0 : active;
+  const look = looks[safeActive] || looks[0];
+
+  const wordmarkStr = heroConfig.wordmark?.trim() || "OFFVYBE";
+  const wordChars = wordmarkStr.split("");
+  const highlightIdx = (() => {
+    const vIdx = wordChars.findIndex((c) => c.toUpperCase() === "V");
+    if (vIdx >= 0) return vIdx;
+    return Math.floor(wordChars.length / 2);
+  })();
+
+  const badgeText = heroConfig.badgeText?.trim() || siteSettings.hero?.badgeText?.trim() || "Drop 04 — live now";
+  const secondaryCtaText = heroConfig.secondaryCtaText?.trim() || "Shop all";
+  const secondaryCtaLink = heroConfig.secondaryCtaLink || "/shop";
+
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const imgScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.3]);
   const wordY = useTransform(scrollYProgress, [0, 1], ["0%", "60%"]);
@@ -45,11 +42,9 @@ export function CinematicHero() {
 
   useEffect(() => {
     if (paused || reduce) return;
-    const t = setInterval(() => setActive((i) => (i + 1) % LOOKS.length), 5200);
+    const t = setInterval(() => setActive((i) => (i + 1) % looks.length), 5200);
     return () => clearInterval(t);
-  }, [paused, reduce]);
-
-  const look = LOOKS[active];
+  }, [paused, reduce, looks.length]);
 
   return (
     <section
@@ -93,7 +88,7 @@ export function CinematicHero() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-gold" />
           </span>
-          {siteSettings.hero?.badgeText?.trim() || "Drop 04 — live now"}
+          {badgeText}
         </motion.p>
 
         <AnimatePresence mode="wait">
@@ -122,34 +117,35 @@ export function CinematicHero() {
             <ArrowRight className="h-4 w-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
           </MagneticButton>
           <MagneticButton
-            href="/shop"
+            href={secondaryCtaLink}
             variant="ghost"
             wrapperClassName="w-full sm:w-[170px]"
             className="w-full justify-center px-5 tracking-[0.16em] sm:tracking-[0.2em]"
           >
-            Shop all
+            {secondaryCtaText}
           </MagneticButton>
         </div>
 
         {/* Silhouette switcher with progress */}
         <div
-          className="mt-3 sm:mt-8 grid grid-cols-3 gap-2 sm:max-w-xl"
+          className="mt-3 sm:mt-8 grid gap-2 sm:max-w-xl"
+          style={{ gridTemplateColumns: `repeat(${Math.min(looks.length, 6)}, minmax(0, 1fr))` }}
           role="tablist"
           aria-label="Choose silhouette"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {LOOKS.map((l, i) => (
+          {looks.map((l, i) => (
             <button
-              key={l.key}
+              key={`${l.key}-${i}`}
               role="tab"
-              aria-selected={i === active}
+              aria-selected={i === safeActive}
               onClick={() => setActive(i)}
               className="group min-h-[44px] text-left"
             >
               <span
-                className={`block text-[11px] font-bold uppercase tracking-[0.18em] transition-colors sm:text-xs ${
-                  i === active ? "text-gold font-black" : "text-white/50 group-hover:text-white/80"
+                className={`block text-[11px] font-bold uppercase tracking-[0.18em] transition-colors sm:text-xs truncate ${
+                  i === safeActive ? "text-gold font-black" : "text-white/50 group-hover:text-white/80"
                 }`}
               >
                 {l.key}
@@ -163,13 +159,13 @@ export function CinematicHero() {
       <motion.h1
         style={{ y: reduce ? 0 : wordY }}
         className="pointer-events-none absolute inset-x-0 top-[14%] sm:top-[10%] z-[5] select-none whitespace-nowrap px-4 text-center font-display font-black uppercase leading-[0.8] text-white/95 text-[clamp(4.5rem,18vw,14rem)]"
-        aria-label="OFFVYBE"
+        aria-label={wordmarkStr}
       >
-        {WORD.map((ch, i) => (
+        {wordChars.map((ch, i) => (
           <motion.span
             key={i}
             aria-hidden
-            className={`inline-block ${i === 3 ? "text-gold" : ""}`}
+            className={`inline-block ${i === highlightIdx ? "text-gold" : ""}`}
             initial={reduce ? false : { y: "110%", opacity: 0 }}
             animate={{ y: "0%", opacity: 1 }}
             transition={{ delay: 0.05 + i * 0.045, duration: 0.8, ease: EASE }}

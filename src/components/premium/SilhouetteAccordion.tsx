@@ -4,44 +4,16 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
+import { useStore } from "@/context/StoreContext";
+import { DEFAULT_STORE_CONFIG } from "@/lib/store-config";
 
-const PANELS = [
-  {
-    name: "Oversized",
-    href: "/oversized",
-    no: "01",
-    shortTag: "520gsm Loopback Hoodies & Dropped Tees",
-    image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1400&auto=format&fit=crop",
-    copy: "Heavyweight loopback hoodies and 320gsm drop-shoulder tees engineered with relaxed architectural drape.",
-  },
-  {
-    name: "Jeans",
-    href: "/shop?category=Jeans",
-    no: "02",
-    shortTag: "Baggy, Carpenter & Selvedge Denim",
-    image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1400&auto=format&fit=crop",
-    copy: "Relaxed baggy and carpenter cuts in heavyweight denim, made to stack and wear in over years.",
-  },
-  {
-    name: "Boxy Fit",
-    href: "/boxy-fit",
-    no: "03",
-    shortTag: "Cropped Waist & Wide-Body Knits",
-    image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1400&auto=format&fit=crop",
-    copy: "Cropped, wide-body knits and structured flannel overshirts that sit precisely at the natural beltline.",
-  },
-  {
-    name: "Jackets",
-    href: "/jackets",
-    no: "04",
-    shortTag: "Handcrafted Flight Bombers & Shells",
-    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1400&auto=format&fit=crop",
-    copy: "Suede flight bombers, Melton overcoats, and Japanese duck canvas chores built for generational longevity.",
-  },
-];
-
-/** Four silhouettes: 2 × 2 tiles on phones and tablets, an expanding accordion on desktop. */
+/** Silhouettes: 2 × 2 tiles on phones and tablets, an expanding accordion on desktop. Configurable via Admin Settings. */
 export function SilhouetteAccordion() {
+  const { siteSettings } = useStore();
+  const cfg = siteSettings.config ?? DEFAULT_STORE_CONFIG;
+  const silhouettes = cfg.silhouettes ?? DEFAULT_STORE_CONFIG.silhouettes;
+  const panels = silhouettes.panels && silhouettes.panels.length > 0 ? silhouettes.panels : DEFAULT_STORE_CONFIG.silhouettes.panels;
+
   const [open, setOpen] = useState(0);
 
   return (
@@ -50,22 +22,22 @@ export function SilhouetteAccordion() {
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
           <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-crimson block mb-1">
-            Architectural Foundations
+            {silhouettes.eyebrow}
           </span>
           <h2 className="font-display text-3xl font-black uppercase leading-[0.85] text-stone-950 sm:text-6xl lg:text-7xl">
-            Four cuts.
+            {silhouettes.titleLine1}
             <br />
-            <span className="text-outline text-burgundy">Nothing else.</span>
+            <span className="text-outline text-burgundy">{silhouettes.titleLine2}</span>
           </h2>
         </div>
         <p className="max-w-xs text-xs sm:text-sm leading-relaxed text-stone-600 font-light">
-          No suits, no formal shoes. Every piece belongs to one of four silhouettes.
+          {silhouettes.subtitle}
         </p>
       </div>
 
       {/* Grid: 1 col on mobile, 2 cols on tablet, expanding flex row on desktop */}
       <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:flex lg:h-[580px] lg:flex-row lg:gap-5">
-        {PANELS.map((p, i) => {
+        {panels.map((p, i) => {
           const isOpen = open === i;
           return (
             <Link

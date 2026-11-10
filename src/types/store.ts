@@ -1,4 +1,5 @@
-import type { StoreConfig } from "@/lib/store-config";
+import type { StoreConfig, HeroLook, SilhouettePanel } from "@/lib/store-config";
+export type { HeroLook, SilhouettePanel };
 
 export type ProductCategory =
   | "Oversized"

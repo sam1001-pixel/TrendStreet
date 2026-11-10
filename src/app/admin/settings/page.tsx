@@ -29,6 +29,7 @@ import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { SiteSettings } from "@/types/store";
 import { sanitizeStoreConfig, type StoreConfig } from "@/lib/store-config";
 import { DeliveryPanel, PricingPanel, OffersPanel, SocialPanel, TrustPanel } from "@/components/admin/StoreConfigPanels";
+import { HeroConfigPanel, SilhouettesConfigPanel } from "@/components/admin/HeroAndCutsPanels";
 
 /** ISO time → value for <input type="datetime-local"> in the admin's own time zone. */
 function toLocalInput(iso: string | null): string {
@@ -48,7 +49,7 @@ export default function AdminSettingsPage() {
   const storeConfig = sanitizeStoreConfig(formData.config);
   const setStoreConfig = (next: StoreConfig) => setFormData({ ...formData, config: next });
   const [activeTab, setActiveTab] = useState<
-    "hero" | "sections" | "drop" | "announcement" | "categories" | "marquee" | "promos" | "contact" | "delivery" | "pricing" | "offers" | "social" | "trust"
+    "hero" | "silhouettes" | "sections" | "drop" | "announcement" | "categories" | "marquee" | "promos" | "contact" | "delivery" | "pricing" | "offers" | "social" | "trust"
   >("delivery");
   const [newPromoCode, setNewPromoCode] = useState({
     code: "",
@@ -235,7 +236,8 @@ export default function AdminSettingsPage() {
           { id: "offers", label: "Offers", icon: Percent },
           { id: "social", label: "Social & WhatsApp", icon: Share2 },
           { id: "trust", label: "Trust badges", icon: ShieldCheck },
-          { id: "hero", label: "Hero & Headlines", icon: Layout },
+          { id: "hero", label: "Hero & Images", icon: Layout },
+          { id: "silhouettes", label: "Four Cuts / Silhouettes", icon: Layers },
           { id: "sections", label: "Storefront Sections", icon: Sliders },
           { id: "drop", label: "Next drop", icon: Clock },
           { id: "announcement", label: "Announcement Bar", icon: Sparkles },
@@ -273,253 +275,11 @@ export default function AdminSettingsPage() {
         {activeTab === "social" && <SocialPanel config={storeConfig} onChange={setStoreConfig} />}
         {activeTab === "trust" && <TrustPanel config={storeConfig} onChange={setStoreConfig} />}
 
-        {/* Tab 1: Hero & Headlines */}
-        {activeTab === "hero" && (
-          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-burgundy/15 shadow-xs space-y-6">
-            <p role="note" className="rounded-xl border border-burgundy/15 bg-ivory p-3 text-xs text-espresso/80">
-              On the current homepage the <strong>Top Badge</strong> is the red line above the hero buttons (e.g. &ldquo;Drop 04 — live now&rdquo;).
-              The other hero fields are kept for alternative layouts and don&apos;t show right now.
-            </p>
-            <div className="border-b border-burgundy/10 pb-3">
-              <h2 className="font-serif text-lg font-bold text-espresso">
-                Storefront Hero Presentation
-              </h2>
-              <p className="text-xs text-espresso/60">
-                Configure the primary headline, hero badge, descriptive copy, and CTA links.
-              </p>
-            </div>
+        {/* Tab: Hero Presentation, Slides & Images */}
+        {activeTab === "hero" && <HeroConfigPanel config={storeConfig} onChange={setStoreConfig} />}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Hero Top Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.hero.badgeText}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, badgeText: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Headline Line 1
-                </label>
-                <input
-                  type="text"
-                  value={formData.hero.titleLine1}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, titleLine1: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none font-serif text-base"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Headline Line 2 (Highlighted)
-                </label>
-                <input
-                  type="text"
-                  value={formData.hero.titleLine2}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, titleLine2: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none font-serif text-base"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Subtitle Description
-                </label>
-                <textarea
-                  rows={2}
-                  value={formData.hero.subtitle}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, subtitle: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Primary CTA Label
-                </label>
-                <input
-                  type="text"
-                  value={formData.hero.primaryBtnText}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, primaryBtnText: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Primary CTA Destination URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.hero.primaryBtnLink}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, primaryBtnLink: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Secondary CTA Label
-                </label>
-                <input
-                  type="text"
-                  value={formData.hero.secondaryBtnText}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, secondaryBtnText: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-espresso uppercase tracking-wider mb-1">
-                  Secondary CTA Destination URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.hero.secondaryBtnLink}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, secondaryBtnLink: e.target.value },
-                    })
-                  }
-                  className="w-full px-3.5 py-2.5 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Three Live Stats */}
-            <div className="pt-4 border-t border-burgundy/10">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-espresso mb-3">
-                Hero Metrics & Trust Counters
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-3 bg-ivory rounded-xl border border-burgundy/15 space-y-2">
-                  <span className="text-[10px] font-bold text-espresso/60 uppercase">Stat #1</span>
-                  <input
-                    type="text"
-                    placeholder="Value (e.g. 520gsm)"
-                    value={formData.hero.stat1Value}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        hero: { ...formData.hero, stat1Value: e.target.value },
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white rounded border border-burgundy/20 font-bold"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Label (e.g. Heavyweight Loopback)"
-                    value={formData.hero.stat1Label}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        hero: { ...formData.hero, stat1Label: e.target.value },
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white rounded border border-burgundy/20 text-espresso/70"
-                  />
-                </div>
-
-                <div className="p-3 bg-ivory rounded-xl border border-burgundy/15 space-y-2">
-                  <span className="text-[10px] font-bold text-espresso/60 uppercase">Stat #2</span>
-                  <input
-                    type="text"
-                    placeholder="Value (e.g. 14oz)"
-                    value={formData.hero.stat2Value}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        hero: { ...formData.hero, stat2Value: e.target.value },
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white rounded border border-burgundy/20 font-bold"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Label (e.g. Okayama Selvedge Denim)"
-                    value={formData.hero.stat2Label}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        hero: { ...formData.hero, stat2Label: e.target.value },
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white rounded border border-burgundy/20 text-espresso/70"
-                  />
-                </div>
-
-                <div className="p-3 bg-ivory rounded-xl border border-burgundy/15 space-y-2">
-                  <span className="text-[10px] font-bold text-espresso/60 uppercase">Stat #3</span>
-                  <input
-                    type="text"
-                    placeholder="Value (e.g. Boxy Cut)"
-                    value={formData.hero.stat3Value}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        hero: { ...formData.hero, stat3Value: e.target.value },
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white rounded border border-burgundy/20 font-bold"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Label (e.g. Dropped-Shoulder Geometry)"
-                    value={formData.hero.stat3Label}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        hero: { ...formData.hero, stat3Label: e.target.value },
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 text-xs bg-white rounded border border-burgundy/20 text-espresso/70"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Tab: Four Cuts / Silhouettes */}
+        {activeTab === "silhouettes" && <SilhouettesConfigPanel config={storeConfig} onChange={setStoreConfig} />}
 
         {/* Tab 2: Storefront Sections Visibility */}
         {activeTab === "sections" && (
