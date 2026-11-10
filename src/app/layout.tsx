@@ -3,7 +3,7 @@ import { Montserrat, Big_Shoulders } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
-// Trend Street typography: Montserrat for text, Big Shoulders Display for big headings.
+// OFFVYBE typography: Montserrat for text, Big Shoulders Display for big headings.
 const montserrat = Montserrat({
   subsets: ["latin"],
   // Only the weights the site uses (400–700; the heavy headings use the display font). 12 font files → 4,
@@ -52,13 +52,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
+  title: "OFFVYBE | Wear Your Own Vibe — Oversized, Boxy Fit & Jackets",
   description:
-    "Trend Street is the definitive contemporary luxury menswear house. Specializing in 520gsm loopback oversized hoodies, boxy fit knits, and handcrafted flight jackets.",
+    "OFFVYBE is the definitive contemporary luxury menswear house. Specializing in 520gsm loopback oversized hoodies, boxy fit knits, and handcrafted flight jackets.",
   keywords: [
-    "trend street",
-    "trendstreet",
-    "the style hub",
+    "offvybe",
+    "₹499 t-shirts",
     "oversized hoodie",
     "heavyweight oversized tee",
     "heavyweight streetwear",
@@ -67,13 +66,14 @@ export const metadata: Metadata = {
     "suede bomber jacket",
     "mens streetwear luxury",
     "menswear",
+    "wear your own vibe",
   ],
-  authors: [{ name: "Trend Street Studio" }],
-  creator: "Trend Street",
-  publisher: "Trend Street",
+  authors: [{ name: "OFFVYBE Studio" }],
+  creator: "OFFVYBE",
+  publisher: "OFFVYBE",
   metadataBase: new URL(SITE_URL),
-  // Opened from the iPhone home screen: full screen, with the Trend Street name under the icon.
-  appleWebApp: { capable: true, title: "Trend Street", statusBarStyle: "black" },
+  // Opened from the iPhone home screen: full screen, with the OFFVYBE name under the icon.
+  appleWebApp: { capable: true, title: "OFFVYBE", statusBarStyle: "black" },
   other: {
     "geo.region": "IN-MH",
     "geo.placename": "Mumbai, Bandra West",
@@ -84,16 +84,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: SITE_URL,
-    title: "Trend Street | The Style Hub — Oversized, Boxy Fit & Jackets",
+    title: "OFFVYBE | Wear Your Own Vibe — Oversized, Boxy Fit & Jackets",
     description:
       "Contemporary luxury menswear engineering. 520gsm Japanese loopback hoodies, boxy fit architecture, and handcrafted jackets.",
-    siteName: "Trend Street",
+    siteName: "OFFVYBE",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Trend Street | The Style Hub",
+    title: "OFFVYBE | Wear Your Own Vibe",
     description: "Contemporary Streetwear & Luxury Menswear: Oversized, Boxy Fit, Jackets.",
-    creator: "@trendstreet",
+    creator: "@offvybe",
   },
 };
 

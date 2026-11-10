@@ -31,7 +31,7 @@ async function ask(question: string, hidden = false): Promise<string> {
 }
 
 async function main() {
-  console.log("\nTrend Street — set the admin login\n");
+  console.log("\nOFFVYBE — set the admin login\n");
   const email = (await ask("Admin email: ")).toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("That doesn't look like an email address.");
   const password = await ask("New admin password (12+ characters): ", true);

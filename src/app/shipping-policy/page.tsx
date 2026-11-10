@@ -8,15 +8,15 @@ import { DEFAULT_STORE_CONFIG, rupees } from "@/lib/store-config";
 export const revalidate = 300;
 
 export const metadata = {
-  title: "Shipping & Logistics Policy | Trend Street",
-  description: "Trend Street shipping timelines, courier partners (Blue Dart Apex & Delhivery Air), and domestic delivery coverage across India.",
+  title: "Shipping & Logistics Policy | OFFVYBE",
+  description: "OFFVYBE shipping timelines, courier partners (Blue Dart Apex & Delhivery Air), and domestic delivery coverage across India.",
 };
 
 export default async function ShippingPolicyPage() {
   const { settings } = await getCachedStorefront();
   const cfg = settings.config ?? DEFAULT_STORE_CONFIG;
   const phone = settings.contactInfo?.phone || "";
-  const email = settings.contactInfo?.email || "concierge@trendstreet.in";
+  const email = settings.contactInfo?.email || "concierge@offvybe.in";
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12">
       {/* Back Link */}
@@ -41,7 +41,7 @@ export default async function ShippingPolicyPage() {
           Effective Date: January 1, 2026 • Dispatched from Mumbai Atelier
         </p>
         <p className="text-xs text-espresso/80 leading-relaxed">
-          At Trend Street, every garment is handled as an architectural piece. From fabric steam-finishing to hardware protection,
+          At OFFVYBE, every garment is handled as an architectural piece. From fabric steam-finishing to hardware protection,
           our logistics chain guarantees white-glove doorstep delivery across 19,000+ Indian postal PIN codes.
         </p>
       </div>

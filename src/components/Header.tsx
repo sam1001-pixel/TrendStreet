@@ -20,7 +20,7 @@ const CATEGORIES = [
 ];
 
 const MORE_LINKS = [
-  { label: "Why Trend Street", href: "/why-trend-street", icon: HelpCircle },
+  { label: "Why OFFVYBE", href: "/why-offvybe", icon: HelpCircle },
   { label: "Track my order", href: "/track", icon: Truck },
 ];
 
@@ -246,7 +246,7 @@ export const Header: React.FC = () => {
             </div>
 
             <div className="border-t border-burgundy/10 p-4 text-xs text-espresso/60">
-              <p>Need help? <a href="mailto:concierge@trendstreet.in" className="font-semibold text-burgundy">concierge@trendstreet.in</a></p>
+              <p>Need help? <a href="mailto:concierge@offvybe.in" className="font-semibold text-burgundy">concierge@offvybe.in</a></p>
             </div>
           </div>
         </div>

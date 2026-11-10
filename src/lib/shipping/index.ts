@@ -1,5 +1,5 @@
 /**
- * Trend Street — SHIPPING PROVIDER FACTORY
+ * OFFVYBE — SHIPPING PROVIDER FACTORY
  */
 
 import { ShippingProvider } from "./types";

@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 
-/** Lets shoppers add Trend Street to their home screen and open it like an app (full screen, own icon). */
+/** Lets shoppers add OFFVYBE to their home screen and open it like an app (full screen, own icon). */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Trend Street — The Style Hub",
-    short_name: "Trend Street",
+    name: "OFFVYBE — Every fit ₹499",
+    short_name: "OFFVYBE",
     description: "Oversized tees, jeans, boxy fits and jackets. New drops, cash on delivery, easy exchanges.",
     start_url: "/?source=homescreen",
     scope: "/",

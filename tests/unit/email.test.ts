@@ -22,19 +22,19 @@ test("getVerifiedSenderAddress - resolves configured sender with fallback", () =
 
   try {
     // 1. Explicit RESEND_FROM_EMAIL
-    process.env.RESEND_FROM_EMAIL = "Trend Street <orders@trendstreet.in>";
-    process.env.EMAIL_FROM = "fallback@trendstreet.in";
-    assert.equal(getVerifiedSenderAddress(), "Trend Street <orders@trendstreet.in>");
+    process.env.RESEND_FROM_EMAIL = "OFFVYBE <orders@offvybe.in>";
+    process.env.EMAIL_FROM = "fallback@offvybe.in";
+    assert.equal(getVerifiedSenderAddress(), "OFFVYBE <orders@offvybe.in>");
 
     // 2. EMAIL_FROM fallback
     delete process.env.RESEND_FROM_EMAIL;
-    process.env.EMAIL_FROM = "orders@trendstreet.in";
-    assert.equal(getVerifiedSenderAddress(), "orders@trendstreet.in");
+    process.env.EMAIL_FROM = "orders@offvybe.in";
+    assert.equal(getVerifiedSenderAddress(), "orders@offvybe.in");
 
     // 3. Default fallback
     delete process.env.RESEND_FROM_EMAIL;
     delete process.env.EMAIL_FROM;
-    assert.equal(getVerifiedSenderAddress(), "Trend Street <onboarding@resend.dev>");
+    assert.equal(getVerifiedSenderAddress(), "OFFVYBE <onboarding@resend.dev>");
   } finally {
     process.env.RESEND_FROM_EMAIL = origResendFrom;
     process.env.EMAIL_FROM = origEmailFrom;
@@ -76,7 +76,7 @@ test("generateOrderConfirmationHtml - builds luxury email markup with order deta
   const html = generateOrderConfirmationHtml(sampleData);
 
   // Assertions for luxury branding and order context
-  assert.match(html, /Trend Street/);
+  assert.match(html, /OFFVYBE/);
   assert.match(html, /MUMBAI ATELIER/);
   assert.match(html, /TS-2026-9901/);
   assert.match(html, /The Mayfair Velvet Flight Jacket/);

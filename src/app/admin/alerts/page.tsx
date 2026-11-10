@@ -23,8 +23,8 @@ const fmt = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", h
 function waLink(a: Alert, origin: string) {
   const text =
     a.kind === "DROP"
-      ? `Hi! The new Trend Street drop you asked about is live now: ${origin}/shop?sort=newest`
-      : `Hi! ${a.productName ?? "The piece you asked about"}${a.size ? ` (size ${a.size})` : ""} is back in stock at Trend Street: ${origin}/product/${a.productId}`;
+      ? `Hi! The new OFFVYBE drop you asked about is live now: ${origin}/shop?sort=newest`
+      : `Hi! ${a.productName ?? "The piece you asked about"}${a.size ? ` (size ${a.size})` : ""} is back in stock at OFFVYBE: ${origin}/product/${a.productId}`;
   return `https://wa.me/91${a.phone}?text=${encodeURIComponent(text)}`;
 }
 

@@ -66,7 +66,7 @@ test("CSV Security - generateSafeCsv formats rows and headers with formula prote
 
 test("CSV Security - getSafeExportFilename produces sanitized timestamped filename", () => {
   const filename = getSafeExportFilename("Patron Ledger & Spend");
-  assert.ok(filename.startsWith("trendstreet-patron-ledger---spend-"));
+  assert.ok(filename.startsWith("offvybe-patron-ledger---spend-"));
   assert.ok(filename.endsWith(".csv"));
 });
 

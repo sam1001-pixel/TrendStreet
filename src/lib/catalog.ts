@@ -1,5 +1,5 @@
 /**
- * Trend Street — server catalog.
+ * OFFVYBE — server catalog.
  * The database is the source of truth for product copy, prices, photos, videos, variants, stock and reviews
  * (all editable in /admin). If the database is unreachable, the code catalog is served so the shop stays browsable.
  */

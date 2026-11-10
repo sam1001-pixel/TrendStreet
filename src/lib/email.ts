@@ -1,5 +1,5 @@
 /**
- * Trend Street — TRANSACTIONAL EMAIL SERVICE (RESEND)
+ * OFFVYBE — TRANSACTIONAL EMAIL SERVICE (RESEND)
  *
  * Handles order confirmation receipts, payment verification notifications,
  * and delivery updates using Resend's transactional email API.
@@ -29,7 +29,7 @@ function pruneSentOrderCache() {
 
 /**
  * Redacts an email address for safe operational logging without exposing PII.
- * Example: "aarav.sharma@trendstreet.in" -> "a***a@trendstreet.in"
+ * Example: "aarav.sharma@offvybe.in" -> "a***a@offvybe.in"
  */
 export function maskEmailForLogs(email: string): string {
   if (!email || !email.includes("@")) return "***@***";
@@ -83,13 +83,13 @@ export interface SendEmailResult {
 
 /**
  * Resolves the configured sender email address.
- * Prioritizes RESEND_FROM_EMAIL -> EMAIL_FROM -> "Trend Street <onboarding@resend.dev>".
+ * Prioritizes RESEND_FROM_EMAIL -> EMAIL_FROM -> "OFFVYBE <onboarding@resend.dev>".
  */
 export function getVerifiedSenderAddress(): string {
   return (
     process.env.RESEND_FROM_EMAIL ||
     process.env.EMAIL_FROM ||
-    "Trend Street <onboarding@resend.dev>"
+    "OFFVYBE <onboarding@resend.dev>"
   );
 }
 
@@ -132,7 +132,7 @@ export async function isOrderEmailAlreadySent(orderNumber: string, orderId?: str
 }
 
 /**
- * Generates the luxury HTML email markup for Trend Street.
+ * Generates the luxury HTML email markup for OFFVYBE.
  */
 /** Escapes text for safe insertion into HTML. */
 export function escapeHtml(value: string): string {
@@ -199,7 +199,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Confirmed — Trend Street</title>
+  <title>Order Confirmed — OFFVYBE</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #FAF7F2; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FAF7F2; padding: 40px 16px;">
@@ -211,7 +211,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
           <!-- Burgundy Atelier Banner -->
           <tr>
             <td style="background-color: #4A1216; padding: 32px 24px; text-align: center;">
-              <span style="font-family: Georgia, serif; font-size: 26px; font-weight: bold; letter-spacing: 0.25em; color: #FFFFFF; text-transform: uppercase; display: block;">Trend Street</span>
+              <span style="font-family: Georgia, serif; font-size: 26px; font-weight: bold; letter-spacing: 0.25em; color: #FFFFFF; text-transform: uppercase; display: block;">OFFVYBE</span>
               <span style="font-size: 10px; letter-spacing: 0.3em; color: #D4AF37; text-transform: uppercase; margin-top: 6px; display: block;">MUMBAI ATELIER &bull; ARCHITECTURAL MENSWEAR</span>
             </td>
           </tr>
@@ -324,7 +324,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
           <!-- Dispatch Tracking CTA -->
           <tr>
             <td style="padding: 12px 32px 36px 32px; text-align: center;">
-              <a href="https://trendstreet.in/profile" style="background-color: #4A1216; color: #FAF7F2; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 12px; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; display: inline-block;">
+              <a href="https://offvybe.in/profile" style="background-color: #4A1216; color: #FAF7F2; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 12px; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; display: inline-block;">
                 Track Atelier Progress
               </a>
               <p style="font-size: 11px; color: #6B6562; margin-top: 14px; margin-bottom: 0;">
@@ -337,11 +337,11 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
           <tr>
             <td style="background-color: #1A1615; padding: 28px 24px; text-align: center; color: #FAF7F2;">
               <p style="font-size: 12px; color: #D4AF37; margin: 0 0 6px 0; font-weight: 600;">
-                TREND STREET FLAGSHIP ATELIER
+                OFFVYBE FLAGSHIP ATELIER
               </p>
               <p style="font-size: 11px; color: #E8DFD8; margin: 0 0 12px 0; line-height: 1.5;">
                 42 Waterfield Road, Bandra West, Mumbai, Maharashtra 400050<br>
-                Concierge Hotline: +91 98200 12345 &bull; concierge@trendstreet.in
+                Concierge Hotline: +91 98200 12345 &bull; concierge@offvybe.in
               </p>
               <p style="font-size: 10px; color: #8F8884; margin: 0; line-height: 1.4;">
                 This communication is generated following verified electronic settlement. Compliant with the Digital Personal Data Protection Act 2023 (DPDP) and Consumer Protection (E-Commerce) Rules 2020.
@@ -389,9 +389,9 @@ export async function sendOrderConfirmationEmail(
     }
 
     const sender = getVerifiedSenderAddress();
-    const subject = `Order Confirmed — Trend Street Allocation [${data.orderNumber}]`;
+    const subject = `Order Confirmed — OFFVYBE Allocation [${data.orderNumber}]`;
     const html = generateOrderConfirmationHtml(data);
-    const textFallback = `Order Confirmed: ${data.orderNumber}\nTotal: ₹${data.total.toLocaleString("en-IN")}\nRecipient: ${data.customerName}\nStatus: Atelier Allocation Secured\nThank you for choosing Trend Street.`;
+    const textFallback = `Order Confirmed: ${data.orderNumber}\nTotal: ₹${data.total.toLocaleString("en-IN")}\nRecipient: ${data.customerName}\nStatus: Atelier Allocation Secured\nThank you for choosing OFFVYBE.`;
 
     // 2. Dispatch via Resend REST API
     const response = await fetch("https://api.resend.com/emails", {

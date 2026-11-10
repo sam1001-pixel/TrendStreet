@@ -4,8 +4,8 @@ import Link from "next/link";
 import { TrackOrder } from "@/components/TrackOrder";
 
 export const metadata: Metadata = {
-  title: "Track Your Order | Trend Street",
-  description: "Track a Trend Street order with your order number. See dispatch, courier and delivery status for Blue Dart and Delhivery shipments.",
+  title: "Track Your Order | OFFVYBE",
+  description: "Track a OFFVYBE order with your order number. See dispatch, courier and delivery status for Blue Dart and Delhivery shipments.",
   alternates: { canonical: "/track" },
 };
 

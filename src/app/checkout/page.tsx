@@ -403,7 +403,7 @@ export default function CheckoutPage() {
         key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "Trend Street",
+        name: "OFFVYBE",
         description: "Luxury Indian Menswear Order",
         order_id: orderData.orderId,
         image: "/icon.png",
@@ -1011,7 +1011,7 @@ export default function CheckoutPage() {
               ) : (
                 <p className="flex items-start gap-2 rounded-xl bg-ivory p-3 text-xs text-espresso/70">
                   <ShieldCheck className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-700" />
-                  You&apos;ll pick UPI, card or net banking in the next step. Trend Street never sees your card details.
+                  You&apos;ll pick UPI, card or net banking in the next step. OFFVYBE never sees your card details.
                 </p>
               )}
 

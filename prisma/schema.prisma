@@ -360,8 +360,8 @@ model Coupon {
 
 model SiteSettings {
   id String @id @default("global") @map("_id")
-  storeName          String   @default("Trend Street")
-  storeTagline       String   @default("The Style Hub")
+  storeName          String   @default("OFFVYBE")
+  storeTagline       String   @default("Wear Your Own Vibe")
   announcementText   String?
   announcementLink   String?
   announcementActive Boolean  @default(true)
@@ -373,7 +373,7 @@ model SiteSettings {
   heroSecondaryCta   String   @default("/lookbook")
   marqueeText        String[]
   conciergePhone     String   @default("+91 98200 12345")
-  conciergeEmail     String   @default("concierge@trendstreet.in")
+  conciergeEmail     String   @default("concierge@offvybe.in")
   storefrontSections Json?
   /// Next drop countdown on the homepage (hidden when empty or in the past).
   nextDropAt         DateTime?

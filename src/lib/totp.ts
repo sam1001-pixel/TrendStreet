@@ -79,6 +79,6 @@ export function totpMatchStep(secret: string, code: unknown, timeMs = Date.now()
   return matched;
 }
 
-export function otpauthUrl(secret: string, account: string, issuer = "Trend Street Admin") {
+export function otpauthUrl(secret: string, account: string, issuer = "OFFVYBE Admin") {
   return `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(account)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
 }

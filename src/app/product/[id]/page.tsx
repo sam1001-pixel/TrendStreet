@@ -616,7 +616,7 @@ export default function ProductDetailPage() {
           <div className="flex flex-wrap items-center gap-2 border-y border-burgundy/10 py-3 text-xs text-espresso/70">
             <span className="mr-auto font-semibold">Share</span>
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(`Check out ${product.name} on Trend Street: ${SITE_URL}/product/${product.id}`)}`}
+              href={`https://wa.me/?text=${encodeURIComponent(`Check out ${product.name} on OFFVYBE: ${SITE_URL}/product/${product.id}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[40px] items-center rounded-lg border border-burgundy/15 bg-ivory px-3 text-xs font-bold hover:text-burgundy"
@@ -624,7 +624,7 @@ export default function ProductDetailPage() {
               WhatsApp
             </a>
             <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${product.name} from Trend Street`)}&url=${encodeURIComponent(`${SITE_URL}/product/${product.id}`)}`}
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${product.name} from OFFVYBE`)}&url=${encodeURIComponent(`${SITE_URL}/product/${product.id}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[40px] items-center rounded-lg border border-burgundy/15 bg-ivory px-3 text-xs font-bold hover:text-burgundy"

@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     await writeAudit(req, { action: "CUSTOMER_EMAIL_CONFIRMED", entityType: "User", entityId: user.id, userId: user.id });
     const session = await signCustomerToken({ id: user.id, email: user.email, name: user.name || "Customer", sessionVersion: user.sessionVersion });
-    const res = NextResponse.json({ success: true, message: "Email confirmed — welcome to Trend Street!" });
+    const res = NextResponse.json({ success: true, message: "Email confirmed — welcome to OFFVYBE!" });
     setCustomerSessionCookie(res, req, session);
     return res;
   } catch (err) {

@@ -10,8 +10,8 @@ export function safeRedirectPath(raw: string | null | undefined, fallback = "/pr
   if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return fallback;
   if (/[\u0000-\u001f\u007f]/.test(value) || value.length > 512) return fallback;
   try {
-    const url = new URL(value, "https://trendstreet.invalid");
-    if (url.origin !== "https://trendstreet.invalid") return fallback;
+    const url = new URL(value, "https://offvybe.invalid");
+    if (url.origin !== "https://offvybe.invalid") return fallback;
     return url.pathname + url.search + url.hash;
   } catch {
     return fallback;

@@ -323,7 +323,7 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
             <span>Navigation: <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[11px]">↑</kbd> <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[11px]">↓</kbd></span>
             <span>Select: <kbd className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-burgundy/15 text-[11px]">↵</kbd></span>
           </div>
-          <span className="font-mono text-burgundy font-semibold">Trend Street</span>
+          <span className="font-mono text-burgundy font-semibold">OFFVYBE</span>
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Plus,
@@ -37,11 +36,6 @@ export default function AdminProductsPage() {
   const [stockFilter, setStockFilter] = useState<"All" | "InStock" | "LowStock" | "OutOfStock" | "Hidden">("All");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!isAddModalOpen && !editingProduct) return;
@@ -507,7 +501,7 @@ export default function AdminProductsPage() {
             {/* PINNED HEADER */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-burgundy/20 shrink-0 bg-ivory">
               <h3 className="font-serif text-lg sm:text-xl font-bold text-espresso">
-                Add New Garment to Trend Street
+                Add New Garment to OFFVYBE
               </h3>
               <button
                 type="button"
@@ -786,8 +780,7 @@ export default function AdminProductsPage() {
               </div>
             </form>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
 
       {/* EDIT PRODUCT MODAL */}
@@ -1112,8 +1105,7 @@ export default function AdminProductsPage() {
               </div>
             </form>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );

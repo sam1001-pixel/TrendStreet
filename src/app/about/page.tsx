@@ -25,7 +25,7 @@ export default function AboutPage() {
           </span>
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
             The Philosophy of <br />
-            <span className="text-gold italic font-normal">Trend Street</span>
+            <span className="text-gold italic font-normal">OFFVYBE</span>
           </h1>
           <p className="text-xs sm:text-sm text-ivory/80 leading-relaxed font-light max-w-xl mx-auto">
             Founded with an uncompromising belief that true modern elegance is born from deliberate architectural silhouette, heavy natural textiles, and artisanal loom craft.
@@ -44,7 +44,7 @@ export default function AboutPage() {
               Where Japanese Loom Craft Meets Brutalist Streetwear Architecture
             </h2>
             <p className="text-xs sm:text-base text-espresso/80 leading-relaxed font-light">
-              Trend Street was founded to redefine contemporary menswear through uncompromising material density and calculated proportion. We reject disposable fast-fashion and synthetic polyester blends in favor of authentic heirloom construction.
+              OFFVYBE was founded to redefine contemporary menswear through uncompromising material density and calculated proportion. We reject disposable fast-fashion and synthetic polyester blends in favor of authentic heirloom construction.
             </p>
             <p className="text-xs sm:text-base text-espresso/80 leading-relaxed font-light">
               Every piece across our three core silhouettes—Oversized, Boxy Fit, and Jackets—is engineered from pure natural fibers: custom-milled 520gsm Japanese loopback terry, 220gsm mercerized poplin, and butter-soft Tuscan lambskin suede. The result is a sculptural drape that holds its presence and patinas beautifully over decades.
@@ -55,7 +55,7 @@ export default function AboutPage() {
             <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-burgundy/15">
               <Image
                 src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?q=80&w=1200&auto=format&fit=crop"
-                alt="Trend Street Workshop"
+                alt="OFFVYBE Workshop"
                 fill
                 sizes="(max-width:1024px) 100vw, 50vw"
                 className="object-cover"
@@ -128,7 +128,7 @@ export default function AboutPage() {
               Private Studio Appointments
             </span>
             <h3 className="font-serif text-3xl font-bold text-ivory">
-              Trend Street Studio
+              OFFVYBE Studio
             </h3>
             <p className="text-xs text-ivory/80 max-w-md mx-auto">
               Our studio design team is available for silhouette consultations, chain-stitch hemming appointments, and private collection viewings.

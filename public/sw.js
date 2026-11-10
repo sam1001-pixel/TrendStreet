@@ -1,8 +1,8 @@
-/* Trend Street service worker — makes the site installable and gives a friendly offline page.
+/* OFFVYBE service worker — makes the site installable and gives a friendly offline page.
    Pages always come from the network (prices and stock must be live); only versioned build
    files and the offline page are cached. Bump VERSION to drop old caches. */
-const VERSION = "v2";
-const STATIC_CACHE = `trendstreet-static-${VERSION}`;
+const VERSION = "v1";
+const STATIC_CACHE = `offvybe-static-${VERSION}`;
 const OFFLINE_URL = "/offline";
 
 self.addEventListener("install", (event) => {
@@ -12,7 +12,7 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => (k.startsWith("trendstreet-") || k.startsWith("offvybe-")) && k !== STATIC_CACHE).map((k) => caches.delete(k))))
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith("offvybe-") && k !== STATIC_CACHE).map((k) => caches.delete(k))))
   );
   self.clients.claim();
 });

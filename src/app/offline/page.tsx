@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { WifiOff } from "lucide-react";
 
-export const metadata: Metadata = { title: "You're offline | Trend Street", robots: { index: false } };
+export const metadata: Metadata = { title: "You're offline | OFFVYBE", robots: { index: false } };
 
 /** Shown by the service worker when there's no connection. */
 export default function OfflinePage() {

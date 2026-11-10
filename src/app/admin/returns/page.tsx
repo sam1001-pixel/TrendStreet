@@ -190,7 +190,7 @@ export default function AdminReturnsPage() {
           {visible.map((r) => {
             const phone = r.order.phone.replace(/\D/g, "").slice(-10);
             const wa = phone
-              ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${r.order.customerName.split(" ")[0]}, this is Trend Street about your ${r.kind === "EXCHANGE" ? "exchange" : "return"} for order ${r.order.orderNumber}.`)}`
+              ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${r.order.customerName.split(" ")[0]}, this is OFFVYBE about your ${r.kind === "EXCHANGE" ? "exchange" : "return"} for order ${r.order.orderNumber}.`)}`
               : null;
             return (
               <li key={r.id} className="rounded-2xl bg-white p-4 ring-1 ring-burgundy/10 sm:p-5">

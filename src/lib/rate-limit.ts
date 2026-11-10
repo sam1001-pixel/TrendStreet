@@ -1,5 +1,5 @@
 /**
- * Trend Street — shared rate limiter.
+ * OFFVYBE — shared rate limiter.
  *
  * Order of backends (the first one that works is used):
  *   1. Upstash Redis REST — when UPSTASH_REDIS_REST_URL / _TOKEN are set.

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Package,
@@ -45,9 +44,8 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState<string>("");
   const [mounted, setMounted] = useState(false);
   const [activeSlipOrder, setActiveSlipOrder] = useState<Order | null>(null);
-
+  // Deep link from Exchanges & returns: /admin/orders?q=TS-…
   useEffect(() => {
-    setMounted(true);
     const q = new URLSearchParams(window.location.search).get("q");
     if (q) setSearch(q.slice(0, 40));
   }, []);
@@ -445,7 +443,6 @@ export default function AdminOrdersPage() {
         )}
       </div>
 
-      {/* PRINTABLE PACKING SLIP MODAL */}
       {mounted && activeSlipOrder && createPortal(
         <div
           role="dialog"
@@ -458,7 +455,7 @@ export default function AdminOrdersPage() {
             {/* PINNED HEADER */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-burgundy/15 shrink-0 bg-white">
               <div>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-burgundy">Trend Street Dispatch Manifest</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-burgundy">OFFVYBE Dispatch Manifest</span>
                 <h3 className="font-serif text-lg sm:text-xl font-bold text-espresso">
                   Packing Slip #{activeSlipOrder.orderNumber}
                 </h3>
@@ -538,8 +535,7 @@ export default function AdminOrdersPage() {
               </button>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );
