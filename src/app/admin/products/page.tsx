@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Plus,
@@ -36,6 +37,11 @@ export default function AdminProductsPage() {
   const [stockFilter, setStockFilter] = useState<"All" | "InStock" | "LowStock" | "OutOfStock" | "Hidden">("All");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isAddModalOpen && !editingProduct) return;
@@ -780,7 +786,8 @@ export default function AdminProductsPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* EDIT PRODUCT MODAL */}
@@ -1105,7 +1112,8 @@ export default function AdminProductsPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

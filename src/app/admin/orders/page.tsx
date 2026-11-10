@@ -26,6 +26,7 @@ import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { formatPrice } from "@/lib/pricing";
 import { Order, OrderStatus } from "@/types/store";
 import { lockScroll } from "@/lib/scroll-lock";
+import { createPortal } from "react-dom";
 
 const STATUS_LIST: OrderStatus[] = [
   "Pending",
@@ -46,6 +47,7 @@ export default function AdminOrdersPage() {
   const [activeSlipOrder, setActiveSlipOrder] = useState<Order | null>(null);
   // Deep link from Exchanges & returns: /admin/orders?q=TS-…
   useEffect(() => {
+    setMounted(true);
     const q = new URLSearchParams(window.location.search).get("q");
     if (q) setSearch(q.slice(0, 40));
   }, []);
@@ -535,7 +537,8 @@ export default function AdminOrdersPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
