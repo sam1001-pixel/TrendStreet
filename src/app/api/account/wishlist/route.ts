@@ -19,8 +19,8 @@ export async function PUT(req: NextRequest) {
     const keep = live.map((p) => p.id);
 
     await prisma.$transaction([
-      prisma.wishlistItem.deleteMany({ where: { userId, productId: { notIn: keep } } }),
-      prisma.wishlistItem.createMany({ data: keep.map((productId) => ({ userId, productId })), skipDuplicates: true }),
+      prisma.wishlistItem.deleteMany({ where: { userId } }),
+      prisma.wishlistItem.createMany({ data: keep.map((productId) => ({ userId, productId })) }),
     ]);
     return NextResponse.json({ wishlist: keep });
   } catch (err) {

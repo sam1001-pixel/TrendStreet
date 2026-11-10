@@ -93,7 +93,9 @@ export async function enforceCustomerCouponRules(
 
   const id = customerIdentity(customer.email, customer.phone);
   const lockKeys = [`coupon-cust:e:${id.email}`, ...(id.phoneDigits.length === 10 ? [`coupon-cust:p:${id.phoneDigits}`] : [])].sort();
-  for (const k of lockKeys) await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${k}))`;
+  if ("$queryRaw" in tx && typeof (tx as unknown as { $queryRaw: unknown }).$queryRaw === "function") {
+    for (const k of lockKeys) await (tx as unknown as { $queryRaw: (s: TemplateStringsArray, ...args: unknown[]) => Promise<unknown> }).$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${k}))`;
+  }
 
   // Match the raw email as typed and its canonical form, case-insensitively.
   const emails = Array.from(new Set([customer.email.trim().toLowerCase(), id.email]));

@@ -1,0 +1,314 @@
+{
+  "project": "Trend Street - The Style Hub",
+  "branchName": "main",
+  "description": "Luxury Menswear Fashion Platform with 3D WebGL Showroom, E-Commerce, Admin Panel, and GEO/SEO readiness",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Foundation & Design System Setup",
+      "description": "As a developer, I want a Next.js project with Tailwind CSS, custom burgundy color tokens, and Lucide icons.",
+      "acceptanceCriteria": [
+        "Tailwind config includes burgundy, crimson, espresso, warm ivory, and champagne gold tokens",
+        "Global styles and typography hierarchy established",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Configured Tailwind with brand palette: Deep Burgundy #4A1216, Crimson #6B1D24, Dark Espresso #2B080A, Warm Ivory #F9F6F4, Accent Gold #C5A880. Playfair Display and Plus Jakarta Sans loaded."
+    },
+    {
+      "id": "US-002",
+      "title": "Core Data Models & Store State",
+      "description": "As a shopper, I want persistent cart, wishlist, products, and orders state.",
+      "acceptanceCriteria": [
+        "StoreContext handles cart, wishlist, products, promo codes, and orders with localStorage persistence",
+        "20+ luxury menswear items defined",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "StoreContext and store types implemented with localStorage sync, coupon system (TREND10, VIP20), and product catalog."
+    },
+    {
+      "id": "US-003",
+      "title": "Navigation & Responsive Header with Centered Logo",
+      "description": "As a user, I want a luxury header with centered Trend Street logo, navigation links, and cart drawer.",
+      "acceptanceCriteria": [
+        "Logo centered in desktop and mobile header",
+        "Mobile drawer navigation operates smoothly",
+        "Cart drawer slides over with item count badge",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Trend Street logo centered across all viewports with ornate monogram emblem, slide-over cart drawer, and mobile menu."
+    },
+    {
+      "id": "US-004",
+      "title": "3D WebGL Luxury Garment Showroom",
+      "description": "As a visitor, I want an interactive 3D WebGL fabric and garment showroom on the home page.",
+      "acceptanceCriteria": [
+        "Three.js canvas renders interactive 3D luxury fabric mesh with orbit and swatch switcher",
+        "Device pixel ratio capped at 2 for smooth 60fps performance",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "HeroShowroom3D implemented with Three.js drape wave physics, interactive lighting, fabric swatch switcher, and 60fps capped DPR."
+    },
+    {
+      "id": "US-005",
+      "title": "Public Storefront Pages (Home, Shop, Product, Lookbook, About)",
+      "description": "As a menswear customer, I want dedicated pages for browsing, product discovery, lookbook, and brand story.",
+      "acceptanceCriteria": [
+        "Home page renders hero, curated collections, trending products, and reviews",
+        "Shop catalog provides multi-filter sidebar and sorting",
+        "Product detail page features gallery, size guide modal, and accordion details",
+        "Lookbook page features interactive shop the look hotspots",
+        "About page details brand heritage and fabric mills",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "All 5 storefront views built with rich editorial styling, interactive hotspot pins, Suspense boundaries, and size guide modal."
+    },
+    {
+      "id": "US-006",
+      "title": "Cart, Checkout Flow & Order Confirmation",
+      "description": "As a customer, I want a seamless bag and checkout experience with immediate order confirmation.",
+      "acceptanceCriteria": [
+        "Bag page with promo code engine (TREND10)",
+        "Multi-step checkout with address inputs and payment simulation",
+        "Order confirmation page with generated tracking ID",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "End-to-end purchasing journey completed: Bag -> Checkout (Cards, UPI, COD, Netbanking) -> Order Confirmation receipt."
+    },
+    {
+      "id": "US-007",
+      "title": "Saved Items & Customer Profile",
+      "description": "As a customer, I want to manage saved items and view profile order history.",
+      "acceptanceCriteria": [
+        "Saved items page with move-to-bag action",
+        "Profile page with VIP gold tier and order history tracking timeline",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "Saved items page with instant add-to-bag and customer profile with bespoke measurements editor and order history."
+    },
+    {
+      "id": "US-008",
+      "title": "Admin Panel & Privileged Access Register",
+      "description": "As admin Sujal, I want to manage products, orders, and review the access register.",
+      "acceptanceCriteria": [
+        "Route-guarded login validating sujal@.com / [REDACTED-rotate-this-password]",
+        "Admin dashboard with revenue KPIs",
+        "Products CRUD (add, edit, delete, in-line stock)",
+        "Orders status management",
+        "Admin access register per /admin-access-register skill",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "Complete administrative control room with privileged access register (CSV, JSON, SQL DDL export), product inventory CRUD, and order status fulfillment."
+    },
+    {
+      "id": "US-009",
+      "title": "Digital Marketing, SEO & GEO Optimization",
+      "description": "As a marketer, I want robots.txt, llms.txt, sitemap.ts, and JSON-LD schema for AI & search visibility.",
+      "acceptanceCriteria": [
+        "robots.txt configured for GPTBot, ClaudeBot, PerplexityBot",
+        "llms.txt formatted per GEO standards",
+        "Dynamic sitemap.ts indexing store routes",
+        "JSON-LD structured data for Store and Products",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Comprehensive SEO and GEO setup: robots.txt, llms.txt with 134-167 word passage citability, dynamic sitemap.ts, and JSON-LD schema."
+    },
+    {
+      "id": "US-010",
+      "title": "Defensive Security, IP Rate Limiter & Webhook Verification",
+      "description": "As a security engineer, I want IP sliding-window rate limiting on login and constant-time webhook verification.",
+      "acceptanceCriteria": [
+        "Sliding-window rate limiter prevents brute-force login",
+        "Constant-time signature verification prevents timing attacks",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "Implemented sliding-window rate limiter, constant-time HMAC check in payment webhook, and 10,000-event deduplication cache."
+    },
+    {
+      "id": "US-011",
+      "title": "India-First Logistics, 6-Digit PIN Engine & INR Currency",
+      "description": "As an Indian shopper, I want prices in INR, all-inclusive 12% GST, and live PIN code delivery estimates.",
+      "acceptanceCriteria": [
+        "PIN code validation for 6-digit Indian postal codes",
+        "Blue Dart Apex & Delhivery Air transit SLAs",
+        "Integer minor units in paise with en-IN formatting",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": "Pincode engine with circle mapping and Blue Dart/Delhivery transit estimation, paise pricing engine, and ₹1,999 free shipping threshold."
+    },
+    {
+      "id": "US-012",
+      "title": "High-Converting Indian D2C Checkout",
+      "description": "As a shopper, I want to checkout with Indian address format, UPI, Cards, Net Banking, and COD.",
+      "acceptanceCriteria": [
+        "3-step Indian checkout flow",
+        "28 States and 8 UTs dropdown",
+        "UPI, RuPay, Net Banking, and COD options",
+        "Server-authoritative validation",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": true,
+      "notes": "High-converting checkout with live PIN serviceability check, UPI apps/QR, Indian banks, and server-side pricing validation."
+    },
+    {
+      "id": "US-013",
+      "title": "Statutory Indian Legal Compliance Pages",
+      "description": "As a consumer, I want access to statutory Indian e-commerce policies and Grievance Officer details.",
+      "acceptanceCriteria": [
+        "DPDP Act 2023 compliant Privacy Policy",
+        "Consumer Protection (E-Commerce) Rules 2020 Terms",
+        "Shipping and 30-day Return policies",
+        "Designated Grievance Redressal Officer disclosures",
+        "Typecheck passes"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": "5 statutory pages implemented with active footer links, 30-day doorstep return protocol, and Grievance Officer Rohan Kulkarni details."
+    },
+    {
+      "id": "US-014",
+      "title": "Automated Testing Suite & Code Review Quality Gates",
+      "description": "As a release manager, I want 100% automated test coverage on security, pricing, and logistics.",
+      "acceptanceCriteria": [
+        "Unit tests pass",
+        "Typecheck passes",
+        "ESLint passes",
+        "Next.js build passes with 27 routes",
+        "Code review passes"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": "15 unit tests passing covering authentication, paise calculations, shipping waivers, and PIN validation; 27/27 routes compiled cleanly."
+    },
+    {
+      "id": "US-015",
+      "title": "Admin Route-Level Defense-in-Depth Session Protection",
+      "description": "As a security engineer, I want all /api/admin/* endpoints to strictly enforce requireAdminSession at the route handler level.",
+      "acceptanceCriteria": [
+        "All 6 admin API endpoints validate session token and signature at handler level",
+        "Unauthorized requests return HTTP 401 even if edge middleware is bypassed",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 15,
+      "passes": true,
+      "notes": "Implemented requireAdminSession in src/lib/auth.ts and applied across products, orders, settings, and audit admin route handlers."
+    },
+    {
+      "id": "US-016",
+      "title": "Durable Database Webhook Deduplication & Atomic Transactions",
+      "description": "As a payment specialist, I want webhooks deduplicated via PostgreSQL AuditLog and state updates bundled in an atomic transaction.",
+      "acceptanceCriteria": [
+        "Durable database deduplication via AuditLog prevents duplicate credits across serverless instances",
+        "Payment and order state updates execute in an atomic $transaction",
+        "Order amount matches webhook amount",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 16,
+      "passes": true,
+      "notes": "Switched webhook to shared @/lib/prisma, implemented AuditLog eventId deduplication, atomic transaction, and amount mismatch checks."
+    },
+    {
+      "id": "US-017",
+      "title": "Pluggable Carrier-Agnostic Logistics & Shiprocket Adapter",
+      "description": "As an operations lead, I want a carrier-agnostic logistics abstraction with Shiprocket and deterministic sandbox mock mode.",
+      "acceptanceCriteria": [
+        "ShippingProvider interface with serviceability, shipment creation, tracking, and cancellation",
+        "ShiprocketShippingAdapter with token caching and JWT auth",
+        "Deterministic Sandbox Mock Mode fallback for safe testing without carrier wallet billing",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 17,
+      "passes": true,
+      "notes": "Engineered src/lib/shipping/types.ts and src/lib/shipping/shiprocket.ts with Blue Dart Apex & Delhivery Air mapping and full mock fallback."
+    },
+    {
+      "id": "US-018",
+      "title": "Distributed Rate Limiter & Trusted Proxy IP Extraction",
+      "description": "As a DevSecOps engineer, I want rate limiting hardened against IP spoofing and supporting distributed Redis.",
+      "acceptanceCriteria": [
+        "Hardened client IP extraction prioritizing cf-connecting-ip and x-vercel-forwarded-for with regex validation",
+        "Optional Upstash Redis REST distributed limiter with fallback to in-memory sliding window",
+        "Timer unref on interval for clean node exit",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 18,
+      "passes": true,
+      "notes": "Enhanced src/lib/rate-limit.ts with trusted header hierarchy, Upstash Redis REST check, unref interval, and strict route profiles."
+    },
+    {
+      "id": "US-019",
+      "title": "Private Route Intermediary Cache Hardening",
+      "description": "As a security architect, I want private user and admin routes explicitly prevented from caching on intermediate CDNs.",
+      "acceptanceCriteria": [
+        "Strict Cache-Control: no-store, no-cache, must-revalidate headers on /api/admin/*, /api/orders/*, /admin/*, /checkout, /bag, /profile, /saved",
+        "Pragma: no-cache set for legacy proxies",
+        "Typecheck passes",
+        "Build passes"
+      ],
+      "priority": 19,
+      "passes": true,
+      "notes": "Configured private route Cache-Control headers in next.config.js preventing intermediary caching of orders, bag, and admin state."
+    },
+    {
+      "id": "US-020",
+      "title": "CI/CD Pipeline, Operational Documentation & Automated Test Harness",
+      "description": "As an engineering lead, I want full GitHub Actions CI, complete production documentation, and 45 passing unit/security tests.",
+      "acceptanceCriteria": [
+        "GitHub Actions CI pipeline (.github/workflows/ci.yml) running lint, typecheck, tests, and build",
+        "Operational documentation in docs/ (SECURITY_AUDIT, PRODUCTION_DEPLOYMENT, PAYMENT_SETUP, SHIPPING_SETUP)",
+        "Automated unit & security tests pass 100% (45/45)",
+        "Typecheck passes with 0 errors",
+        "Production build compiles 31/31 routes with 0 errors"
+      ],
+      "priority": 20,
+      "passes": true,
+      "notes": "Scaffolded CI pipeline, authored 4 complete operational docs, expanded test harness to 45 passing tests, 31 routes built cleanly."
+    },
+    {
+      "id": "US-021",
+      "title": "Customer User Login System & Active Administrative Credentials",
+      "description": "As a customer and administrator, I want a complete customer login/registration system and active administrative credentials configured for local management.",
+      "acceptanceCriteria": [
+        "Active admin credentials configured in .env.local (admin@trendstreet.in / TrendStreetAdmin2026!)",
+        "Customer authentication backend with PBKDF2 password hashing and HMAC-SHA256 session tokens",
+        "Customer API endpoints for login, register, session verification, and logout",
+        "Luxury /login page supporting customer sign in, registration, and quick demo login",
+        "Header and Profile page reflect authenticated customer state and support sign out",
+        "Unit tests pass (51/51)",
+        "Typecheck passes with 0 errors",
+        "Production build compiles 32/32 routes with 0 errors"
+      ],
+      "priority": 21,
+      "passes": true,
+      "notes": "Configured .env.local with active admin credentials, engineered src/lib/customer-auth.ts, UserAuthContext, luxury /login page, profile integration, and added unit tests."
+    }
+  ]
+}

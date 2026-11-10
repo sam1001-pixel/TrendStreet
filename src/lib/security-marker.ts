@@ -10,18 +10,22 @@ import { prisma } from "./prisma";
 
 /** Returns true if this is the first claim of `key`; false if it was already claimed. Throws if the DB is down. */
 export async function claimOnce(key: string, ttlMs: number): Promise<boolean> {
+  const now = new Date();
   const expiresAt = new Date(Date.now() + ttlMs);
-  const rows = await prisma.$queryRaw<{ key: string }[]>`
-    INSERT INTO security_markers (key, expires_at, created_at)
-    VALUES (${key}, ${expiresAt}, NOW())
-    ON CONFLICT (key) DO UPDATE SET expires_at = EXCLUDED.expires_at
-      WHERE security_markers.expires_at <= NOW()
-    RETURNING key`;
+  const existing = await prisma.securityMarker.findUnique({ where: { key } });
+  if (existing && existing.expiresAt > now) {
+    return false;
+  }
+  await prisma.securityMarker.upsert({
+    where: { key },
+    update: { expiresAt },
+    create: { key, expiresAt, createdAt: now },
+  });
   // Opportunistic cleanup of expired markers.
   if (Math.random() < 0.01) {
-    void prisma.$executeRaw`DELETE FROM security_markers WHERE expires_at < NOW()`.catch(() => {});
+    void prisma.securityMarker.deleteMany({ where: { expiresAt: { lt: now } } }).catch(() => {});
   }
-  return rows.length === 1;
+  return true;
 }
 
 /** True if `key` has an unexpired marker. */

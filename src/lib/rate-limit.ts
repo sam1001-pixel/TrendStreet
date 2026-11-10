@@ -151,25 +151,36 @@ async function pgHit(key: string, options: RateLimitOptions): Promise<{ count: n
   if (!postgresAvailable()) return null;
   try {
     const { prisma } = await import("./prisma");
-    const resetAt = new Date(Date.now() + options.windowMs);
-    // One atomic statement: create the bucket, or count up — or start a fresh window if the old one ended.
-    const rows = await prisma.$queryRaw<{ count: number; reset_at: Date }[]>`
-      INSERT INTO rate_limit_buckets (key, count, reset_at)
-      VALUES (${key}, 1, ${resetAt})
-      ON CONFLICT (key) DO UPDATE SET
-        count = CASE WHEN rate_limit_buckets.reset_at <= NOW() THEN 1 ELSE rate_limit_buckets.count + 1 END,
-        reset_at = CASE WHEN rate_limit_buckets.reset_at <= NOW() THEN EXCLUDED.reset_at ELSE rate_limit_buckets.reset_at END
-      RETURNING count, reset_at`;
+    const now = new Date();
+    const existing = await prisma.rateLimitBucket.findUnique({ where: { key } });
+    let count = 1;
+    let resetAt = new Date(Date.now() + options.windowMs);
+
+    if (existing && existing.resetAt > now) {
+      count = existing.count + 1;
+      resetAt = existing.resetAt;
+      await prisma.rateLimitBucket.update({
+        where: { key },
+        data: { count },
+      });
+    } else {
+      await prisma.rateLimitBucket.upsert({
+        where: { key },
+        update: { count: 1, resetAt },
+        create: { key, count: 1, resetAt },
+      });
+    }
+
     // Opportunistic cleanup of long-expired buckets (about 1 call in 200).
     if (Math.random() < 0.005) {
-      void prisma.$executeRaw`DELETE FROM rate_limit_buckets WHERE reset_at < NOW() - INTERVAL '1 day'`.catch(() => {});
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      void prisma.rateLimitBucket.deleteMany({ where: { resetAt: { lt: yesterday } } }).catch(() => {});
     }
-    const row = rows[0];
-    return row ? { count: Number(row.count), resetAt: new Date(row.reset_at) } : null;
+    return { count, resetAt };
   } catch (err) {
     // Table missing (schema not pushed yet) or database down: stop trying for a minute.
     pgDisabledUntil = Date.now() + 60_000;
-    console.warn("[RateLimit] PostgreSQL limiter unavailable, using in-memory fallback:", (err as Error).message);
+    console.warn("[RateLimit] Database limiter unavailable, using in-memory fallback:", (err as Error).message);
     return null;
   }
 }

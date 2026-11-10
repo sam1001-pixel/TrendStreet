@@ -1,0 +1,74 @@
+## Codebase Patterns
+- Palette: Primary Deep Burgundy (`#4A1216`), Crimson Highlight (`#6B1D24`), Dark Espresso Shadow (`#2B080A`), Warm Ivory (`#F9F6F4`), Champagne Gold (`#C5A880`).
+- Header: Centered logo on all devices with responsive action buttons and sliding mobile drawer.
+- 3D Engine: Three.js with capped DPR (max 2), dynamic next/dynamic code splitting, and explicit geometry/material disposal on unmount.
+- Next.js App Router: `useSearchParams` wrapped in React `<Suspense>` boundary; dynamic route fallbacks securely reject missing IDs to prevent PII disclosure.
+- Persistence: StoreContext and AdminAuthContext use localStorage with SSR-safe hydration guards (`isHydrated`).
+- Security: Admin routes guarded; credentials validated against `sujal@.com` / `[REDACTED-rotate-this-password]`; SQL DDL generator escapes user inputs.
+- Privileged Access Register: Conforms to `/admin-access-register` with CSV, JSON, and sanitized SQL DDL exports.
+- GEO & AI Crawlers: `llms.txt` and `robots.txt` optimized for GPTBot, ClaudeBot, PerplexityBot with 134-167 word passage-level citability.
+
+## Stories Progress
+- [x] US-001: Foundation & Design System Setup — COMPLETED (Tailwind tokens, fonts, icons, layout)
+- [x] US-002: Core Data Models & Store State — COMPLETED (StoreContext, cart, wishlist, products, orders, coupons)
+- [x] US-003: Navigation & Responsive Header with Centered Logo — COMPLETED (Centered monogram logo, mobile drawer, cart slide-over)
+- [x] US-004: 3D WebGL Luxury Garment Showroom — COMPLETED (Three.js drape physics, fabric switcher, 60fps)
+- [x] US-005: Public Storefront Pages — COMPLETED (Home, Shop with Suspense, Product Detail, Lookbook hotspots, About)
+- [x] US-006: Cart, Checkout Flow & Order Confirmation — COMPLETED (Bag promo codes, multi-payment checkout, receipt)
+- [x] US-007: Saved Items & Customer Profile — COMPLETED (Wishlist quick actions, profile bespoke measurements & tracking)
+- [x] US-008: Admin Panel & Privileged Access Register — COMPLETED (Sujal credentials, products CRUD, orders, access register exports)
+- [x] US-009: Digital Marketing, SEO & GEO Optimization — COMPLETED (sitemap.ts, robots.txt, llms.txt, JSON-LD schema)
+
+## Code Quality Gates
+- [x] CodeRabbit Audit: All findings remediated (PII route fallbacks fixed, OrderStatus type union expanded, Three.js GPU memory leaks eliminated, next/dynamic bundle splitting added reducing home JS bundle from 240kB to 110kB, SQL generation sanitized, Form WCAG 2.1 SC 1.3.1 labels associated).
+- [x] TypeScript Typecheck: 0 errors (`tsc --noEmit`).
+- [x] Next.js Production Build: 22/22 routes compiled successfully.
+
+## Phase 1 & 2 Execution: Production Security, Sizing Standardization & Backend Foundation
+- [x] US-010: Sizing & Silhouette Standardization — COMPLETED (Purged legacy suit/shoe references; standard streetwear sizing S-XXL & 28-38 waist across products, profile fit preferences, and types).
+- [x] US-011: Server-Side Cryptographic Authentication & Edge Middleware — COMPLETED (Universal Web Crypto HMAC-SHA256 session token signing, HTTP-only secure cookie management, Edge middleware route protection on `/admin/*`).
+- [x] US-012: Production Security Headers & Content Security Policy — COMPLETED (HSTS 2-year preload, strict CSP, X-Frame-Options DENY, Permissions-Policy in `next.config.js`).
+- [x] US-013: Prisma Relational Database Schema & Seeding — COMPLETED (`prisma/schema.prisma` with integer minor units, indexes, and `prisma/seed.ts`).
+- [x] US-014: Server-Authoritative Pricing Engine & Minor Units Standard — COMPLETED (`src/lib/pricing.ts` with promo code rules, courier threshold, zero IEEE 754 drift).
+- [x] US-015: Server Checkout Validation & Modular Payment Webhooks — COMPLETED (`POST /api/checkout/validate` and `POST /api/webhooks/payment` with cryptographic HMAC verification).
+- [x] US-016: Automated Testing Harness & CI Test Script — COMPLETED (`tests/unit/pricing.test.ts`, `tests/unit/auth.test.ts`, passing 8/8 tests via `npm test`).
+## Phase 3 Execution: Silhouette Unification, Authentic Streetwear Assets & Complete Purge of Formal/Tailoring Remnants
+- [x] US-017: Complete Removal of Mobile Demo Cards & Text — COMPLETED (Removed Autumn/Winter Silhouettes demo card, $1250/$1390 pricing, and Claim button from `FlyingWearHero.tsx`; optimized hero for mobile without clutter).
+- [x] US-018: Landing Page Section Architecture Aligned to 4 Header Pillars — COMPLETED (Mobile quick silhouette capsules, Section 3 "The Four Silhouettes" with authentic photography, Section 4 real-time silhouette filtering tabs across Oversized, Jeans, Boxy Fit, and Jackets, and Interactive Silhouette Studio).
+- [x] US-019: Real Authentic Streetwear Photography & Bootcut Jeans Integration — COMPLETED (Added "The Okayama Bootcut Flare Denim" with 14.5oz selvedge puddle stack over footwear; authentic photos for Boxy Fit overshirts & knits, Oversized hoodies & tees, and Bootcut Jeans across catalog).
+- [x] US-020: Zero-Tolerance Purge of Formalwear, Suiting, Footwear & Tailoring References — COMPLETED (100% removal of "tailor", "Savile Row", "tuxedo", "footwear", and "shoe" across all storefront, profile, admin, about, and metadata files; verified with grep returning 0 occurrences).
+- [x] US-021: Production Launch Verification & Full Quality Gates — COMPLETED (`npm run typecheck` 0 errors, `npm run lint` 0 errors, `npm test` 8/8 passing, `npm run build` 22/22 routes prerendered cleanly).
+
+## Phase 4 Execution: Commercial Product Page (PDP) Architecture & Master ChatGPT Context
+- [x] US-022: Commercial E-Commerce PDP Layout Architecture — COMPLETED (Extracted `newuiforproductpage.zip` and engineered `src/app/product/[id]/page.tsx` with sticky dual-column layout, media gallery with 3D WebGL switcher, bold pricing box with taxes-included badge, VIP atelier coupon callout, visual color hex swatches, oval size selector with scarcity badges, interactive category-sensitive Size Dimension Guide modal, quantity stepper, pincode courier delivery checker, 30-day return policy card, 3-tier technical garment accordions, sticky mobile purchase bar, social sharing, verified reviews with architectural fit index, and complete-the-silhouette recommendations).
+- [x] US-023: Zero-Tolerance Purge of Marvel/Comic/Demo Data — COMPLETED (Purged all comic, Marvel, and placeholder artifacts from the reference zip; strictly pure architectural luxury menswear across all 4 silhouettes).
+- [x] US-024: Master Technical Architecture Context Document (`SITE_MASTER_CONTEXT.md`) — COMPLETED (Created comprehensive documentation covering brand DNA, 4 silhouettes, tech stack, complete route map, database models, minor units pricing engine, completed items, pending integrations, and architectural rules for ChatGPT).
+
+## Phase 5 Execution: Defensive Edge Security, India-First E-Commerce, Statutory Legal Compliance & Production Readiness
+- [x] US-025: Sliding-Window IP Rate Limiter & Auth Hardening — COMPLETED (`src/lib/rate-limit.ts` in-memory sliding window limiter, `src/app/api/auth/login/route.ts` 5 attempts/15 mins with 429 Retry-After, `src/middleware.ts` protecting `/admin/*` and `/api/admin/*`, `src/lib/auth.ts` throwing in production if AUTH_SECRET is unset).
+- [x] US-026: Webhook Idempotency & Constant-Time Cryptographic Verification — COMPLETED (`src/app/api/webhooks/payment/route.ts` with constant-time equality check to prevent timing side-channel attacks, production secret enforcement, and 10,000-event deduplication cache).
+- [x] US-027: India-First Logistics & 6-Digit PIN Code Engine — COMPLETED (`src/lib/pincode.ts` validating `/^[1-9][0-9]{5}$/`, postal circle prefix mapping, courier transit estimation for Blue Dart Apex & Delhivery Air: Metro 2-3 days, Tier 1/2 3-5 days, Rest of India 4-6 days, and Cash on Delivery eligibility).
+- [x] US-028: Indian Rupee (INR / ₹) Currency & Inclusive 12% GST Pricing Standard — COMPLETED (`src/lib/pricing.ts` integer minor units in paise, ₹1,999 free shipping threshold, 1200 bps GST, `formatPrice(majorAmount, "INR")`, and catalog updated to authentic Indian luxury retail prices ₹2,499–₹11,999).
+- [x] US-029: High-Converting Indian D2C Checkout Flow — COMPLETED (`src/app/checkout/page.tsx` with 28 Indian States & 8 UTs dropdown, 6-digit PIN code real-time serviceability resolution, UPI tabs for Google Pay, PhonePe, Paytm, BHIM, RuPay/Cards, Net Banking for top Indian banks, Cash on Delivery, and server-side validation against `POST /api/checkout/validate`).
+- [x] US-030: Storefront Pricing & Aesthetics Consistency — COMPLETED (`src/components/ProductCard.tsx`, `QuickViewModal.tsx`, `CartDrawer.tsx`, `src/app/bag/page.tsx`, `src/app/order-confirmation/[orderId]/page.tsx`, `src/app/profile/page.tsx`, `FlyingWearScrollStrip.tsx`, and `lookbook/page.tsx` all standardized to INR `₹` formatting with zero broken dollar signs).
+- [x] US-031: Statutory Indian Legal & E-Commerce Compliance Pages — COMPLETED (Created `src/app/privacy-policy/page.tsx` under DPDP Act 2023, `src/app/terms/page.tsx` under Consumer Protection E-Commerce Rules 2020, `src/app/shipping-policy/page.tsx` with Blue Dart/Delhivery transit SLAs, `src/app/returns/page.tsx` with 30-day doorstep return/exchange protocol, and `src/app/contact/page.tsx` with Statutory Grievance Redressal Officer Rohan Kulkarni).
+- [x] US-032: Footer Statutory Wiring & Mumbai Atelier Details — COMPLETED (`src/components/Footer.tsx` wired with active Next.js `<Link>` tags to all 5 statutory pages, Bandra West Mumbai atelier address, and +91 98200 12345 concierge phone).
+- [x] US-033: Automated Test Suite Expansion & Full Quality Gates Pass — COMPLETED (`tests/unit/pincode.test.ts` added, `tests/unit/pricing.test.ts` updated with INR assertions, 14/14 unit tests passing, `npm run typecheck` 0 errors, `npm run lint` 0 errors, `npm run build` 27/27 static and dynamic routes compiled successfully).
+- [x] US-034: Code Review Remediation & Test Expansion — COMPLETED (`src/lib/pricing.ts` updated to waive shipping fee when `FREESHIP` promo code is applied regardless of threshold, `src/app/api/webhooks/payment/route.ts` enhanced with Stripe v1 signature extraction, unit tests expanded to 15/15 tests passing, `npm run build` 27/27 routes compiling cleanly).
+
+## Phase 6 Execution: Master Production Hardening, Security Engineering & Logistics Adapter
+- [x] US-035: Admin Route-Level Defense-in-Depth — COMPLETED (`requireAdminSession` in `src/lib/auth.ts` enforcing HMAC-SHA256 session signature & expiration across all 6 `/api/admin/*` route handlers, preventing unauthorized mutations even if middleware is bypassed).
+- [x] US-036: Durable Database Webhook Deduplication & Atomic Transactions — COMPLETED (`src/app/api/webhooks/payment/route.ts` upgraded to shared `@/lib/prisma`, durable PostgreSQL `AuditLog` deduplication preventing duplicate event processing across serverless instances, atomic `$transaction` for payment/order state updates, and order amount validation).
+- [x] US-037: Pluggable Carrier-Agnostic Logistics Engine — COMPLETED (`src/lib/shipping/types.ts` carrier interface and `src/lib/shipping/shiprocket.ts` adapter with token caching, JWT auth, SLA routing for Blue Dart Apex & Delhivery Air, and deterministic Sandbox Mock Mode fallback).
+- [x] US-038: Distributed Rate Limiting & Spoofing Defense — COMPLETED (`src/lib/rate-limit.ts` upgraded with trusted proxy IP extraction, Upstash Redis REST distributed limiter support with fallback to local sliding window, timer unref for clean node exit, and strict route profiles).
+- [x] US-039: Private Route Cache Hardening — COMPLETED (`next.config.js` updated with strict `Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0` and `Pragma: no-cache` for `/api/admin/*`, `/api/orders/*`, `/admin/*`, `/checkout`, `/bag`, `/profile`, and `/saved`).
+- [x] US-040: Live Payment Gate & Environment Hardening — COMPLETED (`src/lib/razorpay.ts` enforces `ALLOW_LIVE_PAYMENTS="false"` safety gate; `.env.example` fully documented).
+- [x] US-041: Automated Testing Suite Expansion — COMPLETED (Added `tests/unit/shipping.test.ts` with 7 tests and `tests/unit/security.test.ts` with 6 negative security tests; full test suite now passing 45/45 tests in ~1s).
+- [x] US-042: CI/CD Pipeline & Operational Documentation — COMPLETED (Created `.github/workflows/ci.yml`, `docs/SECURITY_AUDIT.md`, `docs/PRODUCTION_DEPLOYMENT.md`, `docs/PAYMENT_SETUP.md`, `docs/SHIPPING_SETUP.md`, and `walkthrough.md`).
+## Phase 7 Execution: Customer User Login System & Active Administrator Credentials
+- [x] US-044: Active Local Administrative Credentials — COMPLETED (Configured `.env.local` with `ADMIN_EMAIL="admin@trendstreet.in"` and `ADMIN_PASSWORD="TrendStreetAdmin2026!"`, high-entropy `AUTH_SECRET` & `SESSION_SECRET`, enabling instant login at `/admin/login`).
+- [x] US-045: Customer User Authentication & Session Security — COMPLETED (`src/lib/customer-auth.ts` with PBKDF2-SHA512 salted password hashing, Web Crypto HMAC-SHA256 customer session tokens in `ts_customer_session` cookie, and dual-mode database/in-memory fallback persistence).
+- [x] US-046: Customer Auth API Endpoints — COMPLETED (`POST /api/auth/customer/login`, `POST /api/auth/customer/register`, `GET /api/auth/customer/session`, and `POST /api/auth/customer/logout` with rate-limiting protection).
+- [x] US-047: Customer Client Context & Luxury UI — COMPLETED (`src/context/UserAuthContext.tsx` syncing with StoreContext, luxury `/login` portal with Sign In, Register, instant demo customer button, and admin portal link).
+- [x] US-048: Storefront & Profile Integration — COMPLETED (`src/components/Header.tsx` reflects customer auth status, `src/app/profile/page.tsx` features sign-out and invitation banner, and mobile bottom nav excludes `/login`).
+- [x] US-049: Automated Testing & Verification — COMPLETED (`tests/unit/customer-auth.test.ts` added, test suite expanded to 51/51 passing tests, `npm run typecheck` 0 errors, `npm run lint` 0 errors, Next.js production build generated 32/32 routes).

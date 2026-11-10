@@ -1,7 +1,6 @@
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -51,7 +50,7 @@ enum ProductCategory {
 // ----------------------------------------------------
 
 model User {
-  id            String       @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   email         String       @unique
   passwordHash  String?
   name          String?
@@ -76,7 +75,7 @@ model User {
 }
 
 model Address {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   label       String?  // e.g. "Primary Residence", "Studio"
@@ -104,12 +103,12 @@ model Address {
 // ----------------------------------------------------
 
 model Product {
-  id               String          @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   slug             String          @unique
   name             String
   subtitle         String?
   category         ProductCategory
-  description      String          @db.Text
+  description      String          
   fabric           String          // e.g. "320gsm Heavyweight Combed Cotton"
   careInstructions String[]
   details          String[]
@@ -138,14 +137,14 @@ model Product {
 
 /// Customer reviews managed in Admin → Reviews. A review can carry a video (shown in the homepage reel and on the product page).
 model Review {
-  id         String   @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   productId  String?
   product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   author     String
   city       String?
   rating     Int      @default(5)
   title      String?
-  comment    String   @db.Text
+  comment    String   
   videoUrl   String?
   posterUrl  String?
   verified   Boolean  @default(true)
@@ -162,7 +161,7 @@ model Review {
 }
 
 model ProductImage {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   url       String
@@ -173,7 +172,7 @@ model ProductImage {
 }
 
 model ProductVariant {
-  id          String     @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   productId   String
   product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   size        String     // e.g. "S", "M", "L", "XL", "32", "34"
@@ -193,7 +192,7 @@ model ProductVariant {
 }
 
 model Inventory {
-  id          String          @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   variantId   String          @unique
   variant     ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
   quantity    Int             @default(0)
@@ -206,7 +205,7 @@ model Inventory {
 }
 
 model StockMovement {
-  id            String    @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   inventoryId   String
   inventory     Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
   changeQty     Int       // Quantity changed (e.g. +10, -5)
@@ -227,7 +226,7 @@ model StockMovement {
 // ----------------------------------------------------
 
 model Cart {
-  id        String     @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   userId    String?    @unique
   user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   sessionId String?    @unique // For anonymous guest carts
@@ -240,7 +239,7 @@ model Cart {
 }
 
 model CartItem {
-  id        String         @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   cartId    String
   cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
   variantId String
@@ -252,7 +251,7 @@ model CartItem {
 }
 
 model WishlistItem {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId String
@@ -268,7 +267,7 @@ model WishlistItem {
 // ----------------------------------------------------
 
 model Order {
-  id                String          @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   orderNumber       String          @unique // e.g. "TS-2026-0842"
   userId            String?
   user              User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -300,12 +299,11 @@ model Order {
 
   @@index([userId])
   @@index([status])
-  @@index([orderNumber])
   @@map("orders")
 }
 
 model OrderItem {
-  id          String         @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   orderId     String
   order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variantId   String
@@ -318,7 +316,7 @@ model OrderItem {
 }
 
 model Payment {
-  id               String          @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   orderId          String
   order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   provider         PaymentProvider
@@ -339,7 +337,7 @@ model Payment {
 // ----------------------------------------------------
 
 model Coupon {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   code            String   @unique
   discountPercent Int
   description     String?
@@ -361,7 +359,7 @@ model Coupon {
 // ----------------------------------------------------
 
 model SiteSettings {
-  id                 String   @id @default("global")
+  id String @id @default("global") @map("_id")
   storeName          String   @default("OFFVYBE")
   storeTagline       String   @default("Wear Your Own Vibe")
   announcementText   String?
@@ -369,7 +367,7 @@ model SiteSettings {
   announcementActive Boolean  @default(true)
   heroTitle1         String   @default("Oversized Silhouettes.")
   heroTitle2         String   @default("Modern Distinction.")
-  heroSubtitle       String   @db.Text
+  heroSubtitle       String   
   heroBadge          String   @default("Autumn / Winter 2026 Drops")
   heroPrimaryCta     String   @default("/shop")
   heroSecondaryCta   String   @default("/lookbook")
@@ -396,7 +394,7 @@ enum AlertKind {
 
 /// Shoppers who asked to hear when something is back in stock, or when the next drop goes live.
 model StockAlert {
-  id         String    @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   kind       AlertKind @default(RESTOCK)
   productId  String?
   product    Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -429,7 +427,7 @@ enum ReturnStatus {
 
 /// Exchange / return requests customers raise from their account or the track-order page.
 model ReturnRequest {
-  id        String       @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   orderId   String
   order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
   kind      ReturnKind
@@ -448,7 +446,7 @@ model ReturnRequest {
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   userId     String?
   user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   action     String   // e.g. "PRODUCT_CREATE", "ORDER_STATUS_UPDATE", "SETTINGS_CHANGE"
@@ -476,7 +474,7 @@ enum AuthTokenPurpose {
 /// One-time links sent by email. Only a SHA-256 hash of the token is stored; the token itself
 /// exists only in the email. Single use (usedAt) and short-lived (expiresAt).
 model AuthToken {
-  id        String           @id @default(cuid())
+  id String @id @default(cuid()) @map("_id")
   userId    String
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   purpose   AuthTokenPurpose
@@ -495,9 +493,9 @@ model AuthToken {
 /// Shared rate-limit counters, used when Upstash Redis isn't configured, so limits hold
 /// across every serverless instance (an in-memory counter resets per instance).
 model RateLimitBucket {
-  key     String   @id
+  key String @id @map("_id")
   count   Int
-  resetAt DateTime @map("reset_at") @db.Timestamptz(3)
+  resetAt DateTime @map("reset_at") 
 
   @@index([resetAt])
   @@map("rate_limit_buckets")
@@ -506,9 +504,9 @@ model RateLimitBucket {
 /// "First time only" markers: an insert succeeds once per key. Used for used TOTP codes,
 /// used recovery codes and processed webhook events.
 model SecurityMarker {
-  key       String   @id
-  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  key String @id @map("_id")
+  expiresAt DateTime @map("expires_at") 
+  createdAt DateTime @default(now()) @map("created_at") 
 
   @@index([expiresAt])
   @@map("security_markers")
