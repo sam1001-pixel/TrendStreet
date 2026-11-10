@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AlertTriangle, Check, RefreshCw, X, ShieldCheck } from "lucide-react";
 import { VALID_STOCK_REASONS, StockAdjustmentReason } from "@/lib/stock-movements";
+import { lockScroll } from "@/lib/scroll-lock";
 
 export interface StockAdjustmentTarget {
   inventoryId: string;
@@ -40,6 +41,19 @@ export function StockAdjustmentModal({
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!target) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [target, onClose]);
 
   if (!target) return null;
 
@@ -81,10 +95,16 @@ export function StockAdjustmentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-ivory rounded-2xl shadow-2xl border border-gold/30 overflow-hidden flex flex-col">
+    <div
+      role="dialog"
+      aria-modal="true"
+      data-lenis-prevent
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-lg bg-ivory rounded-2xl shadow-2xl border border-gold/30 flex flex-col max-h-[90dvh] overflow-hidden">
         {/* Header */}
-        <div className="bg-espresso p-5 text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div className="bg-espresso p-4 sm:p-5 text-ivory flex items-center justify-between border-b border-burgundy/40 shrink-0">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-lg bg-burgundy flex items-center justify-center text-gold border border-gold/30">
               <RefreshCw className="w-4 h-4" />
@@ -99,6 +119,7 @@ export function StockAdjustmentModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-1 rounded-lg text-ivory/60 hover:text-ivory hover:bg-white/10 transition-colors"
           >
@@ -107,15 +128,20 @@ export function StockAdjustmentModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {errorMsg && (
-            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
-              <span>{errorMsg}</span>
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+          <div
+            data-lenis-prevent
+            data-modal-scroll
+            className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-6 space-y-5"
+          >
+            {errorMsg && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
 
-          {/* Variant Context */}
+            {/* Variant Context */}
           <div className="p-4 bg-espresso/5 rounded-xl border border-espresso/10 space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-bold text-sm text-espresso">
@@ -228,8 +254,10 @@ export function StockAdjustmentModal({
             />
           </div>
 
-          {/* Actions */}
-          <div className="pt-3 border-t border-espresso/10 flex items-center justify-end gap-3">
+          </div>
+
+          {/* Pinned Actions */}
+          <div className="shrink-0 p-4 border-t border-espresso/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}

@@ -22,6 +22,7 @@ import {
   StockAdjustmentModal,
   StockAdjustmentTarget,
 } from "@/components/admin/StockAdjustmentModal";
+import { lockScroll } from "@/lib/scroll-lock";
 
 interface InventoryItem {
   id: string;
@@ -67,6 +68,19 @@ export default function AdminInventoryPage() {
   const [adjustTarget, setAdjustTarget] = useState<StockAdjustmentTarget | null>(null);
   const [historyTarget, setHistoryTarget] = useState<InventoryItem | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    if (!historyTarget) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setHistoryTarget(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [historyTarget]);
 
   const fetchInventory = useCallback(async () => {
     setIsLoading(true);
@@ -392,9 +406,16 @@ export default function AdminInventoryPage() {
 
       {/* Movement History Drawer Modal */}
       {historyTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-xl bg-ivory rounded-2xl shadow-2xl border border-gold/30 overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={(e) => { if (e.target === e.currentTarget) setHistoryTarget(null); }}
+        >
+          <div className="w-full max-w-xl bg-ivory rounded-2xl shadow-2xl border border-gold/30 flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40 shrink-0">
               <div className="flex items-center space-x-2">
                 <History className="w-4 h-4 text-gold" />
                 <span className="font-serif font-bold text-sm text-ivory">
@@ -405,14 +426,20 @@ export default function AdminInventoryPage() {
                 </span>
               </div>
               <button
+                type="button"
                 onClick={() => setHistoryTarget(null)}
-                className="p-1 text-ivory/60 hover:text-ivory rounded-lg"
+                className="p-1 text-ivory/60 hover:text-ivory rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4">
+            {/* SCROLLABLE BODY */}
+            <div
+              data-lenis-prevent
+              data-modal-scroll
+              className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-6 space-y-4"
+            >
               <div className="p-3 bg-espresso/5 rounded-xl border border-espresso/10 text-xs">
                 <p className="font-bold text-espresso">{historyTarget.productName}</p>
                 <p className="text-espresso/60 mt-0.5">
@@ -463,6 +490,17 @@ export default function AdminInventoryPage() {
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* PINNED FOOTER */}
+            <div className="shrink-0 p-4 border-t border-espresso/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setHistoryTarget(null)}
+                className="px-4 py-2 bg-espresso text-ivory text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-burgundy transition-colors"
+              >
+                Close Ledger
+              </button>
             </div>
           </div>
         </div>

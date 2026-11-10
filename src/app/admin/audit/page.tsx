@@ -17,6 +17,7 @@ import {
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { generateSafeCsv, getSafeExportFilename } from "@/lib/csv-security";
+import { lockScroll } from "@/lib/scroll-lock";
 
 interface AuditEntry {
   id: string;
@@ -36,6 +37,20 @@ export default function AdminAuditPage() {
   const [actionFilter, setActionFilter] = useState<string>("ALL");
   const [search, setSearch] = useState("");
   const [selectedLog, setSelectedLog] = useState<AuditEntry | null>(null);
+
+  useEffect(() => {
+    if (selectedLog) {
+      const unlock = lockScroll();
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setSelectedLog(null);
+      };
+      window.addEventListener("keydown", onKeyDown);
+      return () => {
+        unlock();
+        window.removeEventListener("keydown", onKeyDown);
+      };
+    }
+  }, [selectedLog]);
 
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
@@ -291,27 +306,37 @@ export default function AdminAuditPage() {
 
       {/* Metadata Diff Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-xl bg-ivory rounded-2xl shadow-2xl border border-gold/30 overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="audit-snapshot-title"
+          data-lenis-prevent
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedLog(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200"
+        >
+          <div className="w-full max-w-xl bg-ivory rounded-2xl shadow-2xl border border-gold/30 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40 shrink-0">
               <div className="flex items-center space-x-2">
-                <FileCode className="w-4 h-4 text-gold" />
-                <span className="font-serif font-bold text-sm text-ivory">
+                <FileCode className="w-4 h-4 text-gold shrink-0" />
+                <span id="audit-snapshot-title" className="font-serif font-bold text-sm text-ivory truncate">
                   Audit Snapshot Details
                 </span>
-                <span className="text-xs font-mono text-gold px-2 py-0.5 bg-burgundy/40 rounded border border-gold/30">
+                <span className="text-xs font-mono text-gold px-2 py-0.5 bg-burgundy/40 rounded border border-gold/30 shrink-0">
                   {selectedLog.action}
                 </span>
               </div>
               <button
                 onClick={() => setSelectedLog(null)}
-                className="p-1 text-ivory/60 hover:text-ivory rounded-lg"
+                aria-label="Close modal"
+                className="p-1.5 text-ivory/60 hover:text-ivory hover:bg-white/10 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 text-xs">
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3 p-3 bg-white rounded-xl border border-espresso/10">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-espresso/50">Actor</span>
@@ -339,15 +364,15 @@ export default function AdminAuditPage() {
                   {JSON.stringify(selectedLog.metadata, null, 2)}
                 </pre>
               </div>
+            </div>
 
-              <div className="pt-2 flex justify-end">
-                <button
-                  onClick={() => setSelectedLog(null)}
-                  className="px-4 py-2 bg-espresso text-ivory text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-burgundy transition-colors"
-                >
-                  Close Snapshot
-                </button>
-              </div>
+            <div className="p-4 bg-espresso/5 border-t border-espresso/10 flex justify-end shrink-0">
+              <button
+                onClick={() => setSelectedLog(null)}
+                className="px-4 py-2 bg-espresso text-ivory text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-burgundy transition-colors shadow-sm"
+              >
+                Close Snapshot
+              </button>
             </div>
           </div>
         </div>

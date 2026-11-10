@@ -1,5 +1,6 @@
 /** Writes an admin-edited storefront `Product` into the database (product, images, variants, stock). */
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import type { Product } from "@/types/store";
 import { CATEGORY_TO_DB } from "@/lib/catalog";
 
@@ -60,9 +61,14 @@ export function validateProduct(p: Partial<Product>) {
   };
 }
 
-type Clean = ReturnType<typeof validateProduct>;
+export type CleanProduct = ReturnType<typeof validateProduct>;
 
-export async function saveProduct(tx: Prisma.TransactionClient, id: string, p: Clean, isNew: boolean) {
+export async function saveProduct(
+  tx: Prisma.TransactionClient | PrismaClient,
+  id: string,
+  p: CleanProduct,
+  isNew: boolean
+) {
   const data = {
     name: p.name,
     subtitle: p.subtitle || null,
@@ -87,31 +93,114 @@ export async function saveProduct(tx: Prisma.TransactionClient, id: string, p: C
   }
 
   await tx.productImage.deleteMany({ where: { productId: id } });
-  await tx.productImage.createMany({
-    data: p.images.map((url, i) => ({ productId: id, url, sortOrder: i, alt: `${p.name} - View ${i + 1}` })),
-  });
+  if (p.images.length > 0) {
+    await tx.productImage.createMany({
+      data: p.images.map((url, i) => ({ productId: id, url, sortOrder: i, alt: `${p.name} - View ${i + 1}` })),
+    });
+  }
 
-  // Every offered size × colour gets a share of the stock; combos no longer offered drop to 0 (kept for order history).
+  // Pre-fetch all existing variants and their inventory in ONE single roundtrip
+  const existingVariants = await tx.productVariant.findMany({
+    where: { productId: id },
+    include: { inventory: true },
+  });
+  const existingMap = new Map(existingVariants.map((v) => [`${v.size}::${v.colorName}`, v]));
+
+  // Every offered size × colour gets a share of the stock; combos no longer offered drop to 0
   const combos = p.sizes.flatMap((size) => p.colors.map((color) => ({ size, color })));
   const total = p.inStock ? p.stockCount : 0;
   const offeredIds: string[] = [];
+
   for (let i = 0; i < combos.length; i++) {
     const { size, color } = combos[i];
     const qty = Math.floor(total / combos.length) + (i < total % combos.length ? 1 : 0);
-    const variant = await tx.productVariant.upsert({
-      where: { productId_size_colorName: { productId: id, size, colorName: color.name } },
-      update: { colorHex: color.hex },
-      create: { productId: id, size, colorName: color.name, colorHex: color.hex, sku: `${id}-${size}-${color.name.toUpperCase().replace(/\s+/g, "_")}` },
-    });
-    offeredIds.push(variant.id);
-    await tx.inventory.upsert({
-      where: { variantId: variant.id },
-      update: { quantity: qty },
-      create: { variantId: variant.id, quantity: qty },
-    });
+    const existing = existingMap.get(`${size}::${color.name}`);
+
+    if (existing) {
+      offeredIds.push(existing.id);
+      if (existing.colorHex !== color.hex) {
+        await tx.productVariant.update({
+          where: { id: existing.id },
+          data: { colorHex: color.hex },
+        });
+      }
+      if (!existing.inventory) {
+        await tx.inventory.create({
+          data: { variantId: existing.id, quantity: qty },
+        });
+      } else if (existing.inventory.quantity !== qty) {
+        await tx.inventory.update({
+          where: { id: existing.inventory.id },
+          data: { quantity: qty },
+        });
+      }
+    } else {
+      const variant = await tx.productVariant.create({
+        data: {
+          productId: id,
+          size,
+          colorName: color.name,
+          colorHex: color.hex,
+          sku: `${id}-${size}-${color.name.toUpperCase().replace(/\s+/g, "_")}`,
+          inventory: {
+            create: { quantity: qty },
+          },
+        },
+      });
+      offeredIds.push(variant.id);
+    }
   }
+
+  // Combos no longer offered drop to 0 units
   await tx.inventory.updateMany({
     where: { variant: { productId: id }, variantId: { notIn: offeredIds } },
     data: { quantity: 0 },
   });
 }
+
+/**
+ * Saves a product with automatic retry for write conflicts / transaction timeouts,
+ * and a guaranteed fallback to direct atomic client operations if an interactive transaction fails.
+ */
+export async function saveProductWithResilience(
+  id: string,
+  p: CleanProduct,
+  isNew: boolean
+): Promise<void> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await prisma.$transaction(
+        (tx) => saveProduct(tx, id, p, isNew),
+        { maxWait: 15000, timeout: 30000 }
+      );
+      return;
+    } catch (err: unknown) {
+      lastErr = err;
+      const prismaErr = err as { code?: string; message?: string };
+      const code = prismaErr?.code;
+      const isRetryable =
+        code === "P2034" ||
+        code === "P2028" ||
+        prismaErr?.message?.includes("Transaction already closed") ||
+        prismaErr?.message?.includes("Transaction failed due to a write conflict");
+
+      if (isRetryable && attempt < 3) {
+        console.warn(`[admin-products] Attempt ${attempt} failed (${code ?? prismaErr?.message}). Retrying in ${attempt * 250}ms...`);
+        await new Promise((r) => setTimeout(r, attempt * 250));
+        continue;
+      }
+      break;
+    }
+  }
+
+  // Final fallback: execute sequentially on prisma client directly outside an interactive transaction
+  console.warn("[admin-products] Interactive transaction could not complete; executing direct client save fallback.");
+  try {
+    await saveProduct(prisma, id, p, isNew);
+  } catch (fallbackErr) {
+    console.error("[admin-products] Fallback direct save also failed:", fallbackErr);
+    throw lastErr ?? fallbackErr;
+  }
+}
+

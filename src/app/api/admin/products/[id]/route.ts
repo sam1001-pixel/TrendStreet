@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCatalog, refreshStorefront } from "@/lib/catalog";
 import { writeAudit } from "@/lib/audit";
-import { ProductInputError, saveProduct, validateProduct } from "@/lib/admin-products";
+import { ProductInputError, saveProductWithResilience, validateProduct } from "@/lib/admin-products";
 import { requireAdminSession } from "@/lib/admin-guard";
 import { notifyRestock } from "@/lib/stock-alerts";
 
@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
     if (!before) return NextResponse.json({ error: "Product not found." }, { status: 404 });
 
     const clean = validateProduct(await req.json());
-    await prisma.$transaction((tx) => saveProduct(tx, params.id, clean, false));
+    await saveProductWithResilience(params.id, clean, false);
 
     // Record only what changed, so the audit trail stays readable.
     const changed: Record<string, { from: unknown; to: unknown }> = {};

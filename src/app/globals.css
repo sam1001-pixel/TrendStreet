@@ -53,20 +53,52 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Universal Scrollbar Line Removal - Seamless fluid scrolling without visible scroll lines */
-* {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+/* Luxury custom scrollbars for dialogs, modals, and designated scrollable panes */
+.custom-scrollbar,
+[role="dialog"] .overflow-y-auto,
+[data-lenis-prevent].overflow-y-auto,
+[data-modal-scroll] {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(67, 36, 44, 0.45) rgba(67, 36, 44, 0.05) !important;
+  -ms-overflow-style: auto !important;
+  -webkit-overflow-scrolling: touch;
 }
 
-*::-webkit-scrollbar,
-::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
+.custom-scrollbar::-webkit-scrollbar,
+[role="dialog"] .overflow-y-auto::-webkit-scrollbar,
+[data-lenis-prevent].overflow-y-auto::-webkit-scrollbar,
+[data-modal-scroll]::-webkit-scrollbar {
+  display: block !important;
+  width: 7px !important;
+  height: 7px !important;
+  background: rgba(67, 36, 44, 0.05) !important;
 }
 
+.custom-scrollbar::-webkit-scrollbar-track,
+[role="dialog"] .overflow-y-auto::-webkit-scrollbar-track,
+[data-lenis-prevent].overflow-y-auto::-webkit-scrollbar-track,
+[data-modal-scroll]::-webkit-scrollbar-track {
+  background: rgba(67, 36, 44, 0.05) !important;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+[role="dialog"] .overflow-y-auto::-webkit-scrollbar-thumb,
+[data-lenis-prevent].overflow-y-auto::-webkit-scrollbar-thumb,
+[data-modal-scroll]::-webkit-scrollbar-thumb {
+  background: rgba(67, 36, 44, 0.4) !important;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+[role="dialog"] .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+[data-lenis-prevent].overflow-y-auto::-webkit-scrollbar-thumb:hover,
+[data-modal-scroll]::-webkit-scrollbar-thumb:hover {
+  background: rgba(67, 36, 44, 0.75) !important;
+}
+
+/* Explicit no-scrollbar utility for horizontal sliders and carousels */
 .no-scrollbar {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;

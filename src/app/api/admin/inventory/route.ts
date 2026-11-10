@@ -190,16 +190,19 @@ export async function POST(req: NextRequest) {
     const ipAddress =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
 
-    const result = await prisma.$transaction(async (tx) => {
-      return adjustInventoryTransactional(tx, {
-        inventoryId,
-        changeQty,
-        reason,
-        notes,
-        performedBy: auth.session.email || "admin",
-        ipAddress,
-      });
-    });
+    const result = await prisma.$transaction(
+      async (tx) => {
+        return adjustInventoryTransactional(tx, {
+          inventoryId,
+          changeQty,
+          reason,
+          notes,
+          performedBy: auth.session.email || "admin",
+          ipAddress,
+        });
+      },
+      { maxWait: 10000, timeout: 20000 }
+    );
 
     // Restocked? Email shoppers who tapped "Notify me" on this product (never blocks the adjustment).
     let alerts: { sent: number; waiting: number } | null = null;

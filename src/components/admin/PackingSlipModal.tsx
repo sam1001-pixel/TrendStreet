@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Printer, X, ShieldCheck } from "lucide-react";
 import { Order } from "@/types/store";
+import { lockScroll } from "@/lib/scroll-lock";
 
 interface PackingSlipModalProps {
   order: Order | null;
@@ -10,6 +11,20 @@ interface PackingSlipModalProps {
 }
 
 export function PackingSlipModal({ order, onClose }: PackingSlipModalProps) {
+  useEffect(() => {
+    if (order) {
+      const unlock = lockScroll();
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") onClose();
+      };
+      window.addEventListener("keydown", onKeyDown);
+      return () => {
+        unlock();
+        window.removeEventListener("keydown", onKeyDown);
+      };
+    }
+  }, [order, onClose]);
+
   if (!order) return null;
 
   const handlePrint = () => {
@@ -19,12 +34,21 @@ export function PackingSlipModal({ order, onClose }: PackingSlipModalProps) {
   const totalItemsCount = order.items.reduce((acc, it) => acc + it.quantity, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="packing-slip-title"
+      data-lenis-prevent
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200"
+    >
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Controls Bar (Hidden during print) */}
-        <div className="print:hidden bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div className="print:hidden bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40 shrink-0">
           <div className="flex items-center space-x-2">
-            <span className="font-serif font-bold text-sm text-ivory">
+            <span id="packing-slip-title" className="font-serif font-bold text-sm text-ivory">
               Atelier Packing Slip Preview
             </span>
             <span className="text-xs font-mono text-gold px-2 py-0.5 bg-burgundy/40 rounded border border-gold/30">
@@ -41,6 +65,7 @@ export function PackingSlipModal({ order, onClose }: PackingSlipModalProps) {
             </button>
             <button
               onClick={onClose}
+              aria-label="Close packing slip"
               className="p-1.5 rounded-lg text-ivory/60 hover:text-ivory hover:bg-white/10 transition-colors"
             >
               <X className="w-5 h-5" />
@@ -49,7 +74,7 @@ export function PackingSlipModal({ order, onClose }: PackingSlipModalProps) {
         </div>
 
         {/* Printable Packing Slip Canvas */}
-        <div className="p-8 sm:p-10 overflow-y-auto font-sans text-espresso bg-white" id="packing-slip-printable">
+        <div className="p-8 sm:p-10 flex-1 overflow-y-auto custom-scrollbar font-sans text-espresso bg-white" id="packing-slip-printable">
           {/* Header */}
           <div className="flex items-start justify-between border-b-2 border-espresso pb-6">
             <div>

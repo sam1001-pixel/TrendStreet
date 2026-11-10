@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -18,6 +18,7 @@ import {
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { AuditTrail } from "@/components/admin/AuditTrail";
 import { AdminAccessRecord } from "@/types/store";
+import { lockScroll } from "@/lib/scroll-lock";
 
 export default function AdminAccessRegisterPage() {
   const { accessRegister, addAccessRecord, updateAccessRecord, deleteAccessRecord } = useAdminAuth();
@@ -25,6 +26,22 @@ export default function AdminAccessRegisterPage() {
   const [activeModal, setActiveModal] = useState<"add" | "edit" | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<AdminAccessRecord | null>(null);
   const [exportFormat, setExportFormat] = useState<"csv" | "sql" | "json" | null>(null);
+
+  useEffect(() => {
+    if (!activeModal) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveModal(null);
+        setSelectedRecord(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [activeModal]);
 
   // New Record Form State
   const [formData, setFormData] = useState<Omit<AdminAccessRecord, "adminId">>({
@@ -382,18 +399,31 @@ ${accessRegister
 
       {/* ADD / EDIT MODAL */}
       {activeModal && (
-        <div className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-ivory rounded-3xl max-w-2xl w-full p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
-              <h3 className="font-serif text-xl font-bold text-espresso">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-50 bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setActiveModal(null);
+              setSelectedRecord(null);
+            }
+          }}
+        >
+          <div className="bg-ivory rounded-3xl max-w-2xl w-full border border-burgundy/20 shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-burgundy/20 shrink-0 bg-ivory">
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-espresso">
                 {activeModal === "add" ? "Register Privileged System Account" : "Edit Access Record"}
               </h3>
               <button
+                type="button"
                 onClick={() => {
                   setActiveModal(null);
                   setSelectedRecord(null);
                 }}
-                className="text-espresso/60 hover:text-burgundy"
+                className="text-espresso/60 hover:text-burgundy p-1 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -401,9 +431,14 @@ ${accessRegister
 
             <form
               onSubmit={activeModal === "add" ? handleCreate : handleUpdate}
-              className="space-y-4 text-xs"
+              className="flex flex-col flex-1 overflow-hidden min-h-0 text-xs"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div
+                data-lenis-prevent
+                data-modal-scroll
+                className="custom-scrollbar flex-1 overflow-y-auto px-6 py-5 space-y-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block font-semibold text-espresso mb-1">System or Tool Name</label>
                   <input
@@ -510,29 +545,31 @@ ${accessRegister
                   </label>
                 </div>
               </div>
+            </div>
 
-              <div className="pt-4 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveModal(null);
-                    setSelectedRecord(null);
-                  }}
-                  className="py-2.5 px-5 bg-white border border-burgundy/20 rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="py-2.5 px-6 bg-burgundy hover:bg-crimson text-gold font-bold uppercase tracking-wider rounded-xl shadow-md"
-                >
-                  {activeModal === "add" ? "Save to Access Register" : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
+            {/* PINNED FOOTER */}
+            <div className="shrink-0 px-6 py-4 border-t border-burgundy/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveModal(null);
+                  setSelectedRecord(null);
+                }}
+                className="py-2.5 px-5 bg-white border border-burgundy/20 rounded-xl text-espresso font-semibold hover:bg-neutral-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="py-2.5 px-6 bg-burgundy hover:bg-crimson text-gold font-bold uppercase tracking-wider rounded-xl shadow-md transition-colors"
+              >
+                {activeModal === "add" ? "Save to Access Register" : "Save Changes"}
+              </button>
+            </div>
+          </form>
         </div>
-      )}
+      </div>
+    )}
     </div>
   );
 }

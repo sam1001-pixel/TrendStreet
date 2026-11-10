@@ -3,6 +3,7 @@
 import React, { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Film, ImageIcon, Library, Link2, Loader2, Play, Trash2, UploadCloud, X } from "lucide-react";
 import { ACCEPT, UploadKind, isVideoUrl, uploadMedia } from "@/lib/upload-client";
+import { lockScroll } from "@/lib/scroll-lock";
 
 interface MediaUploaderProps {
   kind: UploadKind;
@@ -40,6 +41,20 @@ export function MediaUploader({ kind, value, onChange, max = 12, label, helperTe
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [library, setLibrary] = useState<LibraryItem[] | null>(null);
   const [libraryError, setLibraryError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (libraryOpen) {
+      const unlock = lockScroll();
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setLibraryOpen(false);
+      };
+      window.addEventListener("keydown", onKeyDown);
+      return () => {
+        unlock();
+        window.removeEventListener("keydown", onKeyDown);
+      };
+    }
+  }, [libraryOpen]);
 
   // Latest list, so parallel uploads all land even though onChange is async.
   const valueRef = useRef(value);
@@ -285,23 +300,35 @@ export function MediaUploader({ kind, value, onChange, max = 12, label, helperTe
       {error && <p className="rounded-lg bg-crimson/10 px-3 py-2 text-xs font-medium text-crimson">{error}</p>}
 
       {libraryOpen && (
-        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={(e) => e.target === e.currentTarget && setLibraryOpen(false)}>
-          <div role="dialog" aria-modal="true" aria-label="Media library" className="flex max-h-[85dvh] w-full max-w-3xl flex-col rounded-t-3xl bg-ivory sm:rounded-2xl">
-            <div className="flex items-center justify-between border-b border-burgundy/15 px-5 py-3">
-              <span className="text-sm font-bold uppercase tracking-wider text-espresso">Choose {noun}s</span>
-              <button type="button" onClick={() => setLibraryOpen(false)} aria-label="Close" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-burgundy/5">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="media-library-title"
+          data-lenis-prevent
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 sm:items-center sm:p-4 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={(e) => e.target === e.currentTarget && setLibraryOpen(false)}
+        >
+          <div className="flex max-h-[85dvh] w-full max-w-3xl flex-col rounded-t-3xl bg-ivory sm:rounded-2xl border border-gold/30 shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-burgundy/15 px-5 py-3 shrink-0 bg-espresso text-ivory">
+              <span id="media-library-title" className="text-sm font-bold uppercase tracking-wider text-ivory">Choose {noun}s</span>
+              <button
+                type="button"
+                onClick={() => setLibraryOpen(false)}
+                aria-label="Close"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-ivory/60 hover:text-ivory hover:bg-white/10 transition-colors"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
               {libraryError ? (
                 <p className="text-sm text-crimson">{libraryError}</p>
               ) : library === null ? (
-                <p className="flex items-center gap-2 text-sm text-espresso/60">
+                <p className="flex items-center justify-center gap-2 py-8 text-sm text-espresso/60">
                   <Loader2 className="h-4 w-4 animate-spin" /> Loading…
                 </p>
               ) : library.length === 0 ? (
-                <p className="text-sm text-espresso/60">No uploaded {noun}s yet.</p>
+                <p className="py-8 text-center text-sm text-espresso/60">No uploaded {noun}s yet.</p>
               ) : (
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                   {library.map((m) => {
@@ -332,6 +359,15 @@ export function MediaUploader({ kind, value, onChange, max = 12, label, helperTe
                   })}
                 </div>
               )}
+            </div>
+            <div className="p-3 bg-espresso/5 border-t border-espresso/10 flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => setLibraryOpen(false)}
+                className="px-4 py-2 bg-espresso text-ivory text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-burgundy transition-colors shadow-sm"
+              >
+                Done
+              </button>
             </div>
           </div>
         </div>

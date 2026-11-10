@@ -25,6 +25,7 @@ import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { Product, ProductCategory } from "@/types/store";
 import { MediaUploader } from "@/components/admin/MediaUploader";
+import { lockScroll } from "@/lib/scroll-lock";
 
 const CATEGORIES: ProductCategory[] = ["Oversized", "Jeans", "Boxy Fit", "Jackets"];
 
@@ -41,6 +42,22 @@ export default function AdminProductsPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isAddModalOpen && !editingProduct) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsAddModalOpen(false);
+        setEditingProduct(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isAddModalOpen, editingProduct]);
 
   // Quick inline stock increment/decrement
   const handleStockAdjust = (p: Product, delta: number) => {
@@ -479,19 +496,35 @@ export default function AdminProductsPage() {
 
       {/* ADD PRODUCT MODAL */}
       {mounted && isAddModalOpen && createPortal(
-        <div className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overscroll-contain">
-          <div className="bg-ivory rounded-3xl max-w-2xl w-full p-5 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[92dvh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
-              <h3 className="font-serif text-xl font-bold text-espresso">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overscroll-contain animate-in fade-in duration-150"
+          onClick={(e) => { if (e.target === e.currentTarget) setIsAddModalOpen(false); }}
+        >
+          <div className="bg-ivory rounded-3xl max-w-2xl w-full border border-burgundy/20 shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-burgundy/20 shrink-0 bg-ivory">
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-espresso">
                 Add New Garment to Trend Street
               </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-espresso/60 hover:text-burgundy">
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-espresso/60 hover:text-burgundy p-1 rounded-lg"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleCreateProduct} className="flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+              <div
+                data-lenis-prevent
+                data-modal-scroll
+                className="custom-scrollbar flex-1 overflow-y-auto px-6 py-5 space-y-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block font-semibold text-espresso mb-1">Garment Name</label>
                   <input
@@ -732,19 +765,21 @@ export default function AdminProductsPage() {
                     className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
                   />
                 </div>
+                </div>
               </div>
 
-              <div className="pt-4 flex justify-end space-x-3">
+              {/* PINNED FOOTER */}
+              <div className="shrink-0 px-6 py-4 border-t border-burgundy/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="py-2.5 px-5 bg-white border border-burgundy/20 rounded-xl"
+                  className="py-2.5 px-5 bg-white border border-burgundy/20 rounded-xl text-espresso font-semibold hover:bg-neutral-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="py-2.5 px-6 bg-burgundy hover:bg-crimson text-gold font-bold uppercase tracking-wider rounded-xl shadow-md"
+                  className="py-2.5 px-6 bg-burgundy hover:bg-crimson text-gold font-bold uppercase tracking-wider rounded-xl shadow-md transition-colors"
                 >
                   Save & Publish to Store
                 </button>
@@ -757,19 +792,35 @@ export default function AdminProductsPage() {
 
       {/* EDIT PRODUCT MODAL */}
       {mounted && editingProduct && createPortal(
-        <div className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overscroll-contain">
-          <div className="bg-ivory rounded-3xl max-w-2xl w-full p-5 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[92dvh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-burgundy/20">
-              <h3 className="font-serif text-xl font-bold text-espresso">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overscroll-contain animate-in fade-in duration-150"
+          onClick={(e) => { if (e.target === e.currentTarget) setEditingProduct(null); }}
+        >
+          <div className="bg-ivory rounded-3xl max-w-2xl w-full border border-burgundy/20 shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-burgundy/20 shrink-0 bg-ivory">
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-espresso">
                 Edit Garment: {editingProduct.name}
               </h3>
-              <button onClick={() => setEditingProduct(null)} className="text-espresso/60 hover:text-burgundy">
+              <button
+                type="button"
+                onClick={() => setEditingProduct(null)}
+                className="text-espresso/60 hover:text-burgundy p-1 rounded-lg"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleUpdateProduct} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleUpdateProduct} className="flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+              <div
+                data-lenis-prevent
+                data-modal-scroll
+                className="custom-scrollbar flex-1 overflow-y-auto px-6 py-5 space-y-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block font-semibold text-espresso mb-1">Garment Name</label>
                   <input
@@ -1040,19 +1091,21 @@ export default function AdminProductsPage() {
                     <span>Featured on Storefront</span>
                   </label>
                 </div>
+                </div>
               </div>
 
-              <div className="pt-4 flex justify-end space-x-3">
+              {/* PINNED FOOTER */}
+              <div className="shrink-0 px-6 py-4 border-t border-burgundy/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="py-2.5 px-5 bg-white border border-burgundy/20 rounded-xl"
+                  className="py-2.5 px-5 bg-white border border-burgundy/20 rounded-xl text-espresso font-semibold hover:bg-neutral-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="py-2.5 px-6 bg-burgundy hover:bg-crimson text-gold font-bold uppercase tracking-wider rounded-xl shadow-md"
+                  className="py-2.5 px-6 bg-burgundy hover:bg-crimson text-gold font-bold uppercase tracking-wider rounded-xl shadow-md transition-colors"
                 >
                   Save Changes
                 </button>

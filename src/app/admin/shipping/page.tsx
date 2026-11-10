@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { lockScroll } from "@/lib/scroll-lock";
 
 interface ShipmentItem {
   id: string;
@@ -61,6 +62,19 @@ export default function AdminShippingPage() {
     courier: string;
     checkpoints: TrackingCheckpoint[];
   } | null>(null);
+
+  useEffect(() => {
+    if (!activeTracking) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveTracking(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [activeTracking]);
 
   const fetchShipping = async () => {
     setIsLoading(true);
@@ -402,9 +416,16 @@ export default function AdminShippingPage() {
 
       {/* Tracking Timeline Modal */}
       {activeTracking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-lg bg-ivory rounded-2xl shadow-2xl border border-gold/30 overflow-hidden flex flex-col">
-            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={(e) => { if (e.target === e.currentTarget) setActiveTracking(null); }}
+        >
+          <div className="w-full max-w-lg bg-ivory rounded-2xl shadow-2xl border border-gold/30 flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40 shrink-0">
               <div className="flex items-center space-x-2">
                 <Truck className="w-4 h-4 text-gold" />
                 <span className="font-serif font-bold text-sm text-ivory">
@@ -415,14 +436,20 @@ export default function AdminShippingPage() {
                 </span>
               </div>
               <button
+                type="button"
                 onClick={() => setActiveTracking(null)}
-                className="p-1 text-ivory/60 hover:text-ivory rounded-lg"
+                className="p-1 text-ivory/60 hover:text-ivory rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 text-xs">
+            {/* SCROLLABLE BODY */}
+            <div
+              data-lenis-prevent
+              data-modal-scroll
+              className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs"
+            >
               <div className="p-3 bg-white rounded-xl border border-espresso/10 flex items-center justify-between">
                 <div>
                   <span className="text-espresso/60 block text-[10px] uppercase font-bold">Order Reference</span>
@@ -450,15 +477,17 @@ export default function AdminShippingPage() {
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div className="pt-4 flex justify-end">
-                <button
-                  onClick={() => setActiveTracking(null)}
-                  className="px-4 py-2 bg-espresso text-ivory text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-burgundy transition-colors"
-                >
-                  Close Trail
-                </button>
-              </div>
+            {/* PINNED FOOTER */}
+            <div className="shrink-0 p-4 border-t border-espresso/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setActiveTracking(null)}
+                className="px-4 py-2 bg-espresso text-ivory text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-burgundy transition-colors"
+              >
+                Close Trail
+              </button>
             </div>
           </div>
         </div>

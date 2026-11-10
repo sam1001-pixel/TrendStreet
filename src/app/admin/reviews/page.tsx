@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Edit2, Eye, EyeOff, Film, Home, Loader2, Plus, Star, Trash2, X } from "lucide-react";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { MediaUploader } from "@/components/admin/MediaUploader";
+import { lockScroll } from "@/lib/scroll-lock";
 
 interface AdminReview {
   id: string;
@@ -283,26 +284,47 @@ function ReviewEditor({
   const input = "min-h-[44px] w-full rounded-xl border border-burgundy/20 bg-white px-3 text-sm text-espresso focus:border-espresso focus:outline-none";
   const label = "mb-1 block text-xs font-semibold text-espresso";
 
+  useEffect(() => {
+    const unlock = lockScroll();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onCancel]);
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="review-modal-title"
+      data-lenis-prevent
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60 sm:items-center sm:p-4 backdrop-blur-sm animate-in fade-in duration-150"
+      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    >
       <form
-        role="dialog"
-        aria-modal="true"
-        aria-label={d.id ? "Edit review" : "Add review"}
         onSubmit={(e) => {
           e.preventDefault();
           onSave(d);
         }}
-        className="flex max-h-[92dvh] w-full max-w-2xl flex-col rounded-t-3xl bg-ivory sm:rounded-2xl"
+        className="flex max-h-[92dvh] w-full max-w-2xl flex-col rounded-t-3xl bg-ivory sm:rounded-2xl border border-gold/30 shadow-2xl overflow-hidden"
       >
-        <div className="flex items-center justify-between border-b border-burgundy/15 px-5 py-3">
-          <span className="font-serif text-lg font-bold text-espresso">{d.id ? "Edit review" : "Add review"}</span>
-          <button type="button" onClick={onCancel} aria-label="Close" className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-burgundy/5">
+        <div className="flex items-center justify-between border-b border-burgundy/15 px-5 py-3 shrink-0 bg-espresso text-ivory">
+          <span id="review-modal-title" className="font-serif text-lg font-bold text-ivory">{d.id ? "Edit review" : "Add review"}</span>
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Close"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-ivory/60 hover:text-ivory hover:bg-white/10 transition-colors"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="grid flex-1 gap-4 overflow-y-auto px-5 py-4 sm:grid-cols-2">
+        <div className="grid flex-1 gap-4 overflow-y-auto custom-scrollbar px-5 py-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <MediaUploader kind="video" max={1} value={d.videoUrl ? [d.videoUrl] : []} onChange={(v) => set("videoUrl", v[0] ?? null)} label="Review video" />
           </div>
@@ -391,14 +413,14 @@ function ReviewEditor({
           </div>
         </div>
 
-        <div className="flex gap-2 border-t border-burgundy/15 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
-          <button type="button" onClick={onCancel} className="min-h-[48px] rounded-full border border-burgundy/25 px-5 text-xs font-bold uppercase tracking-wider text-espresso">
+        <div className="flex gap-2 border-t border-burgundy/15 px-5 py-3.5 shrink-0 bg-espresso/5">
+          <button type="button" onClick={onCancel} className="min-h-[44px] rounded-xl border border-espresso/20 bg-white px-5 text-xs font-bold uppercase tracking-wider text-espresso hover:bg-espresso/5 transition-colors">
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-espresso text-xs font-bold uppercase tracking-wider text-white hover:bg-crimson disabled:opacity-60"
+            className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-espresso text-xs font-bold uppercase tracking-wider text-white hover:bg-crimson disabled:opacity-60 transition-colors shadow-sm"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />} {d.id ? "Save changes" : "Publish review"}
           </button>

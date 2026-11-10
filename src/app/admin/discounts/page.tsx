@@ -18,6 +18,7 @@ import {
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { formatPrice } from "@/lib/pricing";
+import { lockScroll } from "@/lib/scroll-lock";
 
 interface Coupon {
   id: string;
@@ -68,6 +69,19 @@ export default function AdminDiscountsPage() {
   useEffect(() => {
     fetchCoupons();
   }, []);
+
+  useEffect(() => {
+    if (!modalOpen) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setModalOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [modalOpen]);
 
   const handleCreateCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -295,9 +309,16 @@ export default function AdminDiscountsPage() {
 
       {/* Create Coupon Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-ivory rounded-2xl shadow-2xl border border-gold/30 overflow-hidden flex flex-col">
-            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}
+        >
+          <div className="w-full max-w-md bg-ivory rounded-2xl shadow-2xl border border-gold/30 flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40 shrink-0">
               <div className="flex items-center space-x-2">
                 <Tag className="w-4 h-4 text-gold" />
                 <span className="font-serif font-bold text-sm text-ivory">
@@ -305,135 +326,143 @@ export default function AdminDiscountsPage() {
                 </span>
               </div>
               <button
+                type="button"
                 onClick={() => setModalOpen(false)}
-                className="p-1 text-ivory/60 hover:text-ivory rounded-lg"
+                className="p-1 text-ivory/60 hover:text-ivory rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateCoupon} className="p-6 space-y-4 text-xs">
-              {errorMsg && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
-                  <span>{errorMsg}</span>
-                </div>
-              )}
+            <form onSubmit={handleCreateCoupon} className="flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+              <div
+                data-lenis-prevent
+                data-modal-scroll
+                className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-6 space-y-4"
+              >
+                {errorMsg && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
 
-              <div className="space-y-1">
-                <label className="font-bold uppercase tracking-wider text-espresso/80">
-                  Promo Code (e.g. LUXURY20)
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  placeholder="BUNDLE15"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-espresso/20 text-espresso font-mono font-bold text-sm uppercase focus:ring-2 focus:ring-gold"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="font-bold uppercase tracking-wider text-espresso/80">
-                    Discount Rate (%)
+                    Promo Code (e.g. LUXURY20)
                   </label>
                   <input
-                    type="number"
-                    min={1}
-                    max={90}
+                    type="text"
                     required
-                    value={formData.discountPercent}
-                    onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value, 10) || 0 })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono font-bold focus:ring-2 focus:ring-gold"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                    placeholder="BUNDLE15"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-espresso/20 text-espresso font-mono font-bold text-sm uppercase focus:ring-2 focus:ring-gold"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold uppercase tracking-wider text-espresso/80">
+                      Discount Rate (%)
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={90}
+                      required
+                      value={formData.discountPercent}
+                      onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value, 10) || 0 })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono font-bold focus:ring-2 focus:ring-gold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold uppercase tracking-wider text-espresso/80">
+                      Min Spend (₹)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.minSpend}
+                      onChange={(e) => setFormData({ ...formData, minSpend: parseInt(e.target.value, 10) || 0 })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono font-bold focus:ring-2 focus:ring-gold"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold uppercase tracking-wider text-espresso/80">
+                      Max Redemptions
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={formData.maxUses}
+                      onChange={(e) => setFormData({ ...formData, maxUses: parseInt(e.target.value, 10) || 100 })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold uppercase tracking-wider text-espresso/80">
+                      Expiration Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.expiresAt}
+                      onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="flex min-h-[44px] items-center gap-2 font-bold uppercase tracking-wider text-espresso/80">
+                    <input
+                      type="checkbox"
+                      checked={formData.firstOrderOnly}
+                      onChange={(e) => setFormData({ ...formData, firstOrderOnly: e.target.checked })}
+                      className="h-4 w-4"
+                    />
+                    First order only
+                  </label>
+                  <div className="space-y-1">
+                    <label htmlFor="per-customer" className="font-bold uppercase tracking-wider text-espresso/80">
+                      Uses per customer
+                    </label>
+                    <input
+                      id="per-customer"
+                      type="number"
+                      min={0}
+                      value={formData.perCustomerLimit ?? 0}
+                      onChange={(e) => {
+                        const n = parseInt(e.target.value, 10);
+                        setFormData({ ...formData, perCustomerLimit: n > 0 ? n : null });
+                      }}
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
+                    />
+                    <p className="text-[10px] text-espresso/60">0 = no limit. Matched by email and mobile number.</p>
+                  </div>
                 </div>
 
                 <div className="space-y-1">
                   <label className="font-bold uppercase tracking-wider text-espresso/80">
-                    Min Spend (₹)
+                    Description / Campaign Target
                   </label>
                   <input
-                    type="number"
-                    min={0}
-                    value={formData.minSpend}
-                    onChange={(e) => setFormData({ ...formData, minSpend: parseInt(e.target.value, 10) || 0 })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono font-bold focus:ring-2 focus:ring-gold"
+                    type="text"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="e.g. Autumn / Winter VIP Launch Discount"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso focus:ring-2 focus:ring-gold"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-espresso/80">
-                    Max Redemptions
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={formData.maxUses}
-                    onChange={(e) => setFormData({ ...formData, maxUses: parseInt(e.target.value, 10) || 100 })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold uppercase tracking-wider text-espresso/80">
-                    Expiration Date
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.expiresAt}
-                    onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex min-h-[44px] items-center gap-2 font-bold uppercase tracking-wider text-espresso/80">
-                  <input
-                    type="checkbox"
-                    checked={formData.firstOrderOnly}
-                    onChange={(e) => setFormData({ ...formData, firstOrderOnly: e.target.checked })}
-                    className="h-4 w-4"
-                  />
-                  First order only
-                </label>
-                <div className="space-y-1">
-                  <label htmlFor="per-customer" className="font-bold uppercase tracking-wider text-espresso/80">
-                    Uses per customer
-                  </label>
-                  <input
-                    id="per-customer"
-                    type="number"
-                    min={0}
-                    value={formData.perCustomerLimit ?? 0}
-                    onChange={(e) => {
-                      const n = parseInt(e.target.value, 10);
-                      setFormData({ ...formData, perCustomerLimit: n > 0 ? n : null });
-                    }}
-                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
-                  />
-                  <p className="text-[10px] text-espresso/60">0 = no limit. Matched by email and mobile number.</p>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold uppercase tracking-wider text-espresso/80">
-                  Description / Campaign Target
-                </label>
-                <input
-                  type="text"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="e.g. Autumn / Winter VIP Launch Discount"
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso focus:ring-2 focus:ring-gold"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-espresso/10 flex items-center justify-end gap-3">
+              {/* PINNED FOOTER */}
+              <div className="shrink-0 p-4 border-t border-espresso/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
@@ -443,7 +472,7 @@ export default function AdminDiscountsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-burgundy hover:bg-burgundy/90 text-gold font-bold uppercase tracking-wider rounded-xl shadow-md border border-gold/30"
+                  className="px-5 py-2.5 bg-burgundy hover:bg-burgundy/90 text-gold font-bold uppercase tracking-wider rounded-xl shadow-md border border-gold/30 transition-colors"
                 >
                   Publish Coupon
                 </button>

@@ -26,6 +26,7 @@ import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { formatPrice } from "@/lib/pricing";
 import { Order, OrderStatus } from "@/types/store";
+import { lockScroll } from "@/lib/scroll-lock";
 
 const STATUS_LIST: OrderStatus[] = [
   "Pending",
@@ -43,13 +44,26 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [search, setSearch] = useState<string>("");
   const [mounted, setMounted] = useState(false);
+  const [activeSlipOrder, setActiveSlipOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     setMounted(true);
     const q = new URLSearchParams(window.location.search).get("q");
     if (q) setSearch(q.slice(0, 40));
   }, []);
-  const [activeSlipOrder, setActiveSlipOrder] = useState<Order | null>(null);
+
+  useEffect(() => {
+    if (!activeSlipOrder) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveSlipOrder(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [activeSlipOrder]);
 
   // Generate authentic AWB tracking ID and save to order
   const handleGenerateAwb = async (order: Order, carrier: "Delhivery" | "BlueDart" = "Delhivery") => {
@@ -433,24 +447,37 @@ export default function AdminOrdersPage() {
 
       {/* PRINTABLE PACKING SLIP MODAL */}
       {mounted && activeSlipOrder && createPortal(
-        <div className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-4 overscroll-contain">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 border border-burgundy/20 shadow-2xl space-y-6 max-h-[92dvh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-burgundy/15">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-[100] bg-espresso/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overscroll-contain animate-in fade-in duration-150"
+          onClick={(e) => { if (e.target === e.currentTarget) setActiveSlipOrder(null); }}
+        >
+          <div className="bg-white rounded-3xl max-w-xl w-full border border-burgundy/20 shadow-2xl flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-burgundy/15 shrink-0 bg-white">
               <div>
                 <span className="font-mono text-[10px] uppercase tracking-widest text-burgundy">Trend Street Dispatch Manifest</span>
-                <h3 className="font-serif text-xl font-bold text-espresso">
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-espresso">
                   Packing Slip #{activeSlipOrder.orderNumber}
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={() => setActiveSlipOrder(null)}
-                className="text-espresso/60 hover:text-burgundy p-1"
+                className="text-espresso/60 hover:text-burgundy p-1 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
+            {/* SCROLLABLE BODY */}
+            <div
+              data-lenis-prevent
+              data-modal-scroll
+              className="custom-scrollbar flex-1 overflow-y-auto px-6 py-5 space-y-4 text-xs"
+            >
               <div className="grid grid-cols-2 gap-4 p-4 bg-ivory rounded-2xl border border-burgundy/10">
                 <div>
                   <span className="font-bold text-espresso block mb-1">Ship To:</span>
@@ -492,18 +519,19 @@ export default function AdminOrdersPage() {
               </div>
             </div>
 
-            <div className="pt-4 flex justify-end space-x-3 border-t border-stone-200">
+            {/* PINNED FOOTER */}
+            <div className="shrink-0 px-6 py-4 border-t border-stone-200 bg-white/95 backdrop-blur-xs flex items-center justify-end space-x-3">
               <button
                 type="button"
                 onClick={() => setActiveSlipOrder(null)}
-                className="py-2.5 px-4 bg-ivory text-espresso text-xs font-semibold rounded-xl border border-stone-200"
+                className="py-2.5 px-4 bg-ivory text-espresso text-xs font-semibold rounded-xl border border-stone-200 hover:bg-stone-50 transition-colors"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="py-2.5 px-5 bg-burgundy hover:bg-crimson text-gold text-xs font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center gap-1.5"
+                className="py-2.5 px-5 bg-burgundy hover:bg-crimson text-gold text-xs font-bold uppercase tracking-wider rounded-xl shadow-md flex items-center gap-1.5 transition-colors"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print Packing Slip</span>

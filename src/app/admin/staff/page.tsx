@@ -17,6 +17,7 @@ import {
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { AdminRole, ROLE_PERMISSIONS } from "@/lib/admin-rbac";
+import { lockScroll } from "@/lib/scroll-lock";
 
 interface StaffMember {
   id: string;
@@ -46,6 +47,22 @@ export default function AdminStaffPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedRole, setSelectedRole] = useState<AdminRole>("Catalog Manager");
+
+  useEffect(() => {
+    if (!matrixOpen && !inviteModalOpen) return;
+    const unlock = lockScroll();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMatrixOpen(false);
+        setInviteModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlock();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [matrixOpen, inviteModalOpen]);
 
   const fetchStaff = async () => {
     setIsLoading(true);
@@ -233,9 +250,16 @@ export default function AdminStaffPage() {
 
       {/* Permissions Matrix Modal */}
       {matrixOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-4xl bg-ivory rounded-2xl shadow-2xl border border-gold/30 overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={(e) => { if (e.target === e.currentTarget) setMatrixOpen(false); }}
+        >
+          <div className="w-full max-w-4xl bg-ivory rounded-2xl shadow-2xl border border-gold/30 flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40 shrink-0">
               <div className="flex items-center space-x-2">
                 <Lock className="w-4 h-4 text-gold" />
                 <span className="font-serif font-bold text-sm text-ivory">
@@ -243,14 +267,20 @@ export default function AdminStaffPage() {
                 </span>
               </div>
               <button
+                type="button"
                 onClick={() => setMatrixOpen(false)}
-                className="p-1 text-ivory/60 hover:text-ivory rounded-lg"
+                className="p-1 text-ivory/60 hover:text-ivory rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 text-xs">
+            {/* SCROLLABLE BODY */}
+            <div
+              data-lenis-prevent
+              data-modal-scroll
+              className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs"
+            >
               <p className="text-espresso/70">
                 Granular security matrix governing operational permissions across all 12 modules.
               </p>
@@ -305,15 +335,17 @@ export default function AdminStaffPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
 
-              <div className="pt-2 flex justify-end">
-                <button
-                  onClick={() => setMatrixOpen(false)}
-                  className="px-4 py-2 bg-espresso text-ivory text-xs font-bold uppercase rounded-xl hover:bg-burgundy transition-colors"
-                >
-                  Close Matrix
-                </button>
-              </div>
+            {/* PINNED FOOTER */}
+            <div className="shrink-0 p-4 border-t border-espresso/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setMatrixOpen(false)}
+                className="px-4 py-2 bg-espresso text-ivory text-xs font-bold uppercase rounded-xl hover:bg-burgundy transition-colors"
+              >
+                Close Matrix
+              </button>
             </div>
           </div>
         </div>
@@ -321,9 +353,16 @@ export default function AdminStaffPage() {
 
       {/* Invite Staff Modal */}
       {inviteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-ivory rounded-2xl shadow-2xl border border-gold/30 overflow-hidden flex flex-col">
-            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40">
+        <div
+          role="dialog"
+          aria-modal="true"
+          data-lenis-prevent
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-espresso/80 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={(e) => { if (e.target === e.currentTarget) setInviteModalOpen(false); }}
+        >
+          <div className="w-full max-w-md bg-ivory rounded-2xl shadow-2xl border border-gold/30 flex flex-col max-h-[90dvh] overflow-hidden">
+            {/* PINNED HEADER */}
+            <div className="bg-espresso p-4 text-ivory flex items-center justify-between border-b border-burgundy/40 shrink-0">
               <div className="flex items-center space-x-2">
                 <UserCheck className="w-4 h-4 text-gold" />
                 <span className="font-serif font-bold text-sm text-ivory">
@@ -331,60 +370,68 @@ export default function AdminStaffPage() {
                 </span>
               </div>
               <button
+                type="button"
                 onClick={() => setInviteModalOpen(false)}
-                className="p-1 text-ivory/60 hover:text-ivory rounded-lg"
+                className="p-1 text-ivory/60 hover:text-ivory rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleInvite} className="p-6 space-y-4 text-xs">
-              <div className="space-y-1">
-                <label className="font-bold uppercase tracking-wider text-espresso/80">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Arjun Patel"
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso focus:ring-2 focus:ring-gold"
-                />
+            <form onSubmit={handleInvite} className="flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+              <div
+                data-lenis-prevent
+                data-modal-scroll
+                className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-6 space-y-4"
+              >
+                <div className="space-y-1">
+                  <label className="font-bold uppercase tracking-wider text-espresso/80">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Arjun Patel"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso focus:ring-2 focus:ring-gold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold uppercase tracking-wider text-espresso/80">
+                    Corporate Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="arjun@trendstreet.in"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold uppercase tracking-wider text-espresso/80">
+                    Role Assignment
+                  </label>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-semibold focus:ring-2 focus:ring-gold"
+                  >
+                    {roles.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold uppercase tracking-wider text-espresso/80">
-                  Corporate Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="arjun@trendstreet.in"
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-mono focus:ring-2 focus:ring-gold"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold uppercase tracking-wider text-espresso/80">
-                  Role Assignment
-                </label>
-                <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-espresso/20 text-espresso font-semibold focus:ring-2 focus:ring-gold"
-                >
-                  {roles.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="pt-3 border-t border-espresso/10 flex items-center justify-end gap-3">
+              {/* PINNED FOOTER */}
+              <div className="shrink-0 p-4 border-t border-espresso/10 bg-ivory/95 backdrop-blur-xs flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setInviteModalOpen(false)}
@@ -394,7 +441,7 @@ export default function AdminStaffPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-burgundy hover:bg-burgundy/90 text-gold font-bold uppercase tracking-wider rounded-xl shadow-md border border-gold/30"
+                  className="px-5 py-2.5 bg-burgundy hover:bg-burgundy/90 text-gold font-bold uppercase tracking-wider rounded-xl shadow-md border border-gold/30 transition-colors"
                 >
                   Send Invitation
                 </button>

@@ -32,31 +32,34 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     const cancelling = dbStatus === "CANCELLED" && before.status !== "CANCELLED";
     const reopening = before.status === "CANCELLED" && dbStatus !== undefined && dbStatus !== "CANCELLED";
 
-    const updated = await prisma.$transaction(async (tx) => {
-      // Cancelling returns units to stock (and the coupon use); re-opening a cancelled order takes them again.
-      if (cancelling) {
-        await releaseOrderResources(tx, before);
-      } else if (reopening) {
-        for (const item of before.items) {
-          const taken = await tx.inventory.updateMany({
-            where: { variantId: item.variantId, quantity: { gte: item.quantity } },
-            data: { quantity: { decrement: item.quantity } },
-          });
-          if (taken.count === 0) throw new Error("NOT_ENOUGH_STOCK");
+    const updated = await prisma.$transaction(
+      async (tx) => {
+        // Cancelling returns units to stock (and the coupon use); re-opening a cancelled order takes them again.
+        if (cancelling) {
+          await releaseOrderResources(tx, before);
+        } else if (reopening) {
+          for (const item of before.items) {
+            const taken = await tx.inventory.updateMany({
+              where: { variantId: item.variantId, quantity: { gte: item.quantity } },
+              data: { quantity: { decrement: item.quantity } },
+            });
+            if (taken.count === 0) throw new Error("NOT_ENOUGH_STOCK");
+          }
         }
-      }
-      return tx.order.update({
-        where: { id: params.id },
-        data: {
-          ...(dbStatus ? { status: dbStatus } : {}),
-          ...(tracking !== undefined ? { trackingNumber: tracking || null } : {}),
-          // Starts the 30-day exchange window; cleared if the status is moved back.
-          ...(dbStatus && dbStatus !== before.status ? { deliveredAt: dbStatus === "DELIVERED" ? new Date() : null } : {}),
-          ...(cancelling ? { cancelledAt: new Date(), cancelReason: "Cancelled by the store" } : reopening ? { cancelledAt: null, cancelReason: null } : {}),
-        },
-        include: adminOrderInclude,
-      });
-    });
+        return tx.order.update({
+          where: { id: params.id },
+          data: {
+            ...(dbStatus ? { status: dbStatus } : {}),
+            ...(tracking !== undefined ? { trackingNumber: tracking || null } : {}),
+            // Starts the 30-day exchange window; cleared if the status is moved back.
+            ...(dbStatus && dbStatus !== before.status ? { deliveredAt: dbStatus === "DELIVERED" ? new Date() : null } : {}),
+            ...(cancelling ? { cancelledAt: new Date(), cancelReason: "Cancelled by the store" } : reopening ? { cancelledAt: null, cancelReason: null } : {}),
+          },
+          include: adminOrderInclude,
+        });
+      },
+      { maxWait: 10000, timeout: 20000 }
+    );
 
     if (dbStatus && dbStatus !== before.status) {
       await writeAudit(req, {
