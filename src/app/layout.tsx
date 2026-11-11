@@ -1,30 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat, Big_Shoulders } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
-
-// OFFVYBE typography: Montserrat for text, Big Shoulders Display for big headings.
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  // Only the weights the site uses (400–700; the heavy headings use the display font). 12 font files → 4,
-  // which is the biggest saving on a 4G first visit. Italics are drawn by the browser from the upright face.
-  weight: ["400", "500", "600", "700"],
-  style: ["normal"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-// Google merged "Big Shoulders Display" into the "Big Shoulders" family (an optical-size axis);
-// Next.js 15 only knows the new name. globals.css pins opsz to 72, which is the old Display cut.
-const display = Big_Shoulders({
-  subsets: ["latin"],
-  axes: ["opsz"],
-  variable: "--font-display",
-  display: "swap",
-  // Next has no fallback metrics for the renamed family yet; use the same fallbacks as globals.css.
-  adjustFontFallback: false,
-  fallback: ["Impact", "sans-serif"],
-});
 import { StoreProvider } from "@/context/StoreContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { UserAuthProvider } from "@/context/UserAuthContext";
@@ -109,9 +85,15 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Montserrat:wght@400;500;600;700&display=swap"
+        />
         <StoreJsonLd />
       </head>
-      <body className={`${montserrat.variable} ${display.variable} min-h-screen flex flex-col bg-ivory text-espresso antialiased`}>
+      <body className="min-h-screen flex flex-col bg-ivory text-espresso antialiased">
         <SmoothScroll />
         <AdminAuthProvider>
           <StoreProvider initialProducts={products} initialVideoReviews={videoReviews} initialSettings={settings}>

@@ -107,6 +107,7 @@ const config: Config = {
       fontFamily: {
         serif: ["var(--font-serif)", "Montserrat", "Arial", "sans-serif"],
         sans: ["var(--font-sans)", "Montserrat", "Arial", "sans-serif"],
+        display: ["var(--font-display)", "Impact", "sans-serif"],
       },
       keyframes: {
         shimmer: {
