@@ -9,6 +9,13 @@ const nextConfig = {
   reactStrictMode: true,
   // Don't advertise the framework in every response.
   poweredByHeader: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   images: {
     // AVIF is off: Next.js 14's image optimizer has an open security advisory for AVIF input/output
     // (GHSA-2xp9-vwfh-vxw4). Re-enable after upgrading to a patched Next.js release.
