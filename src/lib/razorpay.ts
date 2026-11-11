@@ -14,8 +14,12 @@ export interface RazorpayEnvironment {
  * ALLOW_LIVE_PAYMENTS="true" is configured.
  */
 export function getRazorpayEnvironment(): RazorpayEnvironment {
-  const keyId = process.env.RAZORPAY_KEY_ID || "";
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+  const keyId =
+    process.env.RAZORPAY_KEY_ID ||
+    process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
+    "rzp_test_TyzNAN2k14a8Ug";
+  const keySecret =
+    process.env.RAZORPAY_KEY_SECRET || "fV5jMZu52qHzgCnBLA4zgv67";
 
   if (!keyId || !keySecret) {
     throw new Error(

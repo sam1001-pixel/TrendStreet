@@ -95,10 +95,11 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    if (error instanceof OrderInputError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (error instanceof OrderInputError || (error as any)?.name === "OrderInputError") {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 });
     }
     console.error("[Razorpay Order Creation Error]:", error);
-    return NextResponse.json({ error: "Failed to initialize payment. Please try again." }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to initialize payment. Please try again.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -145,7 +145,7 @@ export default function ContactPage() {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Aarav Sharma"
+                      placeholder="Your full name"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       className="w-full bg-ivory px-3.5 py-2.5 rounded-lg border border-burgundy/20 text-espresso focus:outline-none focus:border-burgundy"
@@ -157,7 +157,7 @@ export default function ContactPage() {
                     <input
                       type="email"
                       required
-                      placeholder="aarav@example.com"
+                      placeholder="name@example.com"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       className="w-full bg-ivory px-3.5 py-2.5 rounded-lg border border-burgundy/20 text-espresso focus:outline-none focus:border-burgundy"
@@ -170,7 +170,7 @@ export default function ContactPage() {
                     <label className="block font-semibold text-espresso mb-1">Phone / WhatsApp Number</label>
                     <input
                       type="tel"
-                      placeholder="+91 98200 12345"
+                      placeholder="+91 Mobile number"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       className="w-full bg-ivory px-3.5 py-2.5 rounded-lg border border-burgundy/20 text-espresso focus:outline-none focus:border-burgundy"

@@ -640,7 +640,7 @@ export default function CheckoutPage() {
                     required
                     value={formData.fullName}
                     onChange={handleChange}
-                    placeholder="e.g. Aarav Sharma"
+                    placeholder="Enter your full name"
                     className={inputClass}
                   />
                 </div>
@@ -657,7 +657,7 @@ export default function CheckoutPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="aarav@example.com"
+                    placeholder="name@example.com"
                     className={inputClass}
                   />
                 </div>
@@ -674,7 +674,7 @@ export default function CheckoutPage() {
                     required
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="+91 98200 12345"
+                    placeholder="10-digit mobile number"
                     className={inputClass}
                   />
                 </div>
@@ -691,7 +691,7 @@ export default function CheckoutPage() {
                     required
                     value={formData.address}
                     onChange={handleChange}
-                    placeholder="Plot 42, Waterfield Road"
+                    placeholder="House / flat no., building, street"
                     className={inputClass}
                   />
                 </div>
@@ -707,7 +707,7 @@ export default function CheckoutPage() {
                     autoComplete="address-line2"
                     value={formData.apartment}
                     onChange={handleChange}
-                    placeholder="Flat 402, Sea Pearl Apartments"
+                    placeholder="Area, floor (optional)"
                     className={inputClass}
                   />
                 </div>
@@ -722,7 +722,7 @@ export default function CheckoutPage() {
                     name="landmark"
                     value={formData.landmark}
                     onChange={handleChange}
-                    placeholder="Near Mehboob Studio / Bandra Post Office"
+                    placeholder="Landmark (optional)"
                     className={inputClass}
                   />
                 </div>
@@ -740,7 +740,7 @@ export default function CheckoutPage() {
                     maxLength={6}
                     value={formData.postalCode}
                     onChange={handleChange}
-                    placeholder="400050"
+                    placeholder="6-digit PIN code"
                     className={`${inputClass} tracking-widest`}
                   />
                 </div>
@@ -757,7 +757,7 @@ export default function CheckoutPage() {
                     required
                     value={formData.city}
                     onChange={handleChange}
-                    placeholder="Mumbai"
+                    placeholder="City"
                     className={inputClass}
                   />
                 </div>

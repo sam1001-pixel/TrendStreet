@@ -156,88 +156,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   },
 };
 
-const INITIAL_ORDERS: Order[] = [
-  {
-    id: "ord-1001",
-    orderNumber: "TS-2026-8941",
-    createdAt: "2026-10-14T14:32:00Z",
-    status: "Delivered",
-    items: [
-      {
-        productId: "ts-001",
-        productName: "The Mayfair Heavyweight Oversized Tee",
-        price: 2499,
-        selectedSize: "L",
-        selectedColor: "Deep Burgundy",
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        productId: "ts-004",
-        productName: "The Shibuya Relaxed Carpenter Jeans",
-        price: 5499,
-        selectedSize: "32",
-        selectedColor: "Washed Vintage Blue",
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=800&auto=format&fit=crop",
-      },
-    ],
-    subtotal: 7998,
-    discount: 799.8,
-    shipping: 0,
-    tax: 0,
-    total: 7198.2,
-    promoCode: "TREND10",
-    customer: {
-      fullName: "Aarav Sharma",
-      email: "aarav.sharma@offvybe.in",
-      phone: "+91 98200 12345",
-      address: "Flat 402, Sea Green Apartments, Bandra West",
-      city: "Mumbai",
-      postalCode: "400050",
-      country: "India",
-    },
-    deliveryMethod: "vip_courier",
-    paymentMethod: "upi",
-    trackingNumber: "DELHIVERY-AWB-9948210IN",
-    estimatedDelivery: "2026-10-16",
-  },
-  {
-    id: "ord-1002",
-    orderNumber: "TS-2026-9214",
-    createdAt: "2026-10-18T09:15:00Z",
-    status: "In Transit",
-    items: [
-      {
-        productId: "ts-010",
-        productName: "The Tuscan Suede MA-1 Flight Jacket",
-        price: 8999,
-        selectedSize: "L",
-        selectedColor: "Deep Burgundy",
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=800&auto=format&fit=crop",
-      },
-    ],
-    subtotal: 8999,
-    discount: 0,
-    shipping: 0,
-    tax: 0,
-    total: 8999,
-    customer: {
-      fullName: "Aarav Sharma",
-      email: "aarav.sharma@offvybe.in",
-      phone: "+91 98200 12345",
-      address: "Flat 402, Sea Green Apartments, Bandra West",
-      city: "Mumbai",
-      postalCode: "400050",
-      country: "India",
-    },
-    deliveryMethod: "vip_courier",
-    paymentMethod: "card",
-    trackingNumber: "BLUEDART-EXP-773190IN",
-    estimatedDelivery: "2026-10-21",
-  },
-];
+const INITIAL_ORDERS: Order[] = [];
 
 /** Layers database settings over the defaults (nested groups are merged, not replaced). */
 function mergeSettings(prev: SiteSettings, incoming: EditableSettings | Partial<SiteSettings>): SiteSettings {
@@ -285,8 +204,8 @@ export const StoreProvider: React.FC<{
       // Products and settings come from the database (see the fetch below), not browser storage.
       localStorage.removeItem("ts_site_settings");
       localStorage.removeItem("ts_products");
-
-      setIsDemo(localStorage.getItem("ts_demo") === "1");
+      localStorage.removeItem("ts_demo");
+      setIsDemo(false);
 
       const storedCart = localStorage.getItem("ts_cart");
       if (storedCart) {
@@ -300,17 +219,47 @@ export const StoreProvider: React.FC<{
 
       const storedOrders = localStorage.getItem("ts_orders");
       if (storedOrders) {
-        // Drop the demo orders older builds seeded into every browser.
-        const demoIds = new Set(INITIAL_ORDERS.map((o) => o.id));
-        setOrders((JSON.parse(storedOrders) as Order[]).filter((o) => !demoIds.has(o.id)));
+        try {
+          const parsedOrders = JSON.parse(storedOrders) as Order[];
+          // Drop any sample demo orders or orders with mock IDs/emails
+          setOrders(
+            parsedOrders.filter(
+              (o) =>
+                !o.id.startsWith("ord-100") &&
+                !o.orderNumber.startsWith("TS-DEMO") &&
+                o.orderNumber !== "TS-2026-8941" &&
+                o.orderNumber !== "TS-2026-9214" &&
+                !o.customer?.email?.includes("offvybe.in") &&
+                !o.customer?.email?.includes("example.com") &&
+                !o.customer?.fullName?.includes("Aarav") &&
+                !o.customer?.fullName?.includes("Kabir")
+            )
+          );
+        } catch {
+          localStorage.removeItem("ts_orders");
+        }
       }
 
       const storedUser = localStorage.getItem("ts_user");
       if (storedUser) {
-        const parsed = JSON.parse(storedUser) as UserProfile;
-        // Older builds stored a sample profile ("Aarav Sharma") in every browser; discard it.
-        const isSample = parsed?.email === "aarav.sharma@offvybe.in";
-        if (!isSample) setUser({ ...DEFAULT_USER, ...parsed, measurements: { ...DEFAULT_USER.measurements, ...(parsed.measurements || {}) } });
+        try {
+          const parsed = JSON.parse(storedUser) as UserProfile;
+          const isSample =
+            parsed?.email?.includes("offvybe.in") ||
+            parsed?.email?.includes("example.com") ||
+            parsed?.name?.includes("Aarav") ||
+            parsed?.name?.includes("Kabir") ||
+            parsed?.name?.includes("Aryan") ||
+            parsed?.phone?.includes("98200");
+          if (!isSample) {
+            setUser({ ...DEFAULT_USER, ...parsed, measurements: { ...DEFAULT_USER.measurements, ...(parsed.measurements || {}) } });
+          } else {
+            localStorage.removeItem("ts_user");
+            setUser(DEFAULT_USER);
+          }
+        } catch {
+          localStorage.removeItem("ts_user");
+        }
       }
     } catch (e) {
       console.error("Failed to load local storage state:", e);
@@ -567,23 +516,19 @@ export const StoreProvider: React.FC<{
   };
 
   const updateUserProfile = (profile: Partial<UserProfile>) => {
-    // Edits never touch the sample account — it is read-only.
-    if (isDemo) return;
     setUser((prev) => ({ ...prev, ...profile }));
   };
 
   const enterDemo = () => {
-    setIsDemo(true);
-    try { localStorage.setItem("ts_demo", "1"); } catch {}
+    setIsDemo(false);
   };
   const exitDemo = () => {
     setIsDemo(false);
     try { localStorage.removeItem("ts_demo"); } catch {}
   };
 
-  // The sample account is layered on top of (never written into) the shopper's own data.
-  const visibleUser = isDemo ? DEMO_USER : user;
-  const visibleOrders = isDemo ? [...orders, ...DEMO_ORDERS] : orders;
+  const visibleUser = user;
+  const visibleOrders = orders;
 
   // Calculations
   // Same engine the server uses (src/lib/pricing.ts), so the bag total always matches what checkout charges.

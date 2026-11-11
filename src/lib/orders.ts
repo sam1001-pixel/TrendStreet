@@ -52,7 +52,13 @@ export interface PlaceOrderInput {
   accountUserId?: string | null;
 }
 
-export class OrderInputError extends Error {}
+export class OrderInputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OrderInputError";
+    Object.setPrototypeOf(this, OrderInputError.prototype);
+  }
+}
 
 const DELIVERY_COURIER = "Blue Dart Apex / Delhivery Air";
 const MAX_QTY_PER_LINE = 10;

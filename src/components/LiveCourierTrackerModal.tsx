@@ -194,7 +194,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
                   type="text"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. 9820012345 or TS-2026-8941"
+                  placeholder="Enter order number or mobile number"
                   className="w-full pl-9 pr-3 py-2.5 bg-white border border-burgundy/20 rounded-lg text-sm text-espresso placeholder-espresso/40 focus:outline-none focus:border-burgundy"
                 />
               </div>
@@ -214,7 +214,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
               </button>
             </div>
             <div className="flex items-center justify-between text-[11px] text-espresso/60 pt-1">
-              <span>Try test ID: <button type="button" className="font-mono font-bold text-burgundy hover:underline cursor-pointer" onClick={() => setIdentifier("TS-2026-8941")}>TS-2026-8941</button> or <button type="button" className="font-mono font-bold text-burgundy hover:underline cursor-pointer" onClick={() => setIdentifier("9820012345")}>9820012345</button></span>
+              <span>Live tracking across Blue Dart, Delhivery & Bluedart Air</span>
               <span className="text-espresso/40">No login required</span>
             </div>
           </form>
@@ -230,7 +230,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
                   Air Waybill Number
                 </span>
                 <span className="font-mono text-sm font-bold text-burgundy">
-                  {foundOrder?.trackingNumber || "BD-892184-BOM"}
+                  {foundOrder?.trackingNumber || "—"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -253,7 +253,7 @@ export const LiveCourierTrackerModal: React.FC<LiveCourierTrackerModalProps> = (
               <div className="col-span-2 sm:col-span-1">
                 <span className="text-[10px] text-espresso/50 block">Destination:</span>
                 <span className="font-semibold text-espresso">
-                  {foundOrder ? `${foundOrder.customer.city} (${foundOrder.customer.postalCode})` : "Mumbai Metro (400050)"}
+                  {foundOrder ? `${foundOrder.customer.city} (${foundOrder.customer.postalCode})` : "—"}
                 </span>
               </div>
             </div>

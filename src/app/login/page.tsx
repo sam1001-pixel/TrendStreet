@@ -240,7 +240,7 @@ function LoginForm() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Aryan Mehra"
+                  placeholder="Full name"
                   autoComplete="name"
                   className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
@@ -275,7 +275,7 @@ function LoginForm() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98200 00000"
+                  placeholder="10-digit mobile number"
                   autoComplete="tel"
                   className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
