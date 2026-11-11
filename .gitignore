@@ -30,6 +30,7 @@ yarn-error.log*
 .env*.local
 .env.local
 !.env.example
+env-file-for-hostinger.txt
 
 # customer data, backups and local uploads must never go to GitHub
 /data/

@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test \"tests/unit/*.test.ts\"",
+    "test": "node --import tsx --test tests/unit/*.test.ts",
     "test:integrations": "tsx scripts/test-integrations.ts",
     "hash-password": "tsx scripts/hash-password.ts",
     "db:push": "node scripts/db-push.mjs",

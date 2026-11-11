@@ -5,6 +5,7 @@ const BLOB_HOST = (process.env.BLOB_PUBLIC_HOSTNAME || "").trim() || "*.public.b
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   // Don't advertise the framework in every response.
   poweredByHeader: false,
