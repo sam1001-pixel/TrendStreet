@@ -84,7 +84,11 @@ export async function POST(req: NextRequest) {
     if (result.outcome === "confirmed" && result.newlyConfirmed) {
       const orderId = result.orderId;
       // after(): the email is sent once the response is out, and the serverless function waits for it.
-      after(() => sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id).then(() => undefined));
+      try {
+        after(() => sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id).then(() => undefined));
+      } catch {
+        void sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id);
+      }
     }
 
     return NextResponse.json({

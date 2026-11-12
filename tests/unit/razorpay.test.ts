@@ -169,3 +169,46 @@ test("Razorpay Environment Safety Gate - enforces test mode and prevents unappro
     process.env.ALLOW_LIVE_PAYMENTS = originalAllowLive;
   }
 });
+
+test("Razorpay Simulation - accepts simulated signature only in test mode", async () => {
+  const originalKeyId = process.env.RAZORPAY_KEY_ID;
+  const originalAllowLive = process.env.ALLOW_LIVE_PAYMENTS;
+  try {
+    process.env.RAZORPAY_KEY_ID = "rzp_test_mockKeyForTesting";
+    process.env.ALLOW_LIVE_PAYMENTS = "false";
+
+    const simOrderId = "order_sim_test123";
+    const simPaymentId = "pay_sim_test456";
+    const validSimSig = `sim_sig_${simOrderId}`;
+
+    const isValid = verifyRazorpayPaymentSignature({
+      orderId: simOrderId,
+      paymentId: simPaymentId,
+      signature: validSimSig,
+      secret: "mock_secret",
+    });
+    assert.equal(isValid, true, "Simulated signature must pass in test mode");
+
+    const badSig = verifyRazorpayPaymentSignature({
+      orderId: simOrderId,
+      paymentId: simPaymentId,
+      signature: "forged_signature",
+      secret: "mock_secret",
+    });
+    assert.equal(badSig, false, "Tampered signature must be rejected");
+
+    // In live mode, simulation signatures must be rejected
+    process.env.RAZORPAY_KEY_ID = "rzp_live_realMerchantKey123";
+    process.env.ALLOW_LIVE_PAYMENTS = "true";
+    const rejectedInLive = verifyRazorpayPaymentSignature({
+      orderId: simOrderId,
+      paymentId: simPaymentId,
+      signature: validSimSig,
+      secret: "mock_secret",
+    });
+    assert.equal(rejectedInLive, false, "Simulated signatures must be rejected in live mode");
+  } finally {
+    process.env.RAZORPAY_KEY_ID = originalKeyId;
+    process.env.ALLOW_LIVE_PAYMENTS = originalAllowLive;
+  }
+});

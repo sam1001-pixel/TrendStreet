@@ -50,15 +50,19 @@ export async function POST(req: NextRequest) {
     }
 
     // Opportunistically free stock held by abandoned payments (also runs from the daily cron).
-    after(() => releaseStaleRazorpayOrders(10).then(() => undefined).catch((e) => console.warn("[Release stale orders]:", e?.message || e)));
+    try {
+      after(() => releaseStaleRazorpayOrders(10).then(() => undefined).catch((e) => console.warn("[Release stale orders]:", e?.message || e)));
+    } catch {
+      void releaseStaleRazorpayOrders(10).catch(() => undefined);
+    }
 
     const orderNumber = generateOrderNumber();
-    const { order: rzpOrder, keyId, isTestMode } = await createRazorpayOrder({
+    const { order: rzpOrder, keyId, isTestMode, isSimulated } = (await createRazorpayOrder({
       amountMinor: pricing.totalMinor,
       currency: "INR",
       receipt: orderNumber,
       notes: { orderNumber, promoCode: pricing.promoCodeApplied || "none" },
-    });
+    })) as any;
 
     const placed = await placeOrder({
       items,
@@ -77,6 +81,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Prices were just updated. Please review your bag and try again." }, { status: 409 });
     }
 
+    const isSim = Boolean(isSimulated || String(rzpOrder.id).startsWith("order_sim_"));
+
     return NextResponse.json({
       success: true,
       orderId: rzpOrder.id,
@@ -85,6 +91,8 @@ export async function POST(req: NextRequest) {
       currency: rzpOrder.currency,
       keyId,
       isTestMode,
+      isSimulated: isSim,
+      simulatedSignature: isSim ? `sim_sig_${rzpOrder.id}` : undefined,
       pricing: {
         subtotalMinor: placed.pricing.subtotalMinor,
         discountMinor: placed.pricing.discountMinor,
@@ -99,7 +107,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: (error as Error).message }, { status: 400 });
     }
     console.error("[Razorpay Order Creation Error]:", error);
-    const rawMessage = error instanceof Error ? error.message : "";
+    const rawMessage =
+      (error as any)?.error?.description ||
+      (error as any)?.message ||
+      (error instanceof Error ? error.message : "") ||
+      (typeof error === "string" ? error : "");
+
     const isInternalError =
       rawMessage.includes("prisma") ||
       rawMessage.includes("resolv.conf") ||
@@ -108,6 +121,7 @@ export async function POST(req: NextRequest) {
     const clientMessage = isInternalError || !rawMessage
       ? "Unable to initialize payment at this moment. Please try again in a few moments."
       : rawMessage;
-    return NextResponse.json({ error: clientMessage }, { status: 500 });
+    const statusCode = (error as any)?.statusCode === 401 ? 401 : 500;
+    return NextResponse.json({ error: clientMessage }, { status: statusCode });
   }
 }

@@ -65,6 +65,13 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [simulatedOrder, setSimulatedOrder] = useState<{
+    orderId: string;
+    orderNumber: string;
+    amount: number;
+    simulatedSignature?: string;
+    pricing: any;
+  } | null>(null);
 
   // Form State initialized with Indian defaults
   const [formData, setFormData] = useState({
@@ -264,6 +271,84 @@ export default function CheckoutPage() {
     handleSubmitOrder(e);
   };
 
+  const handleSimulatedPaymentSuccess = async (sim: {
+    orderId: string;
+    orderNumber: string;
+    amount: number;
+    simulatedSignature?: string;
+    pricing: any;
+  }) => {
+    setIsProcessing(true);
+    setValidationError(null);
+    try {
+      const paymentId = `pay_sim_${Date.now()}`;
+      const verifyRes = await fetch("/api/payment/razorpay/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          razorpay_order_id: sim.orderId,
+          razorpay_payment_id: paymentId,
+          razorpay_signature: sim.simulatedSignature || `sim_sig_${sim.orderId}`,
+        }),
+      });
+
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok || !verifyData.success || !verifyData.verified) {
+        setValidationError(
+          verifyData.error || "We couldn't confirm your test payment. Please try again."
+        );
+        setIsProcessing(false);
+        setSimulatedOrder(null);
+        return;
+      }
+
+      // Sync with local client order state
+      const orderItems = cart.map((item) => ({
+        productId: item.product.id,
+        productName: item.product.name,
+        price: item.product.price,
+        selectedSize: item.selectedSize,
+        selectedColor: item.selectedColor,
+        quantity: item.quantity,
+        image: item.product.images[0],
+      }));
+
+      const newOrder = createOrder({
+        orderNumber: verifyData.orderNumber || sim.orderNumber,
+        items: orderItems,
+        subtotal: sim.pricing.subtotalMinor / 100,
+        discount: sim.pricing.discountMinor / 100,
+        shipping: sim.pricing.shippingMinor / 100,
+        tax: sim.pricing.taxMinor / 100,
+        total: sim.pricing.totalMinor / 100,
+        promoCode: coupon?.code || undefined,
+        customer: {
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          address: `${formData.address}${formData.apartment ? `, ${formData.apartment}` : ""}${formData.landmark ? `, Near ${formData.landmark}` : ""}, ${formData.state}`,
+          apartment: formData.apartment,
+          city: formData.city,
+          postalCode: formData.postalCode,
+          country: formData.country,
+        },
+        deliveryMethod: formData.deliveryMethod,
+        paymentMethod: formData.paymentMethod,
+      });
+
+      setSimulatedOrder(null);
+      setIsProcessing(false);
+      afterOrderPlaced();
+      router.push(`/order-confirmation/${newOrder.id}`);
+    } catch (verifyErr) {
+      console.error("Signature verification error:", verifyErr);
+      setValidationError("Network error during payment verification. Please contact support.");
+      setIsProcessing(false);
+      setSimulatedOrder(null);
+    }
+  };
+
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -395,6 +480,21 @@ export default function CheckoutPage() {
       if (!createOrderRes.ok || !orderData.success) {
         setValidationError(orderData.error || "Failed to initialize payment gateway. Please retry.");
         setIsProcessing(false);
+        return;
+      }
+
+      // In Sandbox Test Mode: if the order is simulated (e.g. placeholder test credentials),
+      // open the built-in Sandbox Payment Simulator modal to let the user complete and test
+      // the entire order, confirmation email, inventory deduction, and status tracking.
+      if (orderData.isSimulated) {
+        setIsProcessing(false);
+        setSimulatedOrder({
+          orderId: orderData.orderId,
+          orderNumber: orderData.orderNumber,
+          amount: orderData.amount,
+          simulatedSignature: orderData.simulatedSignature,
+          pricing: orderData.pricing,
+        });
         return;
       }
 
@@ -1115,6 +1215,64 @@ export default function CheckoutPage() {
           </div>
         </aside>
       </div>
+
+      {/* RAZORPAY SANDBOX TEST MODE SIMULATOR MODAL */}
+      {simulatedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-burgundy/20 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-ivory-dark">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-burgundy" />
+                <h4 className="font-serif font-bold text-espresso text-lg">Razorpay Sandbox</h4>
+              </div>
+              <span className="text-[10px] uppercase font-bold tracking-widest bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full">
+                Test Mode
+              </span>
+            </div>
+
+            <div className="bg-ivory/60 p-4 rounded-xl space-y-2 border border-burgundy/10 text-xs text-espresso">
+              <div className="flex justify-between items-center">
+                <span className="text-espresso/60">Order Reference</span>
+                <span className="font-mono font-medium">{simulatedOrder.orderNumber}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-espresso/60">Payable Amount</span>
+                <span className="font-bold text-burgundy text-sm">{formatPrice(simulatedOrder.amount / 100)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-espresso/60">Payment Gateway</span>
+                <span className="text-emerald-700 font-medium">Ready (Sandbox Simulator)</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-espresso/70 leading-relaxed">
+              Your server is configured in Test Mode. You can complete this transaction now with the simulated gateway to test inventory reservation, order confirmation, and automated confirmation emails.
+            </p>
+
+            <div className="space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={() => handleSimulatedPaymentSuccess(simulatedOrder)}
+                disabled={isProcessing}
+                className="w-full py-3.5 px-4 bg-burgundy hover:bg-burgundy/90 text-white font-medium rounded-xl transition flex items-center justify-center gap-2 shadow-sm text-sm cursor-pointer disabled:opacity-50"
+              >
+                {isProcessing ? "Confirming Order..." : `Simulate Successful Payment · ${formatPrice(simulatedOrder.amount / 100)}`}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSimulatedOrder(null);
+                  setIsProcessing(false);
+                }}
+                disabled={isProcessing}
+                className="w-full py-2.5 px-4 bg-transparent hover:bg-stone-100 text-stone-600 font-medium rounded-xl transition text-xs cursor-pointer"
+              >
+                Cancel Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

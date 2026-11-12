@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRazorpayClient } from "@/lib/razorpay";
+import { createRazorpayOrder, getRazorpayEnvironment } from "@/lib/razorpay";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +12,10 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(req: NextRequest) {
   try {
-    const key_id = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    const key_secret = process.env.RAZORPAY_KEY_SECRET;
+    const env = getRazorpayEnvironment();
+    const key_id = env.keyId;
 
-    if (!key_id || !key_secret) {
+    if (!key_id || !env.keySecret) {
       return NextResponse.json(
         { error: "Razorpay credentials are not configured on the server." },
         { status: 401 }
@@ -33,10 +33,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const razorpay = getRazorpayClient();
-
-    const order = await razorpay.orders.create({
-      amount: Math.round(amountInPaise),
+    const { order } = await createRazorpayOrder({
+      amountMinor: Math.round(amountInPaise),
       currency: currency.toUpperCase(),
       receipt: String(receipt).slice(0, 40),
     });
@@ -54,7 +52,7 @@ export async function POST(req: NextRequest) {
     const statusCode = error?.statusCode || error?.status || 500;
     return NextResponse.json(
       { error: error?.error?.description || error?.message || "Failed to create Razorpay order." },
-      { status: statusCode === 401 ? 401 : 500 }
+      { status: statusCode === 401 ? 401 : statusCode === 400 ? 400 : 500 }
     );
   }
 }
