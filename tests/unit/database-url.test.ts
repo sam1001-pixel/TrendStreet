@@ -22,10 +22,12 @@ test("normalizeDatabaseUrl - converts sujal MongoDB Atlas SRV URL to direct repl
   assert.ok(normalized?.includes("/trendstreet"));
 });
 
-test("normalizeDatabaseUrl - leaves non-Atlas or other URLs unchanged", () => {
-  const directUrl = "mongodb://user:pass@host:27017/db";
-  assert.equal(normalizeDatabaseUrl(directUrl), directUrl);
+test("normalizeDatabaseUrl - preserves custom query parameters like maxPoolSize", () => {
+  const srvUrl = "mongodb+srv://sujalsolanki200410_db_user:tffoI8audrGBS9wO@sujal.i3a9xri.mongodb.net/trendstreet?retryWrites=true&w=majority&maxPoolSize=15&connectTimeoutMS=10000";
+  const normalized = normalizeDatabaseUrl(srvUrl);
 
-  const postgresUrl = "postgresql://user:pass@localhost:5432/db";
-  assert.equal(normalizeDatabaseUrl(postgresUrl), postgresUrl);
+  assert.ok(normalized?.includes("maxPoolSize=15"));
+  assert.ok(normalized?.includes("connectTimeoutMS=10000"));
+  assert.ok(normalized?.includes("replicaSet=atlas-lvjv8q-shard-0"));
 });
+

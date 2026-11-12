@@ -11,9 +11,16 @@ if (!process.env.DATABASE_URL) {
 
 if (process.env.DATABASE_URL.startsWith("mongodb+srv://") && process.env.DATABASE_URL.includes("sujal.i3a9xri.mongodb.net")) {
   process.env.DATABASE_URL = process.env.DATABASE_URL.replace(
-    /mongodb\+srv:\/\/([^@]+)@sujal\.i3a9xri\.mongodb\.net\/([^?]+)(\?.*)?/,
-    (_match, creds, dbName) => {
-      return `mongodb://${creds}@ac-jhr8wjr-shard-00-00.i3a9xri.mongodb.net:27017,ac-jhr8wjr-shard-00-01.i3a9xri.mongodb.net:27017,ac-jhr8wjr-shard-00-02.i3a9xri.mongodb.net:27017/${dbName}?ssl=true&replicaSet=atlas-lvjv8q-shard-0&authSource=admin&retryWrites=true&w=majority`;
+    /mongodb\+srv:\/\/([^@]+)@sujal\.i3a9xri\.mongodb\.net\/([^?]+)(\?(.*))?/,
+    (_match, creds, dbName, _fullQuery, queryString) => {
+      const params = new URLSearchParams(queryString || "");
+      params.set("ssl", "true");
+      params.set("replicaSet", "atlas-lvjv8q-shard-0");
+      if (!params.has("authSource")) params.set("authSource", "admin");
+      if (!params.has("retryWrites")) params.set("retryWrites", "true");
+      if (!params.has("w")) params.set("w", "majority");
+
+      return `mongodb://${creds}@ac-jhr8wjr-shard-00-00.i3a9xri.mongodb.net:27017,ac-jhr8wjr-shard-00-01.i3a9xri.mongodb.net:27017,ac-jhr8wjr-shard-00-02.i3a9xri.mongodb.net:27017/${dbName}?${params.toString()}`;
     }
   );
 }
