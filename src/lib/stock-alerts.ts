@@ -50,11 +50,26 @@ async function sendEmail(to: string, subject: string, html: string, text: string
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return false;
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    let sender = getVerifiedSenderAddress();
+    let res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: getVerifiedSenderAddress(), to: [to], subject, html, text }),
+      body: JSON.stringify({ from: sender, to: [to], subject, html, text }),
     });
+    let data = await res.json().catch(() => ({}));
+    if (
+      !res.ok &&
+      res.status === 403 &&
+      sender !== "OFFVYBE <onboarding@resend.dev>" &&
+      (data?.message?.includes("not verified") || data?.message?.includes("domain"))
+    ) {
+      sender = "OFFVYBE <onboarding@resend.dev>";
+      res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from: sender, to: [to], subject, html, text }),
+      });
+    }
     if (!res.ok) console.warn(`[Alerts] Email to ${maskEmailForLogs(to)} failed: HTTP ${res.status}`);
     return res.ok;
   } catch (err) {

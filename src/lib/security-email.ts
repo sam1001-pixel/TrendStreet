@@ -18,12 +18,28 @@ async function send(to: string, subject: string, html: string, text: string): Pr
     return false;
   }
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    let sender = getVerifiedSenderAddress();
+    let res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: getVerifiedSenderAddress(), to: [to], subject, html, text }),
+      body: JSON.stringify({ from: sender, to: [to], subject, html, text }),
       cache: "no-store",
     });
+    let data = await res.json().catch(() => ({}));
+    if (
+      !res.ok &&
+      res.status === 403 &&
+      sender !== "OFFVYBE <onboarding@resend.dev>" &&
+      (data?.message?.includes("not verified") || data?.message?.includes("domain"))
+    ) {
+      sender = "OFFVYBE <onboarding@resend.dev>";
+      res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from: sender, to: [to], subject, html, text }),
+        cache: "no-store",
+      });
+    }
     if (!res.ok) {
       console.warn(`[Security email] Resend rejected mail to ${maskEmailForLogs(to)} (HTTP ${res.status}).`);
       return false;
@@ -34,6 +50,7 @@ async function send(to: string, subject: string, html: string, text: string): Pr
     return false;
   }
 }
+
 
 function layout(title: string, bodyHtml: string): string {
   return `<!doctype html><html><body style="margin:0;background:#F5F5F5;font-family:Arial,Helvetica,sans-serif;color:#0A0A0A">

@@ -394,14 +394,15 @@ export async function sendOrderConfirmationEmail(
     const textFallback = `Order Confirmed: ${data.orderNumber}\nTotal: ₹${data.total.toLocaleString("en-IN")}\nRecipient: ${data.customerName}\nStatus: Atelier Allocation Secured\nThank you for choosing OFFVYBE.`;
 
     // 2. Dispatch via Resend REST API
-    const response = await fetch("https://api.resend.com/emails", {
+    let activeSender = sender;
+    let response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: sender,
+        from: activeSender,
         to: [data.customerEmail],
         subject,
         html,
@@ -409,7 +410,35 @@ export async function sendOrderConfirmationEmail(
       }),
     });
 
-    const resData = await response.json();
+    let resData = await response.json();
+
+    // Auto-fallback if the custom domain (e.g. offvybe.com) is not yet verified in Resend
+    if (
+      !response.ok &&
+      response.status === 403 &&
+      activeSender !== "OFFVYBE <onboarding@resend.dev>" &&
+      (resData?.message?.includes("not verified") || resData?.message?.includes("domain"))
+    ) {
+      console.warn(
+        `[Resend Email Sender Fallback] Sender ${activeSender} domain is not verified yet. Retrying via OFFVYBE <onboarding@resend.dev>...`
+      );
+      activeSender = "OFFVYBE <onboarding@resend.dev>";
+      response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: activeSender,
+          to: [data.customerEmail],
+          subject,
+          html,
+          text: textFallback,
+        }),
+      });
+      resData = await response.json();
+    }
 
     if (!response.ok) {
       const errorMsg = resData?.message || resData?.error || `HTTP ${response.status}`;
@@ -418,6 +447,7 @@ export async function sendOrderConfirmationEmail(
       );
       return { success: false, error: errorMsg };
     }
+
 
     const messageId = resData?.id;
 

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../src/lib/prisma";
 import {
   verifyRazorpayPaymentSignature,
   verifyRazorpayWebhookSignature,
@@ -14,12 +14,11 @@ import crypto from "crypto";
 
 async function runVerification() {
   console.log("=================================================");
-  console.log("TREND STREET — INTEGRATION VERIFICATION RUNNER");
+  console.log("OFFVYBE — INTEGRATION VERIFICATION RUNNER");
   console.log("=================================================");
 
   // 1. DATABASE CONNECTIVITY
-  console.log("\n[1/3] Testing PostgreSQL (Supabase) Database Connectivity...");
-  const prisma = new PrismaClient();
+  console.log("\n[1/3] Testing MongoDB Atlas Database Connectivity...");
   try {
     const productCount = await prisma.product.count();
     const user = await prisma.user.findFirst({ select: { role: true, createdAt: true } });
@@ -31,9 +30,8 @@ async function runVerification() {
     console.log(`  ✔ Global Settings Store Name: '${settings?.storeName}'`);
   } catch (err: any) {
     console.log("  ✖ Database connection failed:", err.message);
-  } finally {
-    await prisma.$disconnect();
   }
+
 
   // 2. PAYMENT SIGNATURE & GATEWAY SAFETY
   console.log("\n[2/3] Testing Razorpay Cryptographic Verification & Mode Gates...");
