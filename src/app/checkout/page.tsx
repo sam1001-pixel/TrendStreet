@@ -657,7 +657,7 @@ export default function CheckoutPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="name@example.com"
+                    placeholder="name@email.com"
                     className={inputClass}
                   />
                 </div>

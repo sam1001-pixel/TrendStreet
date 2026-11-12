@@ -4,6 +4,7 @@ import { writeAudit } from "@/lib/audit";
 import { settingsFromDb, settingsToDb } from "@/lib/site-settings";
 import { requireAdminSession } from "@/lib/admin-guard";
 import { refreshStorefront } from "@/lib/catalog";
+import { sanitizeStoreConfig } from "@/lib/store-config";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,21 @@ export async function PUT(req: NextRequest) {
     const incoming = settingsToDb(await req.json());
     const data = Object.fromEntries(Object.entries(incoming).filter(([, v]) => v !== undefined));
     const before = await prisma.siteSettings.findUnique({ where: { id: "global" } });
+
+    // Deep-merge JSON configs with existing DB state to prevent partial saves from wiping unmentioned tabs/sections
+    if (before?.storefrontSections && typeof before.storefrontSections === "object" && data.storefrontSections && typeof data.storefrontSections === "object") {
+      data.storefrontSections = {
+        ...(before.storefrontSections as object),
+        ...(data.storefrontSections as object),
+      };
+    }
+
+    if (before?.config && typeof before.config === "object" && data.config && typeof data.config === "object") {
+      data.config = sanitizeStoreConfig({
+        ...(before.config as object),
+        ...(data.config as object),
+      }) as unknown as object;
+    }
 
     const row = await prisma.siteSettings.upsert({
       where: { id: "global" },

@@ -80,8 +80,8 @@ const STEP_ICONS = [CheckCircle2, Package, Truck, Truck, Home];
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
 
 function courierFor(tracking: string) {
-  if (tracking.startsWith("BD")) return "Blue Dart";
-  if (tracking.startsWith("DLV")) return "Delhivery";
+  if (tracking.startsWith("BD") || tracking.startsWith("TS-BLU")) return "Blue Dart";
+  if (tracking.startsWith("DLV") || tracking.startsWith("TS-DEL")) return "Delhivery";
   return null;
 }
 
@@ -203,7 +203,7 @@ export function TrackOrder() {
               required
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
-              placeholder="TS-261022-XXXXX"
+              placeholder="OV-2026-XXXX"
               autoCapitalize="characters"
               className="h-12 w-full rounded-xl border border-white/15 bg-white/5 px-4 font-mono text-sm uppercase text-ivory placeholder:text-ivory/30 focus:border-gold focus:outline-none"
             />
@@ -262,7 +262,7 @@ export function TrackOrder() {
           <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-burgundy/15 p-8 text-center">
             <PackageCheck className="h-10 w-10 text-burgundy/30" />
             <p className="mt-3 font-serif text-lg font-bold text-espresso">Where&apos;s my order?</p>
-            <p className="mt-1 max-w-xs text-sm text-espresso/60">Your order number is in the confirmation email and SMS. It starts with TS-.</p>
+            <p className="mt-1 max-w-xs text-sm text-espresso/60">Your order number is in your confirmation email and SMS.</p>
           </div>
         )}
 

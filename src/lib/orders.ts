@@ -64,13 +64,13 @@ const DELIVERY_COURIER = "Blue Dart Apex / Delhivery Air";
 const MAX_QTY_PER_LINE = 10;
 export const PENDING_PAYMENT_TTL_MINUTES = 30;
 
-/** e.g. TS-261022-7K3QF — date-prefixed, random suffix, safe to read over the phone. */
+/** e.g. OV-261022-7K3QF — date-prefixed, random suffix, safe to read over the phone. */
 export function generateOrderNumber(now = new Date()): string {
   const yymmdd = now.toISOString().slice(2, 10).replace(/-/g, "");
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const bytes = crypto.randomBytes(5);
   const suffix = Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
-  return `TS-${yymmdd}-${suffix}`;
+  return `OV-${yymmdd}-${suffix}`;
 }
 
 /** Validates the customer block; throws OrderInputError with a shopper-readable message. */

@@ -79,16 +79,21 @@ async function sendEmail(to: string, subject: string, html: string, text: string
 }
 
 function emailHtml(heading: string, body: string, cta: string, url: string, image?: string) {
-  return `<!doctype html><html><body style="margin:0;background:#f5f5f5;font-family:Arial,sans-serif;color:#0a0a0a">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
-<table role="presentation" width="100%" style="max-width:480px;background:#fff;border-radius:16px;overflow:hidden">
-${image ? `<tr><td><img src="${escapeHtml(image)}" alt="" width="480" style="display:block;width:100%;height:auto"></td></tr>` : ""}
-<tr><td style="padding:24px">
-<p style="margin:0 0 4px;font-size:12px;letter-spacing:3px;color:#b30015;font-weight:bold">OFFVYBE</p>
-<h1 style="margin:0 0 12px;font-size:22px">${escapeHtml(heading)}</h1>
-<p style="margin:0 0 20px;font-size:15px;line-height:1.5;color:#333">${escapeHtml(body)}</p>
-<a href="${escapeHtml(url)}" style="display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px;font-size:14px">${escapeHtml(cta)}</a>
-<p style="margin:20px 0 0;font-size:12px;color:#777">You asked us to tell you. This is a one-time message.</p>
+  return `<!doctype html><html><body style="margin:0;background:#FDFBF7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1E1B18">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:36px 16px">
+<table role="presentation" width="100%" style="max-width:500px;background:#ffffff;border:1px solid #E5E0D8;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.04)" cellpadding="0" cellspacing="0">
+<tr><td style="background:#8B1E3F;padding:22px 24px;text-align:center">
+  <p style="margin:0;font-size:18px;font-weight:900;letter-spacing:4px;color:#FDFBF7">OFFVYBE</p>
+  <p style="margin:4px 0 0;font-size:10px;letter-spacing:2px;color:#D4AF37;text-transform:uppercase">MUMBAI ATELIER &bull; PRIVATE RELEASE ALERT</p>
+</td></tr>
+${image ? `<tr><td><img src="${escapeHtml(image)}" alt="" width="500" style="display:block;width:100%;height:auto;max-height:360px;object-fit:cover"></td></tr>` : ""}
+<tr><td style="padding:32px 28px">
+<h1 style="margin:0 0 14px;font-size:22px;font-weight:700;color:#1E1B18;letter-spacing:-0.3px">${escapeHtml(heading)}</h1>
+<p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#4A443E">${escapeHtml(body)}</p>
+<p style="margin:0 0 24px"><a href="${escapeHtml(url)}" style="display:inline-block;background:#8B1E3F;color:#ffffff;text-decoration:none;font-weight:600;letter-spacing:0.5px;padding:14px 28px;border-radius:6px;font-size:14px">${escapeHtml(cta)} &rarr;</a></p>
+<div style="border-top:1px solid #EFECE6;padding-top:18px">
+  <p style="margin:0;font-size:12px;line-height:1.5;color:#8C857E">You requested this notification on <a href="${SITE_URL}" style="color:#8B1E3F;text-decoration:none">OFFVYBE</a>. This is a one-time message.</p>
+</div>
 </td></tr></table></td></tr></table></body></html>`;
 }
 

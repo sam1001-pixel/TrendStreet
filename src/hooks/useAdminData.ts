@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_SITE_SETTINGS, useStore } from "@/context/StoreContext";
 import type { Order, OrderStatus, Product, SiteSettings } from "@/types/store";
+import type { EditableSettings } from "@/lib/site-settings";
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers || {}) } });
@@ -19,10 +20,15 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-export function useAdminData({ orders: wantOrders = false, products: wantProducts = false } = {}) {
+export function useAdminData({
+  orders: wantOrders = false,
+  products: wantProducts = false,
+  settings: wantSettings = true,
+} = {}) {
   const store = useStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(store.siteSettings);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -37,18 +43,31 @@ export function useAdminData({ orders: wantOrders = false, products: wantProduct
     setLoading(true);
     setError(null);
     try {
-      const [o, p] = await Promise.all([
+      const [o, p, s] = await Promise.all([
         wantOrders ? api<{ orders: Order[] }>("/api/admin/orders") : null,
         wantProducts ? api<{ products: Product[] }>("/api/admin/products") : null,
+        wantSettings ? api<{ settings: EditableSettings }>("/api/admin/settings") : null,
       ]);
       if (o) setOrders(o.orders);
       if (p) setProducts(p.products);
+      if (s?.settings) {
+        setSiteSettings((prev) => ({
+          ...prev,
+          ...s.settings,
+          hero: { ...(prev.hero || {}), ...(s.settings.hero || {}) },
+          topAnnouncement: { ...(prev.topAnnouncement || {}), ...(s.settings.topAnnouncement || {}) },
+          contactInfo: { ...(prev.contactInfo || {}), ...(s.settings.contactInfo || {}) },
+          config: s.settings.config || prev.config,
+          storefrontSections: { ...(prev.storefrontSections || {}), ...(s.settings.storefrontSections || {}) },
+        }));
+        store.updateSiteSettings(s.settings as unknown as Partial<SiteSettings>);
+      }
     } catch (e) {
       fail(e);
     } finally {
       setLoading(false);
     }
-  }, [wantOrders, wantProducts]);
+  }, [wantOrders, wantProducts, wantSettings, store]);
 
   useEffect(() => {
     refresh();
@@ -135,8 +154,24 @@ export function useAdminData({ orders: wantOrders = false, products: wantProduct
 
   const updateSiteSettings = async (next: Partial<SiteSettings>) => {
     try {
-      await api("/api/admin/settings", { method: "PUT", body: JSON.stringify(next) });
-      store.updateSiteSettings(next);
+      const res = await api<{ settings: EditableSettings }>("/api/admin/settings", {
+        method: "PUT",
+        body: JSON.stringify(next),
+      });
+      if (res?.settings) {
+        setSiteSettings((prev) => ({
+          ...prev,
+          ...res.settings,
+          hero: { ...(prev.hero || {}), ...(res.settings.hero || {}) },
+          topAnnouncement: { ...(prev.topAnnouncement || {}), ...(res.settings.topAnnouncement || {}) },
+          contactInfo: { ...(prev.contactInfo || {}), ...(res.settings.contactInfo || {}) },
+          config: res.settings.config || prev.config,
+          storefrontSections: { ...(prev.storefrontSections || {}), ...(res.settings.storefrontSections || {}) },
+        }));
+        store.updateSiteSettings(res.settings as unknown as Partial<SiteSettings>);
+      } else {
+        store.updateSiteSettings(next);
+      }
       flash("Settings published to the live store");
       return true;
     } catch (e) {
@@ -150,7 +185,7 @@ export function useAdminData({ orders: wantOrders = false, products: wantProduct
   return {
     orders,
     products,
-    siteSettings: store.siteSettings,
+    siteSettings,
     loading,
     error,
     notice,

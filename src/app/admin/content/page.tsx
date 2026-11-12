@@ -55,6 +55,9 @@ export default function AdminContentPage() {
         setHeroPrimaryCta(siteSettings.hero.primaryBtnLink || "/shop");
         setHeroSecondaryCta(siteSettings.hero.secondaryBtnLink || "/shop?sort=newest");
       }
+      if (siteSettings.marqueePhrases && siteSettings.marqueePhrases.length > 0) {
+        setMarqueeText(siteSettings.marqueePhrases.join(" • "));
+      }
     }
   }, [siteSettings]);
 
@@ -63,26 +66,21 @@ export default function AdminContentPage() {
     setIsSaving(true);
     setSaveSuccess(false);
 
+    const phrases = marqueeText
+      .split("•")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     try {
       await updateSiteSettings({
-        ...siteSettings,
         topAnnouncement: {
           enabled: announcementEnabled,
           text: announcementText,
           linkUrl: announcementLink,
-          linkText: "SHOP NOW",
+          linkText: "EXPLORE NOW",
         },
         hero: {
-          ...(siteSettings?.hero || {
-            stat1Value: "520",
-            stat1Label: "GSM FLEECE",
-            stat2Value: "3",
-            stat2Label: "CORE CUTS",
-            stat3Value: "100%",
-            stat3Label: "COMBED COTTON",
-            primaryBtnText: "EXPLORE COLLECTION",
-            secondaryBtnText: "VIEW LOOKBOOK",
-          }),
+          ...(siteSettings?.hero || {}),
           titleLine1: heroTitle1,
           titleLine2: heroTitle2,
           subtitle: heroSubtitle,
@@ -90,6 +88,7 @@ export default function AdminContentPage() {
           primaryBtnLink: heroPrimaryCta,
           secondaryBtnLink: heroSecondaryCta,
         },
+        marqueePhrases: phrases.length > 0 ? phrases : undefined,
       });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);

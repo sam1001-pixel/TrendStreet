@@ -201,28 +201,28 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Confirmed — OFFVYBE</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #FAF7F2; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FAF7F2; padding: 40px 16px;">
+<body style="margin: 0; padding: 0; background-color: #FDFBF7; font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FDFBF7; padding: 40px 16px;">
     <tr>
       <td align="center">
         <!-- Main Card Container -->
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; border: 1px solid #E8DFD8; box-shadow: 0 4px 20px rgba(26,22,21,0.06);">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #FFFFFF; border-radius: 16px; overflow: hidden; border: 1px solid rgba(139, 30, 63, 0.15); box-shadow: 0 10px 30px rgba(30, 27, 24, 0.08);">
           
           <!-- Burgundy Atelier Banner -->
           <tr>
-            <td style="background-color: #4A1216; padding: 32px 24px; text-align: center;">
-              <span style="font-family: Georgia, serif; font-size: 26px; font-weight: bold; letter-spacing: 0.25em; color: #FFFFFF; text-transform: uppercase; display: block;">OFFVYBE</span>
-              <span style="font-size: 10px; letter-spacing: 0.3em; color: #D4AF37; text-transform: uppercase; margin-top: 6px; display: block;">MUMBAI ATELIER &bull; ARCHITECTURAL MENSWEAR</span>
+            <td style="background-color: #8B1E3F; padding: 36px 24px; text-align: center; border-bottom: 2px solid #D4AF37;">
+              <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: 800; letter-spacing: 0.28em; color: #FDFBF7; text-transform: uppercase; display: block;">OFFVYBE</span>
+              <span style="font-size: 10px; letter-spacing: 0.35em; color: #D4AF37; text-transform: uppercase; margin-top: 8px; display: block; font-weight: 600;">MUMBAI ATELIER &bull; ARCHITECTURAL MENSWEAR</span>
             </td>
           </tr>
 
           <!-- Confirmation Headline -->
           <tr>
-            <td style="padding: 36px 32px 24px 32px; text-align: center; border-bottom: 1px solid #E8DFD8;">
-              <span style="background-color: #FAF7F2; color: #4A1216; border: 1px solid #4A1216; font-size: 11px; font-weight: bold; letter-spacing: 0.15em; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 16px;">
+            <td style="padding: 36px 32px 24px 32px; text-align: center; border-bottom: 1px solid #EFEAE4;">
+              <span style="background-color: #FDFBF7; color: #8B1E3F; border: 1px solid #D4AF37; font-size: 10px; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; display: inline-block; margin-bottom: 18px;">
                 ALLOCATION SECURED &bull; VERIFIED PAYMENT
               </span>
-              <h1 style="font-family: Georgia, serif; font-size: 24px; color: #1A1615; margin: 0 0 10px 0; font-weight: bold;">
+              <h1 style="font-family: Georgia, serif; font-size: 26px; color: #1E1B18; margin: 0 0 10px 0; font-weight: bold;">
                 Order Confirmed
               </h1>
               <p style="font-size: 14px; color: #4A4644; margin: 0; line-height: 1.6;">
@@ -233,16 +233,16 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
 
           <!-- Order Reference Strip -->
           <tr>
-            <td style="background-color: #FAF7F2; padding: 18px 32px; border-bottom: 1px solid #E8DFD8;">
+            <td style="background-color: #FDFBF7; padding: 20px 32px; border-bottom: 1px solid #EFEAE4;">
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td>
-                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B6562; display: block;">Order Reference</span>
-                    <strong style="font-size: 15px; color: #1A1615; font-family: monospace;">${data.orderNumber}</strong>
+                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B6562; display: block;">Order Reference</span>
+                    <strong style="font-size: 16px; color: #1E1B18; font-family: monospace;">${data.orderNumber}</strong>
                   </td>
                   <td align="right">
-                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B6562; display: block;">Transit Logistics</span>
-                    <strong style="font-size: 13px; color: #4A1216;">${data.deliveryCourier || "Blue Dart Apex / Delhivery Air"}</strong>
+                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B6562; display: block;">Transit Logistics</span>
+                    <strong style="font-size: 13px; color: #8B1E3F; font-weight: 700;">${data.deliveryCourier || "Blue Dart Apex / Delhivery Air"}</strong>
                   </td>
                 </tr>
               </table>
@@ -252,7 +252,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
           <!-- Garment Selection Table -->
           <tr>
             <td style="padding: 24px 32px;">
-              <span style="font-size: 12px; font-weight: bold; letter-spacing: 0.15em; text-transform: uppercase; color: #4A1216; display: block; margin-bottom: 12px;">
+              <span style="font-size: 12px; font-weight: bold; letter-spacing: 0.15em; text-transform: uppercase; color: #8B1E3F; display: block; margin-bottom: 12px;">
                 Selected Garments
               </span>
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -264,10 +264,10 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
           <!-- Pricing Breakdown -->
           <tr>
             <td style="padding: 0 32px 28px 32px;">
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FAF7F2; padding: 20px; border-radius: 8px; border: 1px solid #E8DFD8;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FDFBF7; padding: 20px; border-radius: 12px; border: 1px solid #EFEAE4;">
                 <tr>
                   <td style="font-size: 13px; color: #4A4644; padding-bottom: 6px;">Subtotal</td>
-                  <td align="right" style="font-size: 13px; color: #1A1615; font-weight: 600; padding-bottom: 6px;">${formattedSubtotal}</td>
+                  <td align="right" style="font-size: 13px; color: #1E1B18; font-weight: 600; padding-bottom: 6px;">${formattedSubtotal}</td>
                 </tr>
                 ${
                   data.discount && data.discount > 0
@@ -282,12 +282,12 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
                   <td align="right" style="font-size: 13px; color: #2E7D32; font-weight: 600; padding-bottom: 6px;">${formattedShipping}</td>
                 </tr>
                 <tr>
-                  <td style="font-size: 13px; color: #6B6562; padding-bottom: 12px; border-bottom: 1px solid #E8DFD8;">Taxation</td>
-                  <td align="right" style="font-size: 12px; color: #6B6562; padding-bottom: 12px; border-bottom: 1px solid #E8DFD8;">Included (GST)</td>
+                  <td style="font-size: 13px; color: #6B6562; padding-bottom: 12px; border-bottom: 1px solid #EFEAE4;">Taxation</td>
+                  <td align="right" style="font-size: 12px; color: #6B6562; padding-bottom: 12px; border-bottom: 1px solid #EFEAE4;">Included (GST)</td>
                 </tr>
                 <tr>
-                  <td style="font-size: 16px; font-weight: bold; color: #1A1615; padding-top: 12px;">Total Paid</td>
-                  <td align="right" style="font-size: 18px; font-weight: bold; color: #4A1216; padding-top: 12px;">${formattedTotal}</td>
+                  <td style="font-size: 16px; font-weight: bold; color: #1E1B18; padding-top: 12px;">Total Paid</td>
+                  <td align="right" style="font-size: 18px; font-weight: bold; color: #8B1E3F; padding-top: 12px;">${formattedTotal}</td>
                 </tr>
               </table>
             </td>
@@ -300,7 +300,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
                 <tr>
                   <td width="55%" style="vertical-align: top; padding-right: 16px;">
                     <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B6562; display: block; margin-bottom: 4px;">Atelier Handover Address</span>
-                    <p style="font-size: 13px; color: #1A1615; line-height: 1.5; margin: 0;">
+                    <p style="font-size: 13px; color: #1E1B18; line-height: 1.5; margin: 0;">
                       ${data.shippingAddress.street}<br>
                       ${data.shippingAddress.apartment ? `${data.shippingAddress.apartment}<br>` : ""}
                       ${data.shippingAddress.city}, ${data.shippingAddress.state} ${data.shippingAddress.postalCode}<br>
@@ -309,7 +309,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
                   </td>
                   <td width="45%" style="vertical-align: top;">
                     <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B6562; display: block; margin-bottom: 4px;">Payment Method</span>
-                    <strong style="font-size: 13px; color: #1A1615; text-transform: uppercase; display: block;">
+                    <strong style="font-size: 13px; color: #1E1B18; text-transform: uppercase; display: block;">
                       ${data.paymentMethod}
                     </strong>
                     <span style="font-size: 11px; color: #2E7D32; display: block; margin-top: 4px;">
@@ -324,7 +324,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
           <!-- Dispatch Tracking CTA -->
           <tr>
             <td style="padding: 12px 32px 36px 32px; text-align: center;">
-              <a href="https://offvybe.in/profile" style="background-color: #4A1216; color: #FAF7F2; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 12px; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; display: inline-block;">
+              <a href="https://offvybe.com/profile" style="background-color: #8B1E3F; color: #FDFBF7; text-decoration: none; padding: 14px 32px; border-radius: 999px; font-size: 12px; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; display: inline-block; border: 1px solid #D4AF37;">
                 Track Atelier Progress
               </a>
               <p style="font-size: 11px; color: #6B6562; margin-top: 14px; margin-bottom: 0;">
@@ -335,13 +335,13 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
 
           <!-- Footer Information -->
           <tr>
-            <td style="background-color: #1A1615; padding: 28px 24px; text-align: center; color: #FAF7F2;">
-              <p style="font-size: 12px; color: #D4AF37; margin: 0 0 6px 0; font-weight: 600;">
+            <td style="background-color: #1E1B18; padding: 28px 24px; text-align: center; color: #FDFBF7;">
+              <p style="font-size: 12px; color: #D4AF37; margin: 0 0 6px 0; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;">
                 OFFVYBE FLAGSHIP ATELIER
               </p>
               <p style="font-size: 11px; color: #E8DFD8; margin: 0 0 12px 0; line-height: 1.5;">
                 42 Waterfield Road, Bandra West, Mumbai, Maharashtra 400050<br>
-                Concierge Hotline: +91 98200 12345 &bull; concierge@offvybe.in
+                Concierge Hotline: +91 98200 12345 &bull; concierge@offvybe.com
               </p>
               <p style="font-size: 10px; color: #8F8884; margin: 0; line-height: 1.4;">
                 This communication is generated following verified electronic settlement. Compliant with the Digital Personal Data Protection Act 2023 (DPDP) and Consumer Protection (E-Commerce) Rules 2020.

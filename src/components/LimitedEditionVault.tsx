@@ -167,7 +167,7 @@ export const LimitedEditionVault: React.FC = () => {
                   Atelier Registration Certificate
                 </span>
                 <span className="font-mono text-sm font-bold text-ivory">
-                  SERIAL NO: TS-2026-042 / 120
+                  SERIAL NO: OV-2026-042 / 120
                 </span>
               </div>
 

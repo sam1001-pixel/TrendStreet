@@ -62,7 +62,7 @@ export function settingsToDb(s: Partial<SiteSettings>) {
     announcementText: str(s.topAnnouncement?.text),
     announcementLink: s.topAnnouncement?.linkUrl === undefined ? undefined : safeHref(s.topAnnouncement.linkUrl, "/shop"),
     announcementActive: typeof s.topAnnouncement?.enabled === "boolean" ? s.topAnnouncement.enabled : undefined,
-    heroBadge: str(s.config?.hero?.badgeText || s.hero?.badgeText),
+    heroBadge: str(s.hero?.badgeText || s.config?.hero?.badgeText),
     heroTitle1: str(s.hero?.titleLine1),
     heroTitle2: str(s.hero?.titleLine2),
     heroSubtitle: str(s.hero?.subtitle),

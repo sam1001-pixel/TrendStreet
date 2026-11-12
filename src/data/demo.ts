@@ -5,7 +5,7 @@ import type { Order, UserProfile } from "@/types/store";
  * Never loaded automatically. Demo order numbers start with "TS-DEMO" so they can't
  * be confused with real orders.
  */
-export const DEMO_EMAIL = "demo@offvybe.in";
+export const DEMO_EMAIL = "concierge@offvybe.com";
 
 export const DEMO_USER: UserProfile = {
   name: "",

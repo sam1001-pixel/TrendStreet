@@ -41,10 +41,17 @@ function toLocalInput(iso: string | null): string {
 }
 
 export default function AdminSettingsPage() {
-  const { siteSettings, updateSiteSettings, resetSiteSettings, error, notice, clearError } = useAdminData();
+  const { siteSettings, updateSiteSettings, resetSiteSettings, error, notice, clearError, loading } = useAdminData({ settings: true });
   const [formData, setFormData] = useState<SiteSettings>(siteSettings);
-  // Pick up the live database values once they load (and after each save).
-  useEffect(() => setFormData(siteSettings), [siteSettings]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Initialize formData once authoritative DB settings arrive
+  useEffect(() => {
+    if (!isLoaded && !loading && siteSettings) {
+      setFormData(siteSettings);
+      setIsLoaded(true);
+    }
+  }, [siteSettings, loading, isLoaded]);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved">("idle");
   const storeConfig = sanitizeStoreConfig(formData.config);
   const setStoreConfig = (next: StoreConfig) => setFormData({ ...formData, config: next });
@@ -385,6 +392,12 @@ export default function AdminSettingsPage() {
                   title: "Promises & Atelier Guarantees",
                   desc: "3-point luxury assurance strip (Ethical Craftsmanship, Express Dispatch, Customer Support).",
                   tag: "Brand Assurance",
+                },
+                {
+                  key: "weightTest" as const,
+                  title: "The Weight Test (GSM Fabric Breakdown)",
+                  desc: "Interactive comparison meters highlighting 520gsm loopback terry and 14.5oz Okayama denim against typical fast fashion.",
+                  tag: "Fabric Engineering",
                 },
               ].map((section) => {
                 const isEnabled = storefrontSections[section.key];

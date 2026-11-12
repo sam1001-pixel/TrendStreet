@@ -412,6 +412,7 @@ export const StoreProvider: React.FC<{
       topAnnouncement: { ...prev.topAnnouncement, ...(newSettings.topAnnouncement || {}) },
       contactInfo: { ...prev.contactInfo, ...(newSettings.contactInfo || {}) },
       categoryTaglines: { ...prev.categoryTaglines, ...(newSettings.categoryTaglines || {}) },
+      storefrontSections: { ...(prev.storefrontSections || {}), ...(newSettings.storefrontSections || {}) },
       config: newSettings.config ? sanitizeStoreConfig(newSettings.config) : prev.config,
     }));
   };

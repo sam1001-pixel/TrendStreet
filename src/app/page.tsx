@@ -15,6 +15,7 @@ import { FlatPriceBanner } from "@/components/home/FlatPriceBanner";
 import { CategoryRails } from "@/components/home/CategoryRails";
 import { RecentlyViewed } from "@/components/home/RecentlyViewed";
 import { NextDropCountdown } from "@/components/home/NextDropCountdown";
+import { WeightTest } from "@/components/premium/WeightTest";
 
 /**
  * Homepage, ordered for phones: get to products fast (category shortcuts → product grid),
@@ -57,6 +58,8 @@ export default function HomePage() {
       {on("videoReviews") && <VideoReviewsReel reviews={videoReviews} />}
 
       {on("silhouetteAccordion") && <SilhouetteAccordion />}
+
+      {on("weightTest") && <WeightTest />}
 
       {on("hangingRail") && <HangingRail />}
 

@@ -53,19 +53,25 @@ async function send(to: string, subject: string, html: string, text: string): Pr
 
 
 function layout(title: string, bodyHtml: string): string {
-  return `<!doctype html><html><body style="margin:0;background:#F5F5F5;font-family:Arial,Helvetica,sans-serif;color:#0A0A0A">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
-<table role="presentation" width="100%" style="max-width:520px;background:#ffffff;border-radius:16px;padding:32px" cellpadding="0" cellspacing="0"><tr><td>
-<p style="margin:0 0 24px;font-weight:900;letter-spacing:2px;font-size:18px">${SITE_NAME}</p>
-<h1 style="margin:0 0 16px;font-size:20px">${escapeHtml(title)}</h1>
+  return `<!doctype html><html><body style="margin:0;background:#FDFBF7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1E1B18">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 16px">
+<table role="presentation" width="100%" style="max-width:520px;background:#ffffff;border:1px solid #E5E0D8;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.04)" cellpadding="0" cellspacing="0">
+<tr><td style="background:#8B1E3F;padding:24px 32px;text-align:center">
+  <p style="margin:0;font-size:18px;font-weight:900;letter-spacing:4px;color:#FDFBF7">OFFVYBE</p>
+  <p style="margin:4px 0 0;font-size:10px;letter-spacing:2px;color:#D4AF37;text-transform:uppercase">MUMBAI ATELIER &bull; ACCOUNT SECURITY</p>
+</td></tr>
+<tr><td style="padding:36px 32px">
+<h1 style="margin:0 0 18px;font-size:20px;font-weight:700;color:#1E1B18;letter-spacing:-0.2px">${escapeHtml(title)}</h1>
 ${bodyHtml}
-<p style="margin:32px 0 0;font-size:12px;color:#6B6B6B">If you didn't ask for this, you can ignore this email — nothing changes on your account.</p>
-</td></tr></table></td></tr></table></body></html>`;
+<hr style="border:none;border-top:1px solid #EFECE6;margin:32px 0 20px 0" />
+<p style="margin:0;font-size:12px;line-height:1.6;color:#8C857E">If you didn't initiate this request, you can safely ignore this email &mdash; no changes will be made to your account. For assistance, reach out to <a href="mailto:concierge@offvybe.com" style="color:#8B1E3F;text-decoration:none">concierge@offvybe.com</a>.</p>
+</td></tr></table>
+</td></tr></table></body></html>`;
 }
 
 function button(href: string, label: string): string {
-  return `<p style="margin:24px 0"><a href="${escapeHtml(href)}" style="display:inline-block;background:#0A0A0A;color:#ffffff;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:999px">${escapeHtml(label)}</a></p>
-<p style="font-size:12px;color:#6B6B6B;word-break:break-all">Or paste this link into your browser:<br>${escapeHtml(href)}</p>`;
+  return `<p style="margin:28px 0"><a href="${escapeHtml(href)}" style="display:inline-block;background:#8B1E3F;color:#ffffff;text-decoration:none;font-weight:600;letter-spacing:0.5px;padding:14px 28px;border-radius:6px;font-size:14px">${escapeHtml(label)}</a></p>
+<p style="font-size:12px;color:#8C857E;word-break:break-all;line-height:1.5">Or paste this link into your browser:<br><a href="${escapeHtml(href)}" style="color:#8B1E3F;text-decoration:underline">${escapeHtml(href)}</a></p>`;
 }
 
 export function sendPasswordResetEmail(to: string, token: string): Promise<boolean> {
@@ -95,7 +101,7 @@ export function sendAccountExistsEmail(to: string): Promise<boolean> {
   return send(
     to,
     `You already have a ${SITE_NAME} account`,
-    layout("You already have an account", `<p style="line-height:1.6">Someone tried to create a new account with this email, but you already have one. You can sign in, or reset your password if you've forgotten it.</p>${button(login, "Sign in")}<p style="font-size:13px"><a href="${escapeHtml(reset)}">Forgot your password?</a></p>`),
+    layout("You already have an account", `<p style="line-height:1.6">Someone tried to create a new account with this email, but you already have one. You can sign in, or reset your password if you've forgotten it.</p>${button(login, "Sign in")}<p style="font-size:13px"><a href="${escapeHtml(reset)}" style="color:#8B1E3F">Forgot your password?</a></p>`),
     `Someone tried to create an account with this email, but you already have one.\nSign in: ${login}\nForgot your password? ${reset}`
   );
 }
@@ -110,7 +116,7 @@ export function sendAdminNewDeviceAlert(to: string, details: { ip: string; userA
       "New admin sign-in",
       `<p style="line-height:1.6">Your admin account was just signed in from a browser that hasn't been used before.</p>
 <p style="font-size:13px;line-height:1.7"><strong>When:</strong> ${escapeHtml(when)} IST<br><strong>IP address:</strong> ${escapeHtml(details.ip)}<br><strong>Browser:</strong> ${escapeHtml(details.userAgent.slice(0, 160))}</p>
-<p style="line-height:1.6">If this wasn't you, change ADMIN_PASSWORD_HASH and ADMIN_TOTP_SECRET in Vercel straight away and use “Sign out all admin devices”.</p>`
+<p style="line-height:1.6">If this wasn't you, change ADMIN_PASSWORD_HASH and ADMIN_TOTP_SECRET in your hosting environment settings immediately and use “Sign out all admin devices”.</p>`
     ),
     `New admin sign-in to ${SITE_NAME}\nWhen: ${when} IST\nIP: ${details.ip}\nBrowser: ${details.userAgent.slice(0, 160)}\nIf this wasn't you, rotate the admin password and 2-step secret now.`
   );

@@ -46,13 +46,13 @@ export default function AdminDashboardPage() {
     error,
     notice,
     clearError,
-  } = useAdminData({ orders: true, products: true });
+  } = useAdminData({ orders: true, products: true, settings: true });
 
   const { adminName, accessRegister } = useAdminAuth();
 
   // Announcement state for quick live update
   const [announcementDraft, setAnnouncementDraft] = useState(
-    siteSettings?.topAnnouncement?.text || "COMPLIMENTARY EXPRESS DELIVERY ON ORDERS OVER ₹1,999 · CODE BUNDLE15"
+    siteSettings?.topAnnouncement?.text || ""
   );
   const [announcementActive, setAnnouncementActive] = useState(
     siteSettings?.topAnnouncement?.enabled ?? true
@@ -532,6 +532,8 @@ export default function AdminDashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             {[
+              { key: "weightTest" as const, name: "The Weight Test (GSM)" },
+              { key: "shopByPriceOccasion" as const, name: "Shop by Price & Occasion" },
               { key: "runwayReel" as const, name: "The Runway Reel" },
               { key: "hangingRail" as const, name: "Fresh off the Rail" },
               { key: "dropList" as const, name: "The Drop List" },
@@ -688,7 +690,7 @@ export default function AdminDashboardPage() {
                       <button
                         type="button"
                         onClick={async () => {
-                          const awb = `TS-DEL-${Math.floor(100000 + Math.random() * 900000)}`;
+                          const awb = `DLV-${Math.floor(100000 + Math.random() * 900000)}`;
                           await updateOrder(ord.id, { status: "In Transit", trackingNumber: awb });
                         }}
                         className="px-2 py-1 rounded bg-burgundy hover:bg-crimson text-gold text-[10px] font-bold uppercase transition-colors"

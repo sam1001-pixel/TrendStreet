@@ -73,7 +73,7 @@ export function AdminHeader({ onMobileMenuOpen }: AdminHeaderProps) {
     {
       id: "2",
       title: "New Order Confirmed",
-      desc: "Order TS-2026-0914 awaiting packing & AWB generation",
+      desc: "Order OV-2026-0914 awaiting packing & AWB generation",
       icon: Package,
       time: "24m ago",
       href: "/admin/orders",

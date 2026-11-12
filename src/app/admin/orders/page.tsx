@@ -67,7 +67,7 @@ export default function AdminOrdersPage() {
 
   // Generate authentic AWB tracking ID and save to order
   const handleGenerateAwb = async (order: Order, carrier: "Delhivery" | "BlueDart" = "Delhivery") => {
-    const prefix = carrier === "Delhivery" ? "TS-DEL" : "TS-BLU";
+    const prefix = carrier === "Delhivery" ? "DLV" : "BD";
     const randomNum = Math.floor(100000 + Math.random() * 900000);
     const generatedAwb = `${prefix}-${randomNum}`;
 
