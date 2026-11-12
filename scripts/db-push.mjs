@@ -8,5 +8,16 @@ if (!process.env.DATABASE_URL) {
   console.error("DATABASE_URL is not set. Add it to .env.local (the same value your site uses) and run again.");
   process.exit(1);
 }
+
+if (process.env.DATABASE_URL.startsWith("mongodb+srv://") && process.env.DATABASE_URL.includes("sujal.i3a9xri.mongodb.net")) {
+  process.env.DATABASE_URL = process.env.DATABASE_URL.replace(
+    /mongodb\+srv:\/\/([^@]+)@sujal\.i3a9xri\.mongodb\.net\/([^?]+)(\?.*)?/,
+    (_match, creds, dbName) => {
+      return `mongodb://${creds}@ac-jhr8wjr-shard-00-00.i3a9xri.mongodb.net:27017,ac-jhr8wjr-shard-00-01.i3a9xri.mongodb.net:27017,ac-jhr8wjr-shard-00-02.i3a9xri.mongodb.net:27017/${dbName}?ssl=true&replicaSet=atlas-lvjv8q-shard-0&authSource=admin&retryWrites=true&w=majority`;
+    }
+  );
+}
+
 execSync("npx prisma db push --skip-generate", { stdio: "inherit", env: process.env });
 console.log("\nDatabase updated. Restart `npm run dev` if it was running.");
+

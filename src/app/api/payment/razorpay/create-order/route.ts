@@ -99,7 +99,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: (error as Error).message }, { status: 400 });
     }
     console.error("[Razorpay Order Creation Error]:", error);
-    const message = error instanceof Error ? error.message : "Failed to initialize payment. Please try again.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const rawMessage = error instanceof Error ? error.message : "";
+    const isInternalError =
+      rawMessage.includes("prisma") ||
+      rawMessage.includes("resolv.conf") ||
+      rawMessage.includes("connector") ||
+      rawMessage.includes("database");
+    const clientMessage = isInternalError || !rawMessage
+      ? "Unable to initialize payment at this moment. Please try again in a few moments."
+      : rawMessage;
+    return NextResponse.json({ error: clientMessage }, { status: 500 });
   }
 }
