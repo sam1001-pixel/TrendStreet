@@ -118,7 +118,6 @@ export async function createRazorpayOrder({
       order: razorpayOrder,
       keyId: env.keyId,
       isTestMode: env.isTestMode,
-      isSimulated: false,
     };
   } catch (error: any) {
     const rawDesc = error?.error?.description || error?.message || "";
@@ -127,35 +126,6 @@ export async function createRazorpayOrder({
       (error?.error?.code === "BAD_REQUEST_ERROR" &&
         typeof rawDesc === "string" &&
         rawDesc.toLowerCase().includes("auth"));
-
-    // In Test Mode ONLY: if Razorpay test credentials return 401 Authentication failed
-    // (e.g. placeholder/unregistered test keys), seamlessly fall back to a Sandbox Test Order
-    // so the entire checkout flow (database order creation, inventory reservation, email dispatch)
-    // can still be fully executed and verified.
-    if (env.isTestMode && isAuthError) {
-      console.warn(
-        `[Razorpay Test Mode] Live Razorpay API order creation failed (${rawDesc || "401"}). Enabling sandbox test simulation for receipt: ${receipt}`
-      );
-      const simulatedOrderId = `order_sim_${receipt.replace(/[^a-zA-Z0-9]/g, "").slice(0, 20)}_${Date.now()}`;
-      return {
-        order: {
-          id: simulatedOrderId,
-          entity: "order",
-          amount: Math.round(amountMinor),
-          amount_paid: 0,
-          amount_due: Math.round(amountMinor),
-          currency,
-          receipt,
-          status: "created",
-          attempts: 0,
-          notes: orderOptions.notes,
-          created_at: Math.floor(Date.now() / 1000),
-        },
-        keyId: env.keyId,
-        isTestMode: true,
-        isSimulated: true,
-      };
-    }
 
     const message = isAuthError
       ? "Razorpay authentication failed: Invalid Key ID or Key Secret. Please verify RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your server environment."
@@ -188,18 +158,6 @@ export function verifyRazorpayPaymentSignature({
 }: VerifyPaymentSignatureParams): boolean {
   if (!orderId || !paymentId || !signature) {
     return false;
-  }
-
-  // Safe test-mode simulation signature verification
-  if (orderId.startsWith("order_sim_")) {
-    const env = getRazorpayEnvironment();
-    if (
-      env.isTestMode &&
-      paymentId.startsWith("pay_sim_") &&
-      signature === `sim_sig_${orderId}`
-    ) {
-      return true;
-    }
   }
 
   const envSecret = secret || process.env.RAZORPAY_KEY_SECRET;
@@ -278,28 +236,6 @@ export async function fetchCapturedPayment(
   paymentId: string,
   orderId: string
 ): Promise<{ state: "captured"; amount: number } | { state: "pending" } | { state: "mismatch" }> {
-  const env = getRazorpayEnvironment();
-  // Safe test-mode simulation captured payment resolution
-  if (
-    env.isTestMode &&
-    (orderId.startsWith("order_sim_") || paymentId.startsWith("pay_sim_") || paymentId.startsWith("pay_test_"))
-  ) {
-    try {
-      const { prisma } = await import("@/lib/prisma");
-      const payment = await prisma.payment.findUnique({
-        where: { gatewayOrderId: orderId },
-        select: { amount: true },
-      });
-      if (payment) {
-        return { state: "captured", amount: payment.amount };
-      }
-      return { state: "mismatch" };
-    } catch (e) {
-      console.warn("[Razorpay Test Mode] Failed to load payment record:", e);
-      return { state: "mismatch" };
-    }
-  }
-
   let p = (await client.payments.fetch(paymentId)) as unknown as RzpPayment;
   if (p.order_id !== orderId) return { state: "mismatch" };
   if (p.status === "authorized") {

@@ -57,12 +57,12 @@ export async function POST(req: NextRequest) {
     }
 
     const orderNumber = generateOrderNumber();
-    const { order: rzpOrder, keyId, isTestMode, isSimulated } = (await createRazorpayOrder({
+    const { order: rzpOrder, keyId, isTestMode } = await createRazorpayOrder({
       amountMinor: pricing.totalMinor,
       currency: "INR",
       receipt: orderNumber,
       notes: { orderNumber, promoCode: pricing.promoCodeApplied || "none" },
-    })) as any;
+    });
 
     const placed = await placeOrder({
       items,
@@ -81,8 +81,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Prices were just updated. Please review your bag and try again." }, { status: 409 });
     }
 
-    const isSim = Boolean(isSimulated || String(rzpOrder.id).startsWith("order_sim_"));
-
     return NextResponse.json({
       success: true,
       orderId: rzpOrder.id,
@@ -91,8 +89,6 @@ export async function POST(req: NextRequest) {
       currency: rzpOrder.currency,
       keyId,
       isTestMode,
-      isSimulated: isSim,
-      simulatedSignature: isSim ? `sim_sig_${rzpOrder.id}` : undefined,
       pricing: {
         subtotalMinor: placed.pricing.subtotalMinor,
         discountMinor: placed.pricing.discountMinor,

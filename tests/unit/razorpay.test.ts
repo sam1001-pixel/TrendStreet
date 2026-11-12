@@ -185,7 +185,7 @@ test("Razorpay Environment Safety Gate - enforces test mode and prevents unappro
   }
 });
 
-test("Razorpay Simulation - accepts simulated signature only in test mode", async () => {
+test("Razorpay Signature Enforcement - rejects unverified or simulated signatures", async () => {
   const originalKeyId = process.env.RAZORPAY_KEY_ID;
   const originalAllowLive = process.env.ALLOW_LIVE_PAYMENTS;
   try {
@@ -194,34 +194,29 @@ test("Razorpay Simulation - accepts simulated signature only in test mode", asyn
 
     const simOrderId = "order_sim_test123";
     const simPaymentId = "pay_sim_test456";
-    const validSimSig = `sim_sig_${simOrderId}`;
+    const fakeSig = `sim_sig_${simOrderId}`;
 
     const isValid = verifyRazorpayPaymentSignature({
       orderId: simOrderId,
       paymentId: simPaymentId,
-      signature: validSimSig,
+      signature: fakeSig,
       secret: "mock_secret",
     });
-    assert.equal(isValid, true, "Simulated signature must pass in test mode");
+    assert.equal(isValid, false, "Fake or simulated signatures must always be rejected");
 
-    const badSig = verifyRazorpayPaymentSignature({
+    // Real cryptographic HMAC signature must be accepted
+    const legitSig = crypto
+      .createHmac("sha256", "mock_secret")
+      .update(`${simOrderId}|${simPaymentId}`)
+      .digest("hex");
+
+    const isLegitValid = verifyRazorpayPaymentSignature({
       orderId: simOrderId,
       paymentId: simPaymentId,
-      signature: "forged_signature",
+      signature: legitSig,
       secret: "mock_secret",
     });
-    assert.equal(badSig, false, "Tampered signature must be rejected");
-
-    // In live mode, simulation signatures must be rejected
-    process.env.RAZORPAY_KEY_ID = "rzp_live_realMerchantKey123";
-    process.env.ALLOW_LIVE_PAYMENTS = "true";
-    const rejectedInLive = verifyRazorpayPaymentSignature({
-      orderId: simOrderId,
-      paymentId: simPaymentId,
-      signature: validSimSig,
-      secret: "mock_secret",
-    });
-    assert.equal(rejectedInLive, false, "Simulated signatures must be rejected in live mode");
+    assert.equal(isLegitValid, true, "Legitimate cryptographic signature must be accepted");
   } finally {
     process.env.RAZORPAY_KEY_ID = originalKeyId;
     process.env.ALLOW_LIVE_PAYMENTS = originalAllowLive;
