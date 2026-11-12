@@ -97,7 +97,7 @@ export const OffcultAssistDrawer: React.FC<OffcultAssistDrawerProps> = ({ onOpen
   const phone = siteSettings.contactInfo?.phone || "";
   const waDigits = phone.replace(/\D/g, "");
   const waHref = waDigits
-    ? `https://wa.me/${waDigits}?text=${encodeURIComponent("Hello Trend Street, I need help with sizing and fit.")}`
+    ? `https://wa.me/${waDigits}?text=${encodeURIComponent("Hello OFFVYBE, I need help with sizing and fit.")}`
     : null;
 
   const tabClass = (active: boolean) =>

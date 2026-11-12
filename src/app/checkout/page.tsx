@@ -296,7 +296,7 @@ export default function CheckoutPage() {
 
       if (!verifyRes.ok || !verifyData.success || !verifyData.verified) {
         setValidationError(
-          verifyData.error || "We couldn't confirm your test payment. Please try again."
+          verifyData.error || "We couldn't confirm your payment. Please try again."
         );
         setIsProcessing(false);
         setSimulatedOrder(null);
@@ -1051,7 +1051,7 @@ export default function CheckoutPage() {
                 </span>
               </div>
 
-              {IS_RAZORPAY_TEST && (
+              {IS_RAZORPAY_TEST && process.env.NODE_ENV !== "production" && (
                 <div className="rounded-xl border border-amber-200/80 bg-amber-50 px-4 py-3 text-xs text-amber-900">
                   <span className="font-semibold">Test mode:</span> use a Razorpay test card or UPI ID. No real money moves.
                 </div>

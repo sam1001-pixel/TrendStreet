@@ -4,8 +4,8 @@ import Link from "next/link";
 import { ShopYourWayFinder } from "@/components/ShopYourWayFinder";
 
 export const metadata: Metadata = {
-  title: "Shop Your Way | By Budget & Occasion — Trend Street",
-  description: "Find Trend Street pieces by budget, occasion and silhouette — every piece at ₹499 — tees, denim, boxy shirts and jackets.",
+  title: "Shop Your Way | By Budget & Occasion — OFFVYBE",
+  description: "Find OFFVYBE pieces by budget, occasion and silhouette — every piece at ₹499 — tees, denim, boxy shirts and jackets.",
   alternates: { canonical: "/shop-your-way" },
 };
 

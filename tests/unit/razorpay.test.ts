@@ -163,6 +163,21 @@ test("Razorpay Environment Safety Gate - enforces test mode and prevents unappro
     const liveEnv = getRazorpayEnvironment();
     assert.equal(liveEnv.isLiveMode, true);
     assert.equal(liveEnv.isTestMode, false);
+
+    // 4. Missing credentials in production throw configuration error
+    const originalNodeEnv = process.env.NODE_ENV;
+    try {
+      (process.env as any).NODE_ENV = "production";
+      delete process.env.RAZORPAY_KEY_ID;
+      delete process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      delete process.env.RAZORPAY_KEY_SECRET;
+      assert.throws(
+        () => getRazorpayEnvironment(),
+        /RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is missing/
+      );
+    } finally {
+      (process.env as any).NODE_ENV = originalNodeEnv;
+    }
   } finally {
     process.env.RAZORPAY_KEY_ID = originalKeyId;
     process.env.RAZORPAY_KEY_SECRET = originalKeySecret;

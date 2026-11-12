@@ -5,8 +5,8 @@ import { CompleteTheFit } from "@/components/CompleteTheFit";
 import { BUNDLE_PERCENT } from "@/data/looks";
 
 export const metadata: Metadata = {
-  title: "Complete the Fit | Styled Outfits — Trend Street",
-  description: `Head-to-toe outfits styled by Trend Street. Pick your sizes once and save ${BUNDLE_PERCENT}% when you buy two or more pieces from a look.`,
+  title: "Complete the Fit | Styled Outfits — OFFVYBE",
+  description: `Head-to-toe outfits styled by OFFVYBE. Pick your sizes once and save ${BUNDLE_PERCENT}% when you buy two or more pieces from a look.`,
   alternates: { canonical: "/complete-the-fit" },
 };
 

@@ -79,13 +79,13 @@ export function PackingSlipModal({ order, onClose }: PackingSlipModalProps) {
           <div className="flex items-start justify-between border-b-2 border-espresso pb-6">
             <div>
               <h1 className="font-serif text-2xl font-bold tracking-tight text-espresso uppercase">
-                TREND STREET
+                OFFVYBE
               </h1>
               <p className="text-[11px] uppercase tracking-widest text-espresso/70 mt-0.5">
                 Luxury Menswear Atelier • Mumbai
               </p>
               <p className="text-[10px] text-espresso/60 mt-2 font-mono">
-                GSTIN: 27AABCT8821Q1ZP | concierge@trendstreet.in
+                GSTIN: 27AABCT8821Q1ZP | concierge@offvybe.com
               </p>
             </div>
             <div className="text-right">

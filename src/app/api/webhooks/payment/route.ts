@@ -68,7 +68,14 @@ export async function POST(req: NextRequest) {
       } else if (result.outcome === "confirmed" && result.newlyConfirmed) {
         const orderId = result.orderId;
         const paymentId = String(paymentEntity.id);
-        after(() => sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", paymentId).then(() => undefined));
+        try {
+          after(() => sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", paymentId).then(() => undefined));
+        } catch {
+          // Fallback if after() is called outside an active request scope
+          void sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", paymentId).catch((err) =>
+            console.error("[Webhook] Failed to send order email:", err)
+          );
+        }
       }
     }
 

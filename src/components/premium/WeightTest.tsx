@@ -90,7 +90,7 @@ export function WeightTest() {
                   </p>
 
                   <div className="mt-5 space-y-3">
-                    <Meter label="Trend Street" value={row.ours} max={row.max} unit={row.unit} tone={dark ? "bg-gold" : "bg-burgundy"} delay={0.1} />
+                    <Meter label="OFFVYBE" value={row.ours} max={row.max} unit={row.unit} tone={dark ? "bg-gold" : "bg-burgundy"} delay={0.1} />
                     <Meter label="Typical high street" value={row.typical} max={row.max} unit={row.unit} tone={dark ? "bg-ivory/50" : "bg-espresso/30"} delay={0.25} />
                   </div>
                 </div>

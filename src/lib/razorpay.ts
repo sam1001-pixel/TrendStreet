@@ -16,14 +16,21 @@ export interface RazorpayEnvironment {
 export function getRazorpayEnvironment(): RazorpayEnvironment {
   const keyId =
     process.env.RAZORPAY_KEY_ID ||
-    process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
-    "rzp_test_TyzNAN2k14a8Ug";
-  const keySecret =
-    process.env.RAZORPAY_KEY_SECRET || "fV5jMZu52qHzgCnBLA4zgv67";
+    process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
   if (!keyId || !keySecret) {
+    // In local dev/test environments, provide safe test placeholder keys if unset
+    if (process.env.NODE_ENV !== "production") {
+      return {
+        keyId: keyId || "rzp_test_devPlaceholderKey",
+        keySecret: keySecret || "devPlaceholderSecret123456",
+        isTestMode: true,
+        isLiveMode: false,
+      };
+    }
     throw new Error(
-      "[Razorpay Configuration Error] RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is missing."
+      "[Razorpay Configuration Error] RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is missing. Please configure your live Razorpay credentials in your environment variables."
     );
   }
 
@@ -40,7 +47,8 @@ export function getRazorpayEnvironment(): RazorpayEnvironment {
   const isLiveApproved = process.env.ALLOW_LIVE_PAYMENTS === "true";
   if (isLiveMode && !isLiveApproved) {
     throw new Error(
-      "[Razorpay Safety Barrier] Live Razorpay credentials (rzp_live_...) detected, but live payments are NOT explicitly authorized. Refusing to process transactions."
+      "[Razorpay Safety Barrier] Live Razorpay credentials (rzp_live_...) detected, but live payments are NOT explicitly authorized. " +
+      "Set ALLOW_LIVE_PAYMENTS=true in your environment variables to accept real production customer transactions."
     );
   }
 
@@ -182,15 +190,16 @@ export function verifyRazorpayPaymentSignature({
     return false;
   }
 
-  const env = getRazorpayEnvironment();
   // Safe test-mode simulation signature verification
-  if (
-    env.isTestMode &&
-    orderId.startsWith("order_sim_") &&
-    paymentId.startsWith("pay_sim_") &&
-    signature === `sim_sig_${orderId}`
-  ) {
-    return true;
+  if (orderId.startsWith("order_sim_")) {
+    const env = getRazorpayEnvironment();
+    if (
+      env.isTestMode &&
+      paymentId.startsWith("pay_sim_") &&
+      signature === `sim_sig_${orderId}`
+    ) {
+      return true;
+    }
   }
 
   const envSecret = secret || process.env.RAZORPAY_KEY_SECRET;
