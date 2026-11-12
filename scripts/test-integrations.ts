@@ -10,6 +10,7 @@ import {
   generateOrderConfirmationHtml,
   sendOrderConfirmationEmail,
 } from "../src/lib/email";
+import { getShippingProvider } from "../src/lib/shipping";
 import crypto from "crypto";
 
 async function runVerification() {
@@ -18,7 +19,7 @@ async function runVerification() {
   console.log("=================================================");
 
   // 1. DATABASE CONNECTIVITY
-  console.log("\n[1/3] Testing MongoDB Atlas Database Connectivity...");
+  console.log("\n[1/4] Testing MongoDB Atlas Database Connectivity...");
   try {
     const productCount = await prisma.product.count();
     const user = await prisma.user.findFirst({ select: { role: true, createdAt: true } });
@@ -34,7 +35,7 @@ async function runVerification() {
 
 
   // 2. PAYMENT SIGNATURE & GATEWAY SAFETY
-  console.log("\n[2/3] Testing Razorpay Cryptographic Verification & Mode Gates...");
+  console.log("\n[2/4] Testing Razorpay Cryptographic Verification & Mode Gates...");
   try {
     const env = getRazorpayEnvironment();
     console.log(`  ✔ Razorpay Mode: ${env.isTestMode ? "TEST MODE (Sandbox)" : "LIVE MODE"}`);
@@ -72,7 +73,7 @@ async function runVerification() {
   }
 
   // 3. EMAIL DELIVERY & SENDER CONFIGURATION
-  console.log("\n[3/3] Testing Resend Transactional Email Engine & Delivery...");
+  console.log("\n[3/4] Testing Resend Transactional Email Engine & Delivery...");
   try {
     const sender = getVerifiedSenderAddress();
     console.log(`  ✔ Configured Verified Sender: ${sender}`);
@@ -141,6 +142,39 @@ async function runVerification() {
     }
   } catch (err: any) {
     console.log("  ⚠ Email test caught exception:", err.message);
+  }
+
+  // 4. SHIPPING & LOGISTICS (Shiprocket)
+  console.log("\n[4/4] Testing Shipping Engine & Courier Serviceability...");
+  try {
+    const shipping = getShippingProvider();
+    const hasLiveCreds = Boolean(
+      process.env.SHIPROCKET_EMAIL &&
+      process.env.SHIPROCKET_PASSWORD &&
+      !process.env.SHIPROCKET_EMAIL.includes("replace_with")
+    );
+
+    console.log(`  ✔ Shipping Provider: ${shipping.providerName}`);
+    console.log(`  ✔ Shiprocket Mode: ${hasLiveCreds ? "LIVE SHIPROCKET API" : "DETERMINISTIC SANDBOX MOCK"}`);
+    console.log(`  ✔ Origin Pickup Hub PIN: ${process.env.SHIPROCKET_PICKUP_PINCODE || "400050"}`);
+    console.log(`  ✔ Pickup Hub Nickname: ${process.env.SHIPROCKET_PICKUP_LOCATION || "Primary"}`);
+
+    const serviceability = await shipping.checkServiceability({
+      pickupPincode: process.env.SHIPROCKET_PICKUP_PINCODE || "400050",
+      deliveryPincode: "110001", // New Delhi Central
+      weightKg: 0.5,
+      isCod: false,
+      orderValuePaise: 249900,
+    });
+
+    console.log(`  ✔ Delivery Check (PIN 110001): ${serviceability.isServiceable ? "SERVICEABLE" : "UNSERVICEABLE"}`);
+    console.log(`  ✔ Active Couriers Found: ${serviceability.availableCouriers.length}`);
+    if (serviceability.cheapestCourier) {
+      console.log(`  ✔ Recommended Courier: ${serviceability.cheapestCourier.courierName} (Est: ${serviceability.cheapestCourier.estimatedDeliveryDays} days)`);
+    }
+    console.log(`  ✔ Execution Mode: ${serviceability.isMock ? "Mock/Sandbox (Safe)" : "Live Shiprocket API"}`);
+  } catch (err: any) {
+    console.log("  ⚠ Shipping test caught exception:", err.message);
   }
 
   console.log("\n=================================================");

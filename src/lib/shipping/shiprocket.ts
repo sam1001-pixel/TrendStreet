@@ -96,7 +96,7 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
     if (token) {
       try {
         const query = new URLSearchParams({
-          pickup_postcode: params.pickupPincode || "400050", // Bandra West Mumbai default
+          pickup_postcode: params.pickupPincode || process.env.SHIPROCKET_PICKUP_PINCODE || "400050",
           delivery_postcode: params.deliveryPincode,
           weight: String(params.weightKg || 0.5),
           cod: params.isCod ? "1" : "0",
@@ -156,7 +156,7 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
         const payload = {
           order_id: params.orderNumber,
           order_date: params.orderDate.toISOString().slice(0, 19).replace("T", " "),
-          pickup_location: params.pickupLocationId || "OFFVYBE Bandra",
+          pickup_location: params.pickupLocationId || process.env.SHIPROCKET_PICKUP_LOCATION || "Primary",
           billing_customer_name: params.customerName,
           billing_last_name: "",
           billing_address: params.deliveryAddress.street,
