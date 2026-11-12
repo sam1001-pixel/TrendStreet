@@ -58,7 +58,7 @@ function layout(title: string, bodyHtml: string): string {
 <table role="presentation" width="100%" style="max-width:520px;background:#ffffff;border:1px solid #E5E0D8;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.04)" cellpadding="0" cellspacing="0">
 <tr><td style="background:#8B1E3F;padding:24px 32px;text-align:center">
   <p style="margin:0;font-size:18px;font-weight:900;letter-spacing:4px;color:#FDFBF7">OFFVYBE</p>
-  <p style="margin:4px 0 0;font-size:10px;letter-spacing:2px;color:#D4AF37;text-transform:uppercase">MUMBAI ATELIER &bull; ACCOUNT SECURITY</p>
+  <p style="margin:4px 0 0;font-size:10px;letter-spacing:2px;color:#D4AF37;text-transform:uppercase">JODHPUR ATELIER &bull; ACCOUNT SECURITY</p>
 </td></tr>
 <tr><td style="padding:36px 32px">
 <h1 style="margin:0 0 18px;font-size:20px;font-weight:700;color:#1E1B18;letter-spacing:-0.2px">${escapeHtml(title)}</h1>

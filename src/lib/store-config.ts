@@ -112,7 +112,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
     note2: "Cash on delivery available",
   },
   offer: { enabled: true, code: "TREND10", bagCodes: ["TREND10", "STREET20"], newsletterCode: "TREND10" },
-  social: { instagram: "", facebook: "", x: "", youtube: "", whatsapp: "" },
+  social: { instagram: "", facebook: "", x: "", youtube: "", whatsapp: "9079199951" },
   trust: [
     { title: "Free delivery", note: "On orders over {freeOver}" },
     { title: "30-day exchange", note: "Doorstep pickup" },
@@ -135,7 +135,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
         key: "Oversized",
         href: "/oversized",
         image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2000&auto=format&fit=crop",
-        line: "520gsm loopback. Built to hang, not cling.",
+        line: "240–350gsm loopback. Built to hang, not cling.",
       },
       {
         key: "Boxy Fit",
@@ -161,9 +161,9 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
         name: "Oversized",
         href: "/oversized",
         no: "01",
-        shortTag: "520gsm Loopback Hoodies & Dropped Tees",
+        shortTag: "240–350gsm Loopback Hoodies & Dropped Tees",
         image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1400&auto=format&fit=crop",
-        copy: "Heavyweight loopback hoodies and 320gsm drop-shoulder tees engineered with relaxed architectural drape.",
+        copy: "Heavyweight loopback hoodies and 240–350gsm drop-shoulder tees engineered with relaxed architectural drape.",
       },
       {
         name: "Jeans",

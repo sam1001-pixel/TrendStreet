@@ -31,7 +31,7 @@ export default function AdminContentPage() {
   const [heroPrimaryCta, setHeroPrimaryCta] = useState("/shop");
   const [heroSecondaryCta, setHeroSecondaryCta] = useState("/shop?sort=newest");
 
-  const [marqueeText, setMarqueeText] = useState("HEAVYWEIGHT COMBED COTTON • 520GSM FLEECE • BESPOKE BOXY CUTS • CRAFTED IN MUMBAI");
+  const [marqueeText, setMarqueeText] = useState("HEAVYWEIGHT COMBED COTTON • 240–350GSM FLEECE • BESPOKE BOXY CUTS • CRAFTED IN JODHPUR");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 

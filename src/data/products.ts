@@ -64,19 +64,19 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
   {
     id: "ts-002",
     name: "The Tokyo Drop-Shoulder Oversized Hoodie",
-    subtitle: "520gsm Loopback French Terry with Double-Walled Hood",
+    subtitle: "350gsm Loopback French Terry with Double-Walled Hood",
     price: FLAT_PRICE,
     originalPrice: MRP,
     category: "Oversized",
-    description: "Engineered with maximum volume and zero compromise. Cut from custom-milled 520gsm Japanese loopback cotton, featuring an oversized hood without drawstrings for an uncompromising brutalist look.",
+    description: "Engineered with maximum volume and zero compromise. Cut from custom-milled 350gsm Japanese loopback cotton, featuring an oversized hood without drawstrings for an uncompromising brutalist look.",
     details: [
-      "520gsm 100% Organic Loopback French Terry",
+      "350gsm 100% Organic Loopback French Terry",
       "Double-layered structural hood that stands on its own",
       "Dropped shoulders with elongated sleeves and snug wrist rib",
       "Hidden interior side-seam stash pocket",
       "Garment washed for a vintage soft hand-feel",
     ],
-    fabric: "520gsm Japanese Loopback Terry",
+    fabric: "350gsm Japanese Loopback Terry",
     careInstructions: ["Cold gentle machine wash", "Reshape while damp", "Dry flat"],
     images: [
       "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop",
@@ -352,18 +352,18 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
   {
     id: "ts-009",
     name: "The Boxy Minimalist Half-Zip Sweatshirt",
-    subtitle: "480gsm Heavyweight French Terry with Custom Silver Hardware",
+    subtitle: "350gsm Heavyweight French Terry with Custom Silver Hardware",
     price: FLAT_PRICE,
     originalPrice: MRP,
     category: "Boxy Fit",
     description: "Refined post-streetwear silhouette. Features a wide, relaxed chest, high stand collar with custom matte silver Excella zipper, and a cropped elasticized waist.",
     details: [
-      "480gsm 100% Combed Cotton French Terry",
+      "350gsm 100% Combed Cotton French Terry",
       "Matte silver YKK Excella dual-pull half zipper",
       "High stand funnel collar",
       "Elastic waistband cinch for adjustable box drape",
     ],
-    fabric: "480gsm French Terry",
+    fabric: "350gsm French Terry",
     careInstructions: ["Machine wash cold", "Dry flat"],
     images: [
       "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop",
@@ -681,18 +681,18 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     reviewsCount: 0,
     reviews: [],
     name: "Thar Sand Heavyweight Hoodie",
-    subtitle: "400gsm Brushed Fleece for Desert Nights",
+    subtitle: "350gsm Brushed Fleece for Desert Nights",
     price: FLAT_PRICE,
     originalPrice: MRP,
     category: "Oversized",
     description: "Thar evenings drop fast. A dense brushed-fleece hoodie in desert sand, with a double-layer hood and kangaroo pocket.",
     details: [
-      "400gsm brushed-back fleece",
+      "350gsm brushed-back fleece",
       "Double-layer hood",
       "Kangaroo pocket",
       "Ribbed cuffs and hem"
     ],
-    fabric: "400gsm Brushed Cotton Fleece",
+    fabric: "350gsm Brushed Cotton Fleece",
     careInstructions: [
       "Machine wash cold",
       "Tumble dry low"

@@ -66,7 +66,7 @@ export default function OrderConfirmationPage() {
           Thank You, {order.customer.fullName}
         </h1>
         <p className="text-xs text-espresso/70 max-w-md mx-auto leading-relaxed">
-          Your garment allocation has been registered with our Bandra West Atelier in Mumbai. Our master craftsmen are inspecting fabric handfeel and hardware prior to express courier dispatch.
+          Your garment allocation has been registered with our Jodhpur Atelier in Rajasthan. Our master craftsmen are inspecting fabric handfeel and hardware prior to express courier dispatch.
         </p>
 
         <div className="pt-4 flex flex-wrap items-center justify-center gap-3 text-xs">

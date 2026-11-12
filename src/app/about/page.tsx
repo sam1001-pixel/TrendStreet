@@ -47,7 +47,7 @@ export default function AboutPage() {
               OFFVYBE was founded to redefine contemporary menswear through uncompromising material density and calculated proportion. We reject disposable fast-fashion and synthetic polyester blends in favor of authentic heirloom construction.
             </p>
             <p className="text-xs sm:text-base text-espresso/80 leading-relaxed font-light">
-              Every piece across our three core silhouettes—Oversized, Boxy Fit, and Jackets—is engineered from pure natural fibers: custom-milled 520gsm Japanese loopback terry, 220gsm mercerized poplin, and butter-soft Tuscan lambskin suede. The result is a sculptural drape that holds its presence and patinas beautifully over decades.
+              Every piece across our three core silhouettes—Oversized, Boxy Fit, and Jackets—is engineered from pure natural fibers: custom-milled 240–350gsm Japanese loopback terry, 220gsm mercerized poplin, and butter-soft Tuscan lambskin suede. The result is a sculptural drape that holds its presence and patinas beautifully over decades.
             </p>
           </div>
 
@@ -101,7 +101,7 @@ export default function AboutPage() {
                 Slow-Knit Loopback Ateliers
               </h3>
               <p className="text-xs text-espresso/70 leading-relaxed">
-                Specialized in dense 520gsm and 320gsm organic loopback French terry and combed jersey. Gives our oversized hoodies and tees their signature structural drape and zero-sag collar.
+                Specialized in dense 240–350gsm organic loopback French terry and combed jersey. Gives our oversized hoodies and tees their signature structural drape and zero-sag collar.
               </p>
             </div>
 

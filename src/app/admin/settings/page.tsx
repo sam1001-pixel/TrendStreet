@@ -393,12 +393,6 @@ export default function AdminSettingsPage() {
                   desc: "3-point luxury assurance strip (Ethical Craftsmanship, Express Dispatch, Customer Support).",
                   tag: "Brand Assurance",
                 },
-                {
-                  key: "weightTest" as const,
-                  title: "The Weight Test (GSM Fabric Breakdown)",
-                  desc: "Interactive comparison meters highlighting 520gsm loopback terry and 14.5oz Okayama denim against typical fast fashion.",
-                  tag: "Fabric Engineering",
-                },
               ].map((section) => {
                 const isEnabled = storefrontSections[section.key];
                 return (

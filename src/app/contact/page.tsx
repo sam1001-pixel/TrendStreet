@@ -58,7 +58,7 @@ export default function ContactPage() {
           Contact Us & Statutory Grievance Redressal
         </h1>
         <p className="text-xs sm:text-sm text-espresso/70 leading-relaxed font-light">
-          Bandra West Atelier, Mumbai • Mon–Sat 10:00 AM – 7:00 PM IST
+          Jodhpur Atelier, Rajasthan • Mon–Sat 10:00 AM – 7:00 PM IST
         </p>
       </div>
 
@@ -73,13 +73,13 @@ export default function ContactPage() {
             </h3>
             <p className="text-espresso/80 leading-relaxed">
               <strong>OFFVYBE</strong><br />
-              Plot 42, Waterfield Road, Pali Hill,<br />
-              Bandra West, Mumbai, Maharashtra 400050, India
+              Pal Road, Jodhpur,<br />
+              Rajasthan 342008, India
             </p>
             <div className="pt-2 border-t border-ivory-dark space-y-2 text-espresso/75">
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-gold flex-shrink-0" />
-                <span>+91 98200 12345 (Calls & WhatsApp)</span>
+                <a href="tel:+919079199951" className="hover:underline">+91 90791 99951 (Calls & WhatsApp)</a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-gold flex-shrink-0" />
@@ -145,7 +145,6 @@ export default function ContactPage() {
                     <input
                       type="text"
                       required
-                      placeholder="Your full name"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       className="w-full bg-ivory px-3.5 py-2.5 rounded-lg border border-burgundy/20 text-espresso focus:outline-none focus:border-burgundy"
@@ -157,7 +156,6 @@ export default function ContactPage() {
                     <input
                       type="email"
                       required
-                      placeholder="name@example.com"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       className="w-full bg-ivory px-3.5 py-2.5 rounded-lg border border-burgundy/20 text-espresso focus:outline-none focus:border-burgundy"
@@ -170,7 +168,6 @@ export default function ContactPage() {
                     <label className="block font-semibold text-espresso mb-1">Phone / WhatsApp Number</label>
                     <input
                       type="tel"
-                      placeholder="+91 Mobile number"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       className="w-full bg-ivory px-3.5 py-2.5 rounded-lg border border-burgundy/20 text-espresso focus:outline-none focus:border-burgundy"
@@ -199,7 +196,6 @@ export default function ContactPage() {
                   <textarea
                     required
                     rows={5}
-                    placeholder="Tell us about your sizing questions or order inquiries..."
                     value={form.message}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                     className="w-full bg-ivory p-3.5 rounded-lg border border-burgundy/20 text-espresso focus:outline-none focus:border-burgundy leading-relaxed"

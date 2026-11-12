@@ -48,7 +48,7 @@ const LOOKBOOK_DATA: LookbookItem[] = [
     id: "look-2",
     title: "Tokyo Brutalism in French Terry & Suede",
     season: "Look 02 — Volume Layering",
-    narrative: "Supple Florentine lambskin suede bomber jacket layered effortlessly over our 520gsm double-walled loopback French terry oversized hoodie.",
+    narrative: "Supple Florentine lambskin suede bomber jacket layered effortlessly over our 350gsm double-walled loopback French terry oversized hoodie.",
     image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1400&auto=format&fit=crop",
     hotspots: [
       {

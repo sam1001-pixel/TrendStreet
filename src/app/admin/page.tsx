@@ -532,7 +532,6 @@ export default function AdminDashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             {[
-              { key: "weightTest" as const, name: "The Weight Test (GSM)" },
               { key: "shopByPriceOccasion" as const, name: "Shop by Price & Occasion" },
               { key: "runwayReel" as const, name: "The Runway Reel" },
               { key: "hangingRail" as const, name: "Fresh off the Rail" },

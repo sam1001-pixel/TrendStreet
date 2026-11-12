@@ -38,7 +38,7 @@ export const CURATED_LOOKS: CuratedLook[] = [
   {
     id: "milan-flight",
     name: "The Milan Flight Set",
-    vibe: "520gsm hoodie under a suede MA-1, raw straight denim",
+    vibe: "350gsm hoodie under a suede MA-1, raw straight denim",
     occasion: "Winter",
     image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop",
     note: "The double-walled hood stands on its own above the bomber collar. Raw indigo keeps the palette dark and sharp.",

@@ -212,7 +212,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
           <tr>
             <td style="background-color: #8B1E3F; padding: 36px 24px; text-align: center; border-bottom: 2px solid #D4AF37;">
               <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: 800; letter-spacing: 0.28em; color: #FDFBF7; text-transform: uppercase; display: block;">OFFVYBE</span>
-              <span style="font-size: 10px; letter-spacing: 0.35em; color: #D4AF37; text-transform: uppercase; margin-top: 8px; display: block; font-weight: 600;">MUMBAI ATELIER &bull; ARCHITECTURAL MENSWEAR</span>
+              <span style="font-size: 10px; letter-spacing: 0.35em; color: #D4AF37; text-transform: uppercase; margin-top: 8px; display: block; font-weight: 600;">JODHPUR ATELIER &bull; ARCHITECTURAL MENSWEAR</span>
             </td>
           </tr>
 
@@ -226,7 +226,7 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
                 Order Confirmed
               </h1>
               <p style="font-size: 14px; color: #4A4644; margin: 0; line-height: 1.6;">
-                Greetings ${data.customerName}, your bespoke menswear garment selection has been allocated and transferred to our Bandra West cutting floor.
+                Greetings ${data.customerName}, your bespoke menswear garment selection has been allocated and transferred to our Jodhpur cutting floor.
               </p>
             </td>
           </tr>
@@ -340,8 +340,8 @@ export function generateOrderConfirmationHtml(rawData: OrderEmailData): string {
                 OFFVYBE FLAGSHIP ATELIER
               </p>
               <p style="font-size: 11px; color: #E8DFD8; margin: 0 0 12px 0; line-height: 1.5;">
-                42 Waterfield Road, Bandra West, Mumbai, Maharashtra 400050<br>
-                Concierge Hotline: +91 98200 12345 &bull; concierge@offvybe.com
+                OFFVYBE, Pal Road, Jodhpur, Rajasthan 342008<br>
+                Concierge Hotline: +91 90791 99951 &bull; concierge@offvybe.in
               </p>
               <p style="font-size: 10px; color: #8F8884; margin: 0; line-height: 1.4;">
                 This communication is generated following verified electronic settlement. Compliant with the Digital Personal Data Protection Act 2023 (DPDP) and Consumer Protection (E-Commerce) Rules 2020.

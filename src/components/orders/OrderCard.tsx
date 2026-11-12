@@ -50,7 +50,7 @@ export function OrderCard({ order, email, onUpdated, defaultOpen = false }: { or
   const tracking = order.trackingNumber && !/assigned/i.test(order.trackingNumber) ? order.trackingNumber : "";
   const live = order.fromAccount || order.cancellable !== undefined;
 
-  const waDigits = config.social.whatsapp || siteSettings.contactInfo?.phone?.replace(/\D/g, "").slice(-10) || "";
+  const waDigits = config.social.whatsapp || siteSettings.contactInfo?.phone?.replace(/\D/g, "").slice(-10) || "9079199951";
   const helpHref = waDigits
     ? `https://wa.me/91${waDigits}?text=${encodeURIComponent(`Hi OFFVYBE, I need help with order ${order.orderNumber}.`)}`
     : "/contact";

@@ -19,7 +19,7 @@ export default function TrackPage() {
       <header>
         <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-crimson">Delivery status</p>
         <h1 className="mt-1 font-display text-5xl font-black uppercase leading-[0.85] text-espresso sm:text-7xl">Track order</h1>
-        <p className="mt-3 max-w-md text-sm text-espresso/70">Orders leave our Mumbai atelier within 24 hours and arrive in 2–5 days across India.</p>
+        <p className="mt-3 max-w-md text-sm text-espresso/70">Orders leave our Jodhpur atelier within 24 hours and arrive in 2–5 days across India.</p>
       </header>
       <Suspense fallback={<div className="h-80 animate-pulse rounded-3xl bg-ivory-dark" />}>
         <TrackOrder />

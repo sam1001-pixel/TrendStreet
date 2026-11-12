@@ -119,7 +119,7 @@ function ResetPasswordInner() {
         {error && <AuthAlert kind="error">{error}</AuthAlert>}
         <div>
           <label htmlFor="reset-email" className={authLabelClass}>Email address</label>
-          <input id="reset-email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@domain.com" className={authInputClass} />
+          <input id="reset-email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={authInputClass} />
         </div>
         <button type="submit" disabled={busy} className={authButtonClass}>
           {busy ? "Sending…" : "Email me a reset link"}

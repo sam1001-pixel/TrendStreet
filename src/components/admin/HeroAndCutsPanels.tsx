@@ -326,7 +326,7 @@ export function HeroConfigPanel({ config, onChange }: PanelProps) {
                           type="text"
                           value={look.line}
                           onChange={(e) => updateLook(i, { line: e.target.value })}
-                          placeholder="e.g. 520gsm loopback. Built to hang, not cling."
+                          placeholder="e.g. 240–350gsm loopback. Built to hang, not cling."
                           maxLength={140}
                           className="w-full px-3.5 py-2 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
                         />
@@ -692,7 +692,7 @@ export function SilhouettesConfigPanel({ config, onChange }: PanelProps) {
                           type="text"
                           value={p.shortTag}
                           onChange={(e) => updatePanel(i, { shortTag: e.target.value })}
-                          placeholder="e.g. 520gsm Loopback Hoodies & Dropped Tees"
+                          placeholder="e.g. 240–350gsm Loopback Hoodies & Dropped Tees"
                           maxLength={100}
                           className="w-full px-3.5 py-2 text-xs bg-ivory rounded-lg border border-burgundy/20 focus:border-burgundy focus:outline-none"
                         />

@@ -138,7 +138,7 @@ export default async function TermsPage() {
           <p className="text-xs text-espresso/80 leading-relaxed">
             These Terms shall be interpreted and governed exclusively by the laws of the Republic of India.
             Any legal claim, dispute, or proceeding arising under or in connection with these Terms or website transactions
-            shall be subject to the exclusive jurisdiction of the competent courts in <strong>Mumbai, Maharashtra, India</strong>.
+            shall be subject to the exclusive jurisdiction of the competent courts in <strong>Jodhpur, Rajasthan, India</strong>.
           </p>
         </section>
       </div>

@@ -96,7 +96,7 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
     if (token) {
       try {
         const query = new URLSearchParams({
-          pickup_postcode: params.pickupPincode || process.env.SHIPROCKET_PICKUP_PINCODE || "400050",
+          pickup_postcode: params.pickupPincode || process.env.SHIPROCKET_PICKUP_PINCODE || "342008",
           delivery_postcode: params.deliveryPincode,
           weight: String(params.weightKg || 0.5),
           cod: params.isCod ? "1" : "0",
@@ -278,13 +278,13 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
       checkpoints: [
         {
           timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-          location: "Bandra West Atelier Hub, Mumbai",
+          location: "Pal Road Atelier Hub, Jodhpur",
           status: "Manifested",
           activity: "Package sorted and manifested for air express transit",
         },
         {
           timestamp: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
-          location: "CSMIA Air Cargo Complex, Mumbai",
+          location: "Jodhpur Air Cargo Hub, Rajasthan",
           status: "In Transit",
           activity: "Dispatched on connecting flight",
         },

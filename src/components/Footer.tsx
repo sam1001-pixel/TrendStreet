@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldCheck, Truck, RotateCcw, Wallet, Mail, Instagram, Twitter, Facebook, MapPin, Phone, ChevronDown, ArrowRight, Check, Youtube, MessageCircle } from "lucide-react";
+import { ShieldCheck, Mail, Instagram, Twitter, Facebook, MapPin, Phone, ChevronDown, ArrowRight, Check, Youtube, MessageCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useStore, useStoreConfig } from "@/context/StoreContext";
 import { fillText } from "@/lib/store-config";
@@ -38,26 +38,22 @@ const GROUPS: { title: string; links: { label: string; href: string }[] }[] = [
   },
 ];
 
-const PROMISE_ICONS = [Truck, RotateCcw, Wallet, ShieldCheck];
-
 export const Footer: React.FC = () => {
   const { siteSettings } = useStore();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
-  const phone = siteSettings.contactInfo?.phone || "+91 98200 12345";
+  const phone = siteSettings.contactInfo?.phone || "+91 90791 99951";
   const mail = siteSettings.contactInfo?.email || "concierge@offvybe.in";
   const pathname = usePathname();
   const config = useStoreConfig();
+  const waNumber = (config.social.whatsapp || "9079199951").replace(/\D/g, "");
   // Badges and social links come from Admin → Settings; empty social links are simply not shown.
-  const PROMISES = config.trust
-    .map((t, i) => ({ icon: PROMISE_ICONS[i], title: fillText(t.title, config), note: fillText(t.note, config) }))
-    .filter((_, i) => i !== 2 || config.cod.enabled);
   const SOCIAL = [
     { href: config.social.instagram, label: "Instagram", icon: Instagram },
     { href: config.social.x, label: "X / Twitter", icon: Twitter },
     { href: config.social.facebook, label: "Facebook", icon: Facebook },
     { href: config.social.youtube, label: "YouTube", icon: Youtube },
-    { href: config.social.whatsapp ? `https://wa.me/91${config.social.whatsapp}` : "", label: "WhatsApp", icon: MessageCircle },
+    { href: waNumber ? `https://wa.me/91${waNumber}` : "", label: "WhatsApp", icon: MessageCircle },
   ].filter((s) => s.href);
 
   // Checkout: a slim footer (help + policies) so nothing pulls the shopper away from paying.
@@ -84,21 +80,6 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="border-t border-burgundy/40 bg-espresso pb-24 text-ivory md:pb-10">
-      {/* Promise strip */}
-      <div className="border-b border-white/10">
-        <ul className="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-white/10 lg:grid-cols-4">
-          {PROMISES.map(({ icon: Icon, title, note }) => (
-            <li key={title} className="flex items-center gap-3 bg-espresso px-4 py-4 sm:px-6 sm:py-6">
-              <Icon className="h-5 w-5 flex-shrink-0 text-gold" />
-              <span className="min-w-0">
-                <span className="block text-xs font-bold sm:text-sm">{title}</span>
-                <span className="block truncate text-[11px] text-ivory/60">{note}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 py-10 sm:py-14 lg:grid-cols-12">
           {/* Newsletter + brand */}
@@ -133,7 +114,6 @@ export const Footer: React.FC = () => {
                     type="email"
                     required
                     autoComplete="email"
-                    placeholder="you@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="h-12 w-full rounded-xl border border-white/15 bg-white/5 pl-10 pr-3 text-sm text-ivory placeholder:text-ivory/40 focus:border-gold focus:outline-none"
@@ -146,7 +126,7 @@ export const Footer: React.FC = () => {
             )}
             <div className="space-y-1.5 text-xs text-ivory/70">
               <p className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gold" /> Pali Hill, Bandra West, Mumbai 400050
+                <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gold" /> {siteSettings.contactInfo?.address || "Pal Road, Jodhpur, Rajasthan 342008"}
               </p>
               <a href={`tel:${phone.replace(/\s/g, "")}`} className="flex min-h-[40px] items-center gap-2 hover:text-gold-light">
                 <Phone className="h-3.5 w-3.5 text-gold" /> {phone}

@@ -121,8 +121,8 @@ export default function AdminShippingPage() {
       });
       const data = await res.json();
       const checkpoints = data.tracking?.checkpoints || [
-        { checkpoint: "Manifest Generated at Atelier", timestamp: new Date(s.dispatchedAt).toLocaleString(), location: "Mumbai Hub", status: "Manifested" },
-        { checkpoint: "Picked up by Courier Partner", timestamp: new Date().toLocaleString(), location: "Mumbai Air Hub", status: "In Transit" },
+        { checkpoint: "Manifest Generated at Atelier", timestamp: new Date(s.dispatchedAt).toLocaleString(), location: "Jodhpur Hub", status: "Manifested" },
+        { checkpoint: "Picked up by Courier Partner", timestamp: new Date().toLocaleString(), location: "Jodhpur Air Hub", status: "In Transit" },
       ];
 
       setActiveTracking({
@@ -137,7 +137,7 @@ export default function AdminShippingPage() {
         orderNumber: s.orderNumber,
         courier: s.courier,
         checkpoints: [
-          { checkpoint: "Manifest Generated at Atelier", timestamp: new Date().toLocaleString(), location: "Mumbai Hub", status: "Manifested" },
+          { checkpoint: "Manifest Generated at Atelier", timestamp: new Date().toLocaleString(), location: "Jodhpur Hub", status: "Manifested" },
         ],
       });
     }
@@ -243,7 +243,7 @@ export default function AdminShippingPage() {
             </h3>
           </div>
           <span className="text-[11px] text-espresso/60 font-mono">
-            Origin Atelier: Mumbai (400050)
+            Origin Atelier: Jodhpur (342008)
           </span>
         </div>
 
@@ -253,7 +253,7 @@ export default function AdminShippingPage() {
             maxLength={6}
             value={testPincode}
             onChange={(e) => setTestPincode(e.target.value.replace(/\D/g, ""))}
-            placeholder="Enter 6-digit PIN code (e.g. 400001)"
+            placeholder="Enter 6-digit PIN code (e.g. 342008)"
             className="flex-1 px-4 py-2.5 rounded-xl bg-espresso/5 border border-espresso/15 text-xs font-mono font-bold text-espresso focus:ring-2 focus:ring-gold"
           />
           <button

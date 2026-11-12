@@ -17,7 +17,7 @@ const PILLARS = [
   {
     name: "Oversized",
     href: "/oversized",
-    spec: "320–520 gsm",
+    spec: "240–350 gsm",
     line: "Loopback and combed jersey heavy enough to hang off the shoulder instead of clinging to it.",
     image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=900&auto=format&fit=crop",
   },
@@ -41,13 +41,13 @@ const PROCESS = [
   { icon: Scale, title: "Weighed at the mill", line: "Every fabric roll is weighed per square metre before we accept it." },
   { icon: Scissors, title: "Cut in small batches", line: "Patterns graded for Indian body proportions, cut 200 pieces at a time." },
   { icon: Droplets, title: "Washed before you wear it", line: "Garment-dyed and pre-shrunk, so the size you buy is the size you keep." },
-  { icon: SearchCheck, title: "Inspected by hand", line: "Seams, collars and hems checked at our Mumbai atelier before packing." },
+  { icon: SearchCheck, title: "Inspected by hand", line: "Seams, collars and hems checked at our Jodhpur atelier before packing." },
   { icon: Truck, title: "Shipped in 24 hours", line: "Blue Dart and Delhivery air to 19,000+ PIN codes, with free delivery on bigger orders." },
 ];
 
 const STATS = [
   { value: 3, suffix: "", label: "Silhouettes. Nothing else." },
-  { value: 520, suffix: "gsm", label: "Heaviest loopback we cut" },
+  { value: 350, suffix: "gsm", label: "Heaviest loopback we cut" },
   { value: 19000, suffix: "+", label: "PIN codes we deliver to" },
   { value: 30, suffix: " days", label: "Doorstep exchange window" },
 ];

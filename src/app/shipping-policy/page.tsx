@@ -38,7 +38,7 @@ export default async function ShippingPolicyPage() {
           Shipping & Logistics Policy
         </h1>
         <p className="text-xs sm:text-sm text-espresso/70 leading-relaxed font-light">
-          Effective Date: January 1, 2026 • Dispatched from Mumbai Atelier
+          Effective Date: January 1, 2026 • Dispatched from Jodhpur Atelier, Rajasthan
         </p>
         <p className="text-xs text-espresso/80 leading-relaxed">
           At OFFVYBE, every garment is handled as an architectural piece. From fabric steam-finishing to hardware protection,
@@ -143,7 +143,7 @@ export default async function ShippingPolicyPage() {
           </h2>
           <ul className="list-disc pl-5 space-y-2 text-xs text-espresso/75">
             <li><strong>Processing Time:</strong> Orders are verified, hand-inspected, and packed within 24 hours of placement (excluding Sundays and national holidays).</li>
-            <li><strong>Tracking Notification:</strong> As soon as the courier partner scans your parcel at our Mumbai fulfillment hub, an Air Waybill (AWB) number and live tracking link is transmitted to your registered mobile and email.</li>
+            <li><strong>Tracking Notification:</strong> As soon as the courier partner scans your parcel at our Jodhpur fulfillment hub, an Air Waybill (AWB) number and live tracking link is transmitted to your registered mobile and email.</li>
             <li><strong>OTP Verification:</strong> For high-value allocations and Cash on Delivery parcels, an OTP is generated upon delivery to ensure handover to the authorized recipient.</li>
           </ul>
         </section>

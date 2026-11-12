@@ -106,7 +106,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     primaryBtnLink: "/shop",
     secondaryBtnText: "New Arrivals",
     secondaryBtnLink: "/shop?sort=newest",
-    stat1Value: "520gsm",
+    stat1Value: "240–350gsm",
     stat1Label: "Heavyweight Loopback",
     stat2Value: "14.5oz",
     stat2Label: "Okayama Selvedge Denim",
@@ -122,7 +122,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     "FREE DELIVERY ACROSS INDIA OVER ₹1,999",
   ],
   categoryTaglines: {
-    Oversized: "520gsm Loopback & Combed Cotton",
+    Oversized: "240–350gsm Loopback & Combed Cotton",
     Jeans: "14.5oz Okayama Shuttle Looms",
     "Boxy Fit": "Structured Minimalist Geometry",
     Jackets: "Tuscan Suede & Duck Canvas",
@@ -135,8 +135,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   ],
   contactInfo: {
     email: "concierge@offvybe.in",
-    phone: "+91 98200 12345",
-    address: "Atelier 4, Pali Hill Road, Bandra West, Mumbai 400050, India",
+    phone: "+91 90791 99951",
+    address: "OFFVYBE, Pal Road, Jodhpur, Rajasthan 342008, India",
     hours: "Monday – Saturday: 10:00 AM – 8:00 PM IST",
   },
   storefrontSections: {

@@ -657,7 +657,6 @@ export default function ProductDetailPage() {
                 inputMode="numeric"
                 autoComplete="postal-code"
                 aria-label="PIN code"
-                placeholder="6-digit PIN code"
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 maxLength={6}
@@ -679,7 +678,7 @@ export default function ProductDetailPage() {
             ) : (
               <p className="text-[11px] text-espresso/60 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-gold" />
-                <span>Orders dispatched within 24 hours from Mumbai Bandra West Atelier.</span>
+                <span>Orders dispatched within 24 hours from Jodhpur Atelier, Rajasthan.</span>
               </p>
             )}
           </div>

@@ -15,7 +15,7 @@ interface ProductCardProps {
   compact?: boolean;
 }
 
-/** Short fabric spec pill derived from the product copy (e.g. "520 GSM"). */
+/** Short fabric spec pill derived from the product copy (e.g. "350 GSM"). */
 function fabricBadge(p: Product): string {
   const text = `${p.fabric} ${p.subtitle} ${p.name}`.toLowerCase();
   const gsm = text.match(/(\d{3})\s?gsm/);

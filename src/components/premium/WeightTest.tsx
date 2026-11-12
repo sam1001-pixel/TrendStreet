@@ -14,8 +14,8 @@ import { formatPrice } from "@/lib/pricing";
  * with meters that fill as the card scrolls in. Hero product per row comes from the live catalog.
  */
 const ROWS = [
-  { category: "Oversized", productId: "ts-002", unit: "gsm", ours: 520, typical: 180, max: 560, note: "Loopback terry that stands off the shoulder" },
-  { category: "Boxy Fit", productId: "ts-007", unit: "gsm", ours: 320, typical: 140, max: 560, note: "Poplin heavy enough to hold a square line" },
+  { category: "Oversized", productId: "ts-002", unit: "gsm", ours: 350, typical: 180, max: 400, note: "Loopback terry that stands off the shoulder" },
+  { category: "Boxy Fit", productId: "ts-007", unit: "gsm", ours: 320, typical: 140, max: 400, note: "Poplin heavy enough to hold a square line" },
   { category: "Jackets", productId: "ts-011", unit: "oz", ours: 14, typical: 7, max: 16, note: "Duck canvas that breaks in, not down" },
 ] as const;
 

@@ -78,7 +78,7 @@ export function checkPincodeServiceability(pincodeInput: string): PincodeService
       courierPartner: "Delhivery / Blue Dart",
       codAvailable: false,
       freeShippingThreshold: 1999,
-      message: "Please enter a valid 6-digit Indian PIN code (e.g., 400050, 110001, 560001).",
+      message: "Please enter a valid 6-digit Indian PIN code (e.g., 342008, 110001, 560001).",
     };
   }
 

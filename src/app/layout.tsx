@@ -30,7 +30,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "OFFVYBE | Wear Your Own Vibe — Oversized, Boxy Fit & Jackets",
   description:
-    "OFFVYBE is the definitive contemporary luxury menswear house. Specializing in 520gsm loopback oversized hoodies, boxy fit knits, and handcrafted flight jackets.",
+    "OFFVYBE is the definitive contemporary luxury menswear house. Specializing in 240–350gsm loopback oversized hoodies, boxy fit knits, and handcrafted flight jackets.",
   keywords: [
     "offvybe",
     "₹499 t-shirts",
@@ -51,10 +51,10 @@ export const metadata: Metadata = {
   // Opened from the iPhone home screen: full screen, with the OFFVYBE name under the icon.
   appleWebApp: { capable: true, title: "OFFVYBE", statusBarStyle: "black" },
   other: {
-    "geo.region": "IN-MH",
-    "geo.placename": "Mumbai, Bandra West",
-    "geo.position": "19.0544;72.8346",
-    "ICBM": "19.0544, 72.8346",
+    "geo.region": "IN-RJ",
+    "geo.placename": "Jodhpur, Rajasthan",
+    "geo.position": "26.2389;73.0243",
+    "ICBM": "26.2389, 73.0243",
   },
   openGraph: {
     type: "website",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     url: SITE_URL,
     title: "OFFVYBE | Wear Your Own Vibe — Oversized, Boxy Fit & Jackets",
     description:
-      "Contemporary luxury menswear engineering. 520gsm Japanese loopback hoodies, boxy fit architecture, and handcrafted jackets.",
+      "Contemporary luxury menswear engineering. 240–350gsm Japanese loopback hoodies, boxy fit architecture, and handcrafted jackets.",
     siteName: "OFFVYBE",
   },
   twitter: {

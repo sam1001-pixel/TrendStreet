@@ -17,6 +17,15 @@ export const StoreJsonLd: React.FC = () => {
     logo: `${SITE_URL}/brand/offvybe-logo-dark.png`,
     currenciesAccepted: "INR",
     paymentAccepted: "UPI, Credit Card, Debit Card, Net Banking, Cash on Delivery",
+    telephone: "+91-90791-99951",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Pal Road",
+      addressLocality: "Jodhpur",
+      addressRegion: "Rajasthan",
+      postalCode: "342008",
+      addressCountry: "IN",
+    },
     areaServed: { "@type": "Country", name: "India" },
   };
 

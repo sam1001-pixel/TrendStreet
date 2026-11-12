@@ -239,7 +239,7 @@ export default function CheckoutPage() {
     if (formData.country === "India") {
       const serviceCheck = checkPincodeServiceability(formData.postalCode);
       if (!serviceCheck.isValid) {
-        setStep1Error("Please enter a valid 6-digit Indian PIN code (e.g. 400050, 110001, 560001).");
+        setStep1Error("Please enter a valid 6-digit Indian PIN code (e.g. 342008, 110001, 560001).");
         document.getElementById("checkout-postalCode")?.focus();
         return false;
       }
@@ -640,7 +640,6 @@ export default function CheckoutPage() {
                     required
                     value={formData.fullName}
                     onChange={handleChange}
-                    placeholder="Enter your full name"
                     className={inputClass}
                   />
                 </div>
@@ -657,7 +656,6 @@ export default function CheckoutPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="name@email.com"
                     className={inputClass}
                   />
                 </div>
@@ -674,7 +672,6 @@ export default function CheckoutPage() {
                     required
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="10-digit mobile number"
                     className={inputClass}
                   />
                 </div>
@@ -691,7 +688,6 @@ export default function CheckoutPage() {
                     required
                     value={formData.address}
                     onChange={handleChange}
-                    placeholder="House / flat no., building, street"
                     className={inputClass}
                   />
                 </div>
@@ -707,7 +703,6 @@ export default function CheckoutPage() {
                     autoComplete="address-line2"
                     value={formData.apartment}
                     onChange={handleChange}
-                    placeholder="Area, floor (optional)"
                     className={inputClass}
                   />
                 </div>
@@ -722,7 +717,6 @@ export default function CheckoutPage() {
                     name="landmark"
                     value={formData.landmark}
                     onChange={handleChange}
-                    placeholder="Landmark (optional)"
                     className={inputClass}
                   />
                 </div>
@@ -740,7 +734,6 @@ export default function CheckoutPage() {
                     maxLength={6}
                     value={formData.postalCode}
                     onChange={handleChange}
-                    placeholder="6-digit PIN code"
                     className={`${inputClass} tracking-widest`}
                   />
                 </div>
@@ -757,7 +750,6 @@ export default function CheckoutPage() {
                     required
                     value={formData.city}
                     onChange={handleChange}
-                    placeholder="City"
                     className={inputClass}
                   />
                 </div>

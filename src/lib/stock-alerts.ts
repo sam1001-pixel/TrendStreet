@@ -84,7 +84,7 @@ function emailHtml(heading: string, body: string, cta: string, url: string, imag
 <table role="presentation" width="100%" style="max-width:500px;background:#ffffff;border:1px solid #E5E0D8;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.04)" cellpadding="0" cellspacing="0">
 <tr><td style="background:#8B1E3F;padding:22px 24px;text-align:center">
   <p style="margin:0;font-size:18px;font-weight:900;letter-spacing:4px;color:#FDFBF7">OFFVYBE</p>
-  <p style="margin:4px 0 0;font-size:10px;letter-spacing:2px;color:#D4AF37;text-transform:uppercase">MUMBAI ATELIER &bull; PRIVATE RELEASE ALERT</p>
+  <p style="margin:4px 0 0;font-size:10px;letter-spacing:2px;color:#D4AF37;text-transform:uppercase">JODHPUR ATELIER &bull; PRIVATE RELEASE ALERT</p>
 </td></tr>
 ${image ? `<tr><td><img src="${escapeHtml(image)}" alt="" width="500" style="display:block;width:100%;height:auto;max-height:360px;object-fit:cover"></td></tr>` : ""}
 <tr><td style="padding:32px 28px">

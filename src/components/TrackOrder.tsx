@@ -88,9 +88,8 @@ function courierFor(tracking: string) {
 export function TrackOrder() {
   const { orders, user, siteSettings } = useStore();
   const config = useStoreConfig();
-  // Contact numbers come from Admin → Settings (Contact details / Social & WhatsApp).
-  const callDigits = (siteSettings.contactInfo?.phone || "").replace(/\D/g, "");
-  const waDigits = config.social.whatsapp || (callDigits.length >= 10 ? callDigits.slice(-10) : "");
+  const callDigits = (siteSettings.contactInfo?.phone || "+91 90791 99951").replace(/\D/g, "");
+  const waDigits = config.social.whatsapp || (callDigits.length >= 10 ? callDigits.slice(-10) : "9079199951");
   const params = useSearchParams();
   const reduce = useReducedMotion();
   const [orderNumber, setOrderNumber] = useState(params.get("order") ?? "");
@@ -203,7 +202,6 @@ export function TrackOrder() {
               required
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
-              placeholder="OV-2026-XXXX"
               autoCapitalize="characters"
               className="h-12 w-full rounded-xl border border-white/15 bg-white/5 px-4 font-mono text-sm uppercase text-ivory placeholder:text-ivory/30 focus:border-gold focus:outline-none"
             />
@@ -217,7 +215,6 @@ export function TrackOrder() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@email.com"
               autoComplete="email"
               className="h-12 w-full rounded-xl border border-white/15 bg-white/5 px-4 text-sm text-ivory placeholder:text-ivory/30 focus:border-gold focus:outline-none"
             />
@@ -255,7 +252,7 @@ export function TrackOrder() {
       </div>
 
       {/* Result */}
-      <div className="lg:col-span-7" aria-live="polite">
+      <div className="lg:col-span-7 min-w-0 max-w-full" aria-live="polite">
         {error && <p role="alert" className="rounded-2xl bg-red-50 p-4 text-sm text-red-800 ring-1 ring-red-200">{error}</p>}
 
         {!result && !error && (
@@ -270,60 +267,92 @@ export function TrackOrder() {
           <motion.article
             initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="overflow-hidden rounded-3xl bg-white ring-1 ring-burgundy/10"
+            className="w-full max-w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-white ring-1 ring-burgundy/10 shadow-xs"
           >
-            <header className="flex flex-wrap items-start justify-between gap-3 bg-burgundy p-5 text-ivory sm:p-6">
-              <div>
-                <p className="font-mono text-sm font-bold">{result.orderNumber}</p>
-                <p className="text-xs text-ivory/70">Placed {fmtDate(result.createdAt)}</p>
+            {/* Header with order number and status pill */}
+            <header className="flex items-center justify-between gap-3 bg-espresso p-4 sm:p-6 text-ivory border-b border-white/10">
+              <div className="min-w-0">
+                <p className="font-mono text-xs sm:text-sm font-bold truncate text-ivory">{result.orderNumber}</p>
+                <p className="text-[11px] sm:text-xs text-ivory/60 truncate mt-0.5">Placed {fmtDate(result.createdAt)}</p>
               </div>
-              <div className="text-right">
-                <p className="text-[11px] uppercase tracking-wider text-ivory/60">{cancelled ? "Status" : result.status === "Delivered" ? "Delivered" : "Arriving by"}</p>
-                <p className="font-serif text-2xl font-bold text-gold">
-                  {cancelled ? "Cancelled" : result.estimatedDelivery ? fmtDate(result.estimatedDelivery) : result.status}
-                </p>
+              <div className="text-right shrink-0">
+                <span
+                  className={`inline-block px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
+                    cancelled
+                      ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                      : result.status === "Delivered"
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                      : result.status === "In Transit" || result.status === "Shipped"
+                      ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                      : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  }`}
+                >
+                  {cancelled ? "Cancelled" : result.status}
+                </span>
+                {result.estimatedDelivery && !cancelled && (
+                  <p className="text-[10px] sm:text-[11px] text-ivory/60 mt-1">
+                    Arriving {fmtDate(result.estimatedDelivery)}
+                  </p>
+                )}
               </div>
             </header>
 
-            {/* Stepper */}
+            {/* Stepper - fully responsive 5-step progress track */}
             {!cancelled && (
-              <ol className="relative grid grid-cols-5 gap-1 px-4 pb-2 pt-6 sm:px-6">
-                <div className="absolute left-[10%] right-[10%] top-[42px] h-1 rounded-full bg-ivory-dark" aria-hidden />
-                <motion.div
-                  aria-hidden
-                  className="absolute left-[10%] top-[42px] h-1 rounded-full bg-burgundy"
-                  initial={{ width: reduce ? `${(step / 4) * 80}%` : 0 }}
-                  animate={{ width: `${(step / 4) * 80}%` }}
-                  transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                />
-                {TRACK_STEPS.map((label, i) => {
-                  const Icon = STEP_ICONS[i];
-                  const done = i <= step;
-                  return (
-                    <li key={label} className="relative flex flex-col items-center text-center">
-                      <span
-                        className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                          done ? "bg-burgundy text-gold" : "bg-ivory-dark text-espresso/30"
-                        } ${i === step ? "ring-4 ring-burgundy/20" : ""}`}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span className={`mt-2 text-[11px] font-semibold leading-tight sm:text-xs ${done ? "text-espresso" : "text-espresso/60"}`}>{label}</span>
-                    </li>
-                  );
-                })}
-              </ol>
+              <div className="w-full max-w-full px-2 sm:px-6 pt-5 pb-3">
+                <ol className="relative grid grid-cols-5 gap-0.5 sm:gap-1 w-full max-w-full min-w-0">
+                  <div className="absolute left-[10%] right-[10%] top-3.5 sm:top-4 h-0.5 sm:h-1 rounded-full bg-ivory-dark" aria-hidden />
+                  <motion.div
+                    aria-hidden
+                    className="absolute left-[10%] top-3.5 sm:top-4 h-0.5 sm:h-1 rounded-full bg-espresso"
+                    initial={{ width: reduce ? `${(step / 4) * 80}%` : 0 }}
+                    animate={{ width: `${(step / 4) * 80}%` }}
+                    transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                  {TRACK_STEPS.map((label, i) => {
+                    const Icon = STEP_ICONS[i];
+                    const done = i <= step;
+                    const isCurrent = i === step;
+                    return (
+                      <li key={label} className="relative flex flex-col items-center text-center min-w-0 px-0.5">
+                        <span
+                          className={`relative z-10 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-colors ${
+                            done ? "bg-espresso text-ivory" : "bg-ivory-dark text-espresso/40"
+                          } ${isCurrent ? "ring-2 sm:ring-4 ring-crimson/30 text-crimson" : ""}`}
+                        >
+                          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        </span>
+                        <span
+                          className={`mt-1.5 text-[9px] sm:text-xs font-semibold leading-tight text-center break-words w-full truncate sm:whitespace-normal ${
+                            done ? "text-espresso font-bold" : "text-espresso/50"
+                          }`}
+                          title={label}
+                        >
+                          {label === "Out for delivery" ? (
+                            <>
+                              <span className="sm:hidden">Out</span>
+                              <span className="hidden sm:inline">Out for delivery</span>
+                            </>
+                          ) : (
+                            label
+                          )}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
             )}
 
-            <div className="space-y-4 p-5 sm:p-6">
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-ivory px-3 py-1.5 text-espresso/80">
-                  <Truck className="h-3.5 w-3.5 text-burgundy" />
-                  {result.trackingNumber ? `${result.courier ?? "Courier"} · ${result.trackingNumber}` : "AWB added when your order ships"}
+            <div className="space-y-4 p-4 sm:p-6">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 text-xs">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-ivory px-2.5 py-1 text-[11px] sm:text-xs text-espresso/80 border border-burgundy/10 truncate max-w-full">
+                  <Truck className="h-3.5 w-3.5 text-crimson shrink-0" />
+                  <span className="truncate">{result.trackingNumber ? `${result.courier ?? "Courier"} · ${result.trackingNumber}` : "AWB added when your order ships"}</span>
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-ivory px-3 py-1.5 text-espresso/80">
-                  <MapPin className="h-3.5 w-3.5 text-burgundy" /> {result.city}
-                  {result.postalCode ? ` ${result.postalCode}` : ""}
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-ivory px-2.5 py-1 text-[11px] sm:text-xs text-espresso/80 border border-burgundy/10 truncate max-w-full">
+                  <MapPin className="h-3.5 w-3.5 text-crimson shrink-0" />
+                  <span className="truncate">{result.city}{result.postalCode ? ` ${result.postalCode}` : ""}</span>
                 </span>
               </div>
 
@@ -331,21 +360,22 @@ export function TrackOrder() {
                 {result.items.map((it, i) => (
                   <li key={i} className="flex items-center gap-3 py-3">
                     {it.image && (
-                      <span className="relative h-16 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-ivory-dark">
-                        <Image src={it.image} alt="" fill sizes="48px" className="object-cover" />
+                      <span className="relative h-14 w-11 sm:h-16 sm:w-12 flex-shrink-0 overflow-hidden rounded-lg bg-ivory-dark border border-burgundy/10">
+                        <Image src={it.image} alt={it.productName} fill sizes="48px" className="object-cover" />
                       </span>
                     )}
-                    <span className="min-w-0 flex-1 text-xs">
-                      <span className="block truncate text-sm font-semibold text-espresso">{it.productName}</span>
-                      <span className="text-espresso/60">Size {it.selectedSize} · {it.selectedColor} · Qty {it.quantity}</span>
-                    </span>
-                    <span className="text-sm font-bold text-espresso">{formatPrice(it.price * it.quantity)}</span>
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate text-xs sm:text-sm font-semibold text-espresso">{it.productName}</span>
+                      <span className="text-[11px] sm:text-xs text-espresso/60 block truncate">Size {it.selectedSize} · {it.selectedColor} · Qty {it.quantity}</span>
+                    </div>
+                    <span className="text-xs sm:text-sm font-bold text-espresso shrink-0 text-right">{formatPrice(it.price * it.quantity)}</span>
                   </li>
                 ))}
               </ul>
-              <div className="flex justify-between border-t border-burgundy/10 pt-3 text-sm">
-                <span className="text-espresso/70">Order total</span>
-                <span className="font-bold text-burgundy">{formatPrice(result.total)}</span>
+
+              <div className="flex justify-between items-center border-t border-burgundy/10 pt-3 text-xs sm:text-sm">
+                <span className="text-espresso/70 font-medium">Order total</span>
+                <span className="font-bold text-sm sm:text-base text-espresso">{formatPrice(result.total)}</span>
               </div>
 
               {result.returns && result.returns.length > 0 && (
@@ -365,12 +395,12 @@ export function TrackOrder() {
               {(result.cancellable || result.returnable) && (
                 <div className="flex flex-col gap-2 sm:flex-row">
                   {result.returnable && (
-                    <button type="button" onClick={() => setSheet("return")} className="inline-flex min-h-[48px] flex-1 items-center justify-center gap-1.5 rounded-full bg-burgundy px-5 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson">
+                    <button type="button" onClick={() => setSheet("return")} className="inline-flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center gap-1.5 rounded-full bg-espresso px-5 text-xs font-bold uppercase tracking-wider text-ivory hover:bg-crimson transition-colors">
                       <RotateCcw className="h-4 w-4" /> Exchange / return
                     </button>
                   )}
                   {result.cancellable && (
-                    <button type="button" onClick={() => setSheet("cancel")} className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full px-5 text-xs font-bold uppercase tracking-wider text-crimson ring-1 ring-crimson/30 hover:bg-crimson/5">
+                    <button type="button" onClick={() => setSheet("cancel")} className="inline-flex min-h-[44px] sm:min-h-[48px] flex-1 items-center justify-center rounded-full px-5 text-xs font-bold uppercase tracking-wider text-crimson ring-1 ring-crimson/30 hover:bg-crimson/5 transition-colors">
                       Cancel order
                     </button>
                   )}
@@ -382,17 +412,17 @@ export function TrackOrder() {
 
               <div className="grid grid-cols-3 gap-2 pt-1">
                 {waDigits && (
-                  <a href={`https://wa.me/91${waDigits}?text=${encodeURIComponent(`Hi, about my order ${result.orderNumber}`)}`} target="_blank" rel="noreferrer" className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
-                    <MessageCircle className="h-4 w-4 text-green-700" /> WhatsApp
+                  <a href={`https://wa.me/91${waDigits}?text=${encodeURIComponent(`Hi, about my order ${result.orderNumber}`)}`} target="_blank" rel="noreferrer" className="flex min-h-[56px] sm:min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[10px] sm:text-[11px] font-semibold text-espresso hover:bg-ivory-dark border border-burgundy/10 transition-colors">
+                    <MessageCircle className="h-4 w-4 text-green-700 shrink-0" /> <span>WhatsApp</span>
                   </a>
                 )}
                 {callDigits.length >= 10 && (
-                  <a href={`tel:+91${callDigits.slice(-10)}`} className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
-                    <Phone className="h-4 w-4 text-burgundy" /> Call us
+                  <a href={`tel:+91${callDigits.slice(-10)}`} className="flex min-h-[56px] sm:min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[10px] sm:text-[11px] font-semibold text-espresso hover:bg-ivory-dark border border-burgundy/10 transition-colors">
+                    <Phone className="h-4 w-4 text-espresso shrink-0" /> <span>Call us</span>
                   </a>
                 )}
-                <Link href="/returns" className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[11px] font-semibold text-espresso hover:bg-ivory-dark">
-                  <RotateCcw className="h-4 w-4 text-crimson" /> Exchange
+                <Link href="/returns" className="flex min-h-[56px] sm:min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ivory text-[10px] sm:text-[11px] font-semibold text-espresso hover:bg-ivory-dark border border-burgundy/10 transition-colors">
+                  <RotateCcw className="h-4 w-4 text-crimson shrink-0" /> <span>Exchange</span>
                 </Link>
               </div>
             </div>

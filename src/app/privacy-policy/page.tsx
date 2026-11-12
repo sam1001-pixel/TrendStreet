@@ -144,9 +144,9 @@ export default function PrivacyPolicyPage() {
             <p><strong>Designated Grievance Officer:</strong> Rohan Kulkarni</p>
             <p><strong>Designation:</strong> Head of Legal, Compliance & Information Security</p>
             <p><strong>Entity:</strong> OFFVYBE</p>
-            <p><strong>Atelier Address:</strong> Plot 42, Waterfield Road, Pali Hill, Bandra West, Mumbai, Maharashtra 400050, India</p>
+            <p><strong>Atelier Address:</strong> OFFVYBE, Pal Road, Jodhpur, Rajasthan 342008, India</p>
             <p><strong>Dedicated Email:</strong> <a href="mailto:grievance@offvybe.in" className="text-burgundy underline font-semibold">grievance@offvybe.in</a></p>
-            <p><strong>Support phone:</strong> +91 98200 12345 (Monday to Saturday, 10:00 AM – 7:00 PM IST)</p>
+            <p><strong>Support phone:</strong> +91 90791 99951 (Monday to Saturday, 10:00 AM – 7:00 PM IST)</p>
             <p className="pt-1 text-[11px] text-espresso/60">
               Response SLA: All formal privacy grievances are acknowledged within 24 hours and fully investigated within 15 working days.
             </p>

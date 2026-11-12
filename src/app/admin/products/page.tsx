@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   Plus,
   Edit2,
+  Copy,
   Trash2,
   Search,
   Check,
@@ -25,6 +26,7 @@ import { useAdminData } from "@/hooks/useAdminData";
 import { AdminStatusBar } from "@/components/admin/AdminStatusBar";
 import { Product, ProductCategory } from "@/types/store";
 import { MediaUploader } from "@/components/admin/MediaUploader";
+import { ProductColorManager } from "@/components/admin/ProductColorManager";
 import { lockScroll } from "@/lib/scroll-lock";
 
 const CATEGORIES: ProductCategory[] = ["Oversized", "Jeans", "Boxy Fit", "Jackets"];
@@ -77,14 +79,15 @@ export default function AdminProductsPage() {
     originalPrice: 2999,
     category: "Oversized" as ProductCategory,
     description: "",
-    details: "520gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders\nDouble-needle reinforced seams",
-    fabric: "520gsm Japanese Loopback Terry",
+    details: "350gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders\nDouble-needle reinforced seams",
+    fabric: "350gsm Japanese Loopback Terry",
     careInstructions: "Machine wash cold inside out\nAir dry flat",
     images: [] as string[],
     videos: [] as string[],
     sizes: "S, M, L, XL",
-    colorName: "Black",
-    colorHex: "#0A0A0A",
+    colors: [
+      { name: "Vintage Washed Black", hex: "#0A0A0A" },
+    ] as { name: string; hex: string }[],
     featured: true,
     inStock: true,
     stockCount: 15,
@@ -129,7 +132,7 @@ export default function AdminProductsPage() {
       images: newForm.images,
       videos: newForm.videos,
       sizes: newForm.sizes.split(",").map((s) => s.trim()),
-      colors: [{ name: newForm.colorName || "Black", hex: newForm.colorHex || "#0A0A0A" }],
+      colors: newForm.colors.length > 0 ? newForm.colors : [{ name: "Vintage Washed Black", hex: "#0A0A0A" }],
       featured: newForm.featured,
       inStock: newForm.inStock,
       stockCount: Number(newForm.stockCount),
@@ -145,14 +148,13 @@ export default function AdminProductsPage() {
       originalPrice: 2999,
       category: "Oversized",
       description: "",
-      details: "520gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders",
-      fabric: "520gsm Japanese Loopback Terry",
+      details: "350gsm 100% Organic Loopback Cotton\nSeamless dropped shoulders",
+      fabric: "350gsm Japanese Loopback Terry",
       careInstructions: "Machine wash cold inside out\nAir dry flat",
       images: [] as string[],
       videos: [] as string[],
       sizes: "S, M, L, XL",
-      colorName: "Black",
-      colorHex: "#0A0A0A",
+      colors: [{ name: "Vintage Washed Black", hex: "#0A0A0A" }],
       featured: true,
       inStock: true,
       stockCount: 15,
@@ -168,6 +170,20 @@ export default function AdminProductsPage() {
     }
     await updateProduct(editingProduct);
     setEditingProduct(null);
+  };
+
+  const handleCloneProduct = async (p: Product) => {
+    if (!confirm(`Clone garment "${p.name}"?\n\nThis will duplicate this garment in your catalog as "${p.name} (Copy)" and open it for editing.`)) {
+      return;
+    }
+    const { id, rating, reviewsCount, reviews, ...cloneData } = p;
+    const cloned = await addProduct({
+      ...cloneData,
+      name: `${p.name} (Copy)`,
+    });
+    if (cloned) {
+      setEditingProduct(cloned);
+    }
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -374,6 +390,27 @@ export default function AdminProductsPage() {
                             )}
                           </span>
                           <span className="text-[10px] text-stone-400 font-mono block">{p.fabric}</span>
+
+                          {/* Available Colours Swatches */}
+                          <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                            {p.colors && p.colors.length > 0 ? (
+                              p.colors.map((c, i) => (
+                                <span
+                                  key={`${c.name}-${i}`}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white border border-burgundy/15 text-[10px] text-espresso shadow-2xs"
+                                  title={`${c.name} (${c.hex})`}
+                                >
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0"
+                                    style={{ backgroundColor: c.hex }}
+                                  />
+                                  <span className="font-medium text-[9px]">{c.name}</span>
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-[9px] text-espresso/40 italic">1 colour</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -464,11 +501,22 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="p-3.5 text-right space-x-1 whitespace-nowrap">
                       <button
+                        type="button"
                         onClick={() => setEditingProduct(p)}
                         className="p-1.5 text-burgundy hover:bg-burgundy/10 rounded-lg transition-colors"
                         title="Edit Product Details"
+                        aria-label={`Edit ${p.name}`}
                       >
                         <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCloneProduct(p)}
+                        className="p-1.5 text-espresso/70 hover:text-burgundy hover:bg-ivory-dark rounded-lg transition-colors"
+                        title={`Clone "${p.name}" (Duplicate garment)`}
+                        aria-label={`Clone ${p.name}`}
+                      >
+                        <Copy className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => updateProduct({ ...p, archived: !p.archived })}
@@ -717,33 +765,11 @@ export default function AdminProductsPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-espresso mb-1">Garment Colour Name</label>
-                  <input
-                    type="text"
-                    value={newForm.colorName}
-                    onChange={(e) => setNewForm({ ...newForm, colorName: e.target.value })}
-                    placeholder="e.g. Deep Burgundy"
-                    className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
+                <div className="sm:col-span-2">
+                  <ProductColorManager
+                    colors={newForm.colors}
+                    onChange={(colors) => setNewForm((f) => ({ ...f, colors }))}
                   />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-espresso mb-1">Colour Hex Code</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={newForm.colorHex}
-                      onChange={(e) => setNewForm({ ...newForm, colorHex: e.target.value })}
-                      className="w-10 h-10 rounded-lg border border-burgundy/20 cursor-pointer p-0.5 bg-white"
-                    />
-                    <input
-                      type="text"
-                      value={newForm.colorHex}
-                      onChange={(e) => setNewForm({ ...newForm, colorHex: e.target.value })}
-                      className="flex-1 bg-white px-3 py-2 rounded-xl border border-burgundy/20 font-mono text-xs"
-                    />
-                  </div>
                 </div>
 
                 <div>
@@ -1030,45 +1056,13 @@ export default function AdminProductsPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-espresso mb-1">Garment Colour Name</label>
-                  <input
-                    type="text"
-                    value={editingProduct.colors?.[0]?.name || ""}
-                    onChange={(e) => {
-                      const name = e.target.value;
-                      const hex = editingProduct.colors?.[0]?.hex || "#1A1A1A";
-                      setEditingProduct({ ...editingProduct, colors: [{ name, hex }] });
-                    }}
-                    placeholder="e.g. Deep Burgundy"
-                    className="w-full bg-white px-3 py-2 rounded-xl border border-burgundy/20"
+                <div className="sm:col-span-2">
+                  <ProductColorManager
+                    colors={editingProduct.colors || []}
+                    onChange={(colors) =>
+                      setEditingProduct((p) => (p ? { ...p, colors } : p))
+                    }
                   />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-espresso mb-1">Colour Hex Code</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={editingProduct.colors?.[0]?.hex || "#1A1A1A"}
-                      onChange={(e) => {
-                        const hex = e.target.value;
-                        const name = editingProduct.colors?.[0]?.name || "Primary";
-                        setEditingProduct({ ...editingProduct, colors: [{ name, hex }] });
-                      }}
-                      className="w-10 h-10 rounded-lg border border-burgundy/20 cursor-pointer p-0.5 bg-white"
-                    />
-                    <input
-                      type="text"
-                      value={editingProduct.colors?.[0]?.hex || "#1A1A1A"}
-                      onChange={(e) => {
-                        const hex = e.target.value;
-                        const name = editingProduct.colors?.[0]?.name || "Primary";
-                        setEditingProduct({ ...editingProduct, colors: [{ name, hex }] });
-                      }}
-                      className="flex-1 bg-white px-3 py-2 rounded-xl border border-burgundy/20 font-mono text-xs"
-                    />
-                  </div>
                 </div>
 
                 <div className="flex items-center gap-6 sm:col-span-2 pt-1 border-t border-burgundy/10">

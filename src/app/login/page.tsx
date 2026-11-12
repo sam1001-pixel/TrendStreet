@@ -171,7 +171,6 @@ function LoginForm() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@domain.com"
                   autoComplete="email"
                   className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
@@ -189,7 +188,6 @@ function LoginForm() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
                   autoComplete="current-password"
                   className="w-full bg-ivory/50 pl-10 pr-11 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
@@ -240,7 +238,6 @@ function LoginForm() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Full name"
                   autoComplete="name"
                   className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
@@ -258,7 +255,6 @@ function LoginForm() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@domain.com"
                   autoComplete="email"
                   className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
@@ -275,7 +271,6 @@ function LoginForm() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="10-digit mobile number"
                   autoComplete="tel"
                   className="w-full bg-ivory/50 pl-10 pr-3 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />
@@ -294,7 +289,6 @@ function LoginForm() {
                   minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 8 characters"
                   autoComplete="new-password"
                   className="w-full bg-ivory/50 pl-10 pr-11 py-3 rounded-xl border border-burgundy/20 text-xs font-medium text-espresso focus:outline-none focus:border-burgundy focus:bg-white"
                 />

@@ -227,7 +227,7 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
                 No exact matches for &ldquo;{query}&rdquo;
               </p>
               <p className="text-xs text-espresso/60">
-                Try searching &ldquo;Oversized&rdquo;, &ldquo;Selvedge&rdquo;, &ldquo;320gsm&rdquo;, or &ldquo;Flight Bomber&rdquo;
+                Try searching &ldquo;Oversized&rdquo;, &ldquo;Selvedge&rdquo;, &ldquo;240–350gsm&rdquo;, or &ldquo;Flight Bomber&rdquo;
               </p>
             </div>
           )}
@@ -239,7 +239,7 @@ export const QuickCommandMenu: React.FC<QuickCommandMenuProps> = ({
             </span>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: "Oversized", path: "/oversized", spec: "520gsm Terry" },
+                { label: "Oversized", path: "/oversized", spec: "350gsm Terry" },
                 { label: "Boxy Fit", path: "/boxy-fit", spec: "320gsm Cotton" },
                 { label: "Jackets", path: "/jackets", spec: "700gsm Wool" },
               ].map((sil) => (

@@ -82,10 +82,10 @@ export function PackingSlipModal({ order, onClose }: PackingSlipModalProps) {
                 OFFVYBE
               </h1>
               <p className="text-[11px] uppercase tracking-widest text-espresso/70 mt-0.5">
-                Luxury Menswear Atelier • Mumbai
+                Luxury Menswear Atelier • Jodhpur, Rajasthan
               </p>
               <p className="text-[10px] text-espresso/60 mt-2 font-mono">
-                GSTIN: 27AABCT8821Q1ZP | concierge@offvybe.com
+                concierge@offvybe.in | +91 90791 99951
               </p>
             </div>
             <div className="text-right">

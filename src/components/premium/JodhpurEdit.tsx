@@ -35,7 +35,7 @@ const CRAFTS = [
 const SEASONS = [
   { icon: Sun, when: "Summer, 40°+", wear: "220–260gsm cotton, indigo & leheriya tees", href: "/oversized" },
   { icon: Sparkles, when: "Wedding & festive season", wear: "Block-print boxy shirts, bandhgala bombers", href: "/boxy-fit" },
-  { icon: Moon, when: "Desert winter nights", wear: "400gsm hoodies, chore & field jackets", href: "/jackets" },
+  { icon: Moon, when: "Desert winter nights", wear: "350gsm hoodies, chore & field jackets", href: "/jackets" },
 ];
 
 /** Typographic banner over a jaali lattice — the Blue City in colour, not illustration. */
