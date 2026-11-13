@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { RETURN_REASONS, canRequestReturn, customerOrderInclude, loadOwnOrder, toCustomerOrder } from "@/lib/order-actions";
 import { writeAudit } from "@/lib/audit";
-import { sendAdminReturnExchangeNotification } from "@/lib/email";
+import { sendAdminReturnExchangeNotification, sendCustomerReturnStatusEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -90,11 +90,38 @@ export async function POST(req: NextRequest) {
       createdAt: created.createdAt,
     };
 
+    const customerReturnPayload = {
+      orderNumber: order.orderNumber,
+      returnId: created.id,
+      customerName: returnPayload.customerName,
+      customerEmail: returnPayload.customerEmail,
+      kind: kind as "EXCHANGE" | "RETURN",
+      status: "REQUESTED",
+      reason,
+      adminNote: undefined,
+      updatedAt: created.createdAt,
+      items: items.map((i) => ({
+        productName: i.productName,
+        size: i.size,
+        quantity: i.quantity,
+        exchangeSize: i.exchangeSize,
+      })),
+      shippingAddress: returnPayload.shippingAddress,
+    };
+
     try {
-      after(() => sendAdminReturnExchangeNotification(returnPayload).then(() => undefined));
+      after(() =>
+        Promise.allSettled([
+          sendAdminReturnExchangeNotification(returnPayload),
+          sendCustomerReturnStatusEmail(customerReturnPayload),
+        ]).then(() => undefined)
+      );
     } catch {
-      void sendAdminReturnExchangeNotification(returnPayload).catch((err) =>
-        console.warn("[Admin return/exchange alert error]:", err?.message || err)
+      void Promise.allSettled([
+        sendAdminReturnExchangeNotification(returnPayload),
+        sendCustomerReturnStatusEmail(customerReturnPayload),
+      ]).catch((err) =>
+        console.warn("[Return/exchange email dispatch error]:", err?.message || err)
       );
     }
 

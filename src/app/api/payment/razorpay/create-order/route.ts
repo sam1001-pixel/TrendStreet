@@ -33,6 +33,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const session = await getCustomerSession(req);
+    if (!session?.userId) {
+      return NextResponse.json(
+        { error: "Please sign in to your OFFVYBE account to place an order.", requiresLogin: true },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const deliveryMethod: DeliveryMethod = DELIVERY_METHODS.includes(body?.deliveryMethod) ? body.deliveryMethod : "standard";
     const items = (Array.isArray(body?.items) ? body.items : []).map((it: Record<string, unknown>) => ({
@@ -70,7 +78,7 @@ export async function POST(req: NextRequest) {
       promoCode: body?.promoCode,
       deliveryMethod,
       orderNumber,
-      accountUserId: (await getCustomerSession(req))?.userId ?? null,
+      accountUserId: session.userId,
       payment: { provider: "RAZORPAY", gatewayOrderId: rzpOrder.id },
     });
 

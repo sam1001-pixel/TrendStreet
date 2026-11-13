@@ -15,6 +15,8 @@ import {
   MapPin,
   Check,
   AlertCircle,
+  LogIn,
+  ShoppingBag,
 } from "lucide-react";
 
 // Razorpay test keys start with rzp_test_; the sandbox notice is only shown then.
@@ -57,7 +59,7 @@ export default function CheckoutPage() {
     updateUserProfile,
   } = useStore();
   const config = useStoreConfig();
-  const { isAuthenticated } = useUserAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useUserAuth();
   const account = useAccount();
   // Signed in: offer to keep a new address in the account for next time.
   const [saveToAccount, setSaveToAccount] = useState(true);
@@ -253,6 +255,10 @@ export default function CheckoutPage() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      router.push("/login?callbackUrl=/checkout");
+      return;
+    }
     if (step === 1) {
       validateAndProceedToStep2();
       return;
@@ -266,6 +272,11 @@ export default function CheckoutPage() {
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      setValidationError("Please sign in or create an account to place your order.");
+      router.push("/login?callbackUrl=/checkout");
+      return;
+    }
     setIsProcessing(true);
     setValidationError(null);
 
@@ -517,6 +528,96 @@ export default function CheckoutPage() {
         >
           Return to Shop
         </Link>
+      </div>
+    );
+  }
+
+  if (isAuthLoading) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-24 text-center space-y-4">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-burgundy"></div>
+        <p className="text-xs uppercase tracking-widest text-espresso/60">Verifying atelier session...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12 sm:py-16">
+        <div className="bg-white rounded-3xl border border-burgundy/15 p-6 sm:p-10 shadow-sm text-center space-y-6">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-burgundy/10 flex items-center justify-center text-burgundy">
+            <Lock className="w-7 h-7" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-crimson">
+              Bespoke Atelier Checkout
+            </span>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-espresso">
+              Sign In Required to Complete Your Order
+            </h1>
+            <p className="text-xs sm:text-sm text-espresso/70 max-w-lg mx-auto leading-relaxed">
+              To ensure secure atelier garment allocation, real-time shipment updates, and priority concierge care, please sign in or register an account before placing your order.
+            </p>
+          </div>
+
+          {/* Bag Preserved Notice */}
+          <div className="bg-ivory rounded-2xl p-4 border border-burgundy/10 flex items-center justify-between text-left">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-burgundy text-ivory flex items-center justify-center font-bold text-xs">
+                {totalItems}
+              </div>
+              <div>
+                <p className="text-xs font-bold text-espresso">
+                  {totalItems} {totalItems === 1 ? "item" : "items"} in your shopping bag
+                </p>
+                <p className="text-[11px] text-espresso/60">
+                  Your selected pieces &amp; discounts are saved safely.
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-xs text-espresso/60 block">Bag Total</span>
+              <span className="font-serif font-bold text-burgundy text-sm sm:text-base">
+                {formatPrice(cartTotal)}
+              </span>
+            </div>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="space-y-3 pt-2">
+            <Link
+              href="/login?callbackUrl=/checkout"
+              className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl bg-burgundy text-xs font-bold uppercase tracking-wider text-ivory shadow-md transition-colors hover:bg-crimson"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Sign In to Your Account</span>
+            </Link>
+
+            <Link
+              href="/login?tab=register&callbackUrl=/checkout"
+              className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-xl border border-burgundy/30 bg-transparent text-xs font-bold uppercase tracking-wider text-espresso transition-colors hover:bg-burgundy/5"
+            >
+              <span>Create New OFFVYBE Account</span>
+              <ArrowRight className="w-4 h-4 text-burgundy" />
+            </Link>
+          </div>
+
+          <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-espresso/55">
+            <ShieldCheck className="w-4 h-4 text-green-700" />
+            <span>Encrypted 256-bit checkout · Quick 30-second sign up</span>
+          </div>
+
+          <div className="pt-2 border-t border-burgundy/10">
+            <Link
+              href="/bag"
+              className="text-xs text-burgundy underline hover:text-crimson transition-colors"
+            >
+              &larr; Back to Shopping Bag
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

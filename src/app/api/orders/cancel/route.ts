@@ -4,7 +4,7 @@ import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { releaseOrderResources } from "@/lib/orders";
 import { canCancel, customerOrderInclude, loadOwnOrder, toCustomerOrder } from "@/lib/order-actions";
 import { writeAudit } from "@/lib/audit";
-import { sendAdminOrderCancelledNotification } from "@/lib/email";
+import { sendAdminOrderCancelledNotification, sendCustomerOrderCancelledEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -70,11 +70,17 @@ export async function POST(req: NextRequest) {
     };
 
     try {
-      after(() => sendAdminOrderCancelledNotification(cancelPayload).then(() => undefined));
-    } catch {
-      void sendAdminOrderCancelledNotification(cancelPayload).catch((err) =>
-        console.warn("[Admin cancel email error]:", err?.message || err)
+      after(() =>
+        Promise.allSettled([
+          sendAdminOrderCancelledNotification(cancelPayload),
+          sendCustomerOrderCancelledEmail(cancelPayload),
+        ]).then(() => undefined)
       );
+    } catch {
+      void Promise.allSettled([
+        sendAdminOrderCancelledNotification(cancelPayload),
+        sendCustomerOrderCancelledEmail(cancelPayload),
+      ]).catch((err) => console.warn("[Cancel email dispatch error]:", err?.message || err));
     }
 
     return NextResponse.json({ success: true, order: toCustomerOrder(updated) });

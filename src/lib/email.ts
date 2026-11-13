@@ -153,6 +153,51 @@ export interface AdminReturnExchangeData {
   createdAt?: Date | string;
 }
 
+export interface CustomerOrderCancelledData {
+  orderNumber: string;
+  orderId?: string;
+  customerName: string;
+  customerEmail: string;
+  reason?: string;
+  totalAmount: number; // In rupees
+  paymentMethod?: string;
+  cancelledAt?: Date | string;
+  cancelledBy?: "Customer" | "Admin / Store";
+  items?: Array<{
+    productName: string;
+    size?: string;
+    color?: string;
+    quantity: number;
+    unitPrice?: number;
+  }>;
+}
+
+export interface CustomerReturnStatusData {
+  orderNumber: string;
+  returnId?: string;
+  customerName: string;
+  customerEmail: string;
+  kind: "EXCHANGE" | "RETURN";
+  status: "REQUESTED" | "APPROVED" | "PICKED_UP" | "COMPLETED" | "REJECTED" | string;
+  reason?: string;
+  adminNote?: string | null;
+  updatedAt?: Date | string;
+  items?: Array<{
+    productName: string;
+    size?: string;
+    quantity: number;
+    exchangeSize?: string | null;
+  }>;
+  shippingAddress?: {
+    street: string;
+    apartment?: string | null;
+    city: string;
+    state?: string | null;
+    postalCode: string;
+    country?: string | null;
+  };
+}
+
 /**
  * Resolves the configured sender email address.
  * Prioritizes RESEND_FROM_EMAIL -> EMAIL_FROM -> "OFFVYBE <onboarding@resend.dev>".
@@ -1239,4 +1284,448 @@ export async function sendAdminReturnExchangeNotification(
     referenceId: data.orderNumber,
   });
 }
+
+// ----------------------------------------------------------------------------
+// CUSTOMER TRANSACTIONAL EMAIL ENGINE (CANCELLATION & RETURN STATUS)
+// ----------------------------------------------------------------------------
+
+export function generateCustomerOrderCancelledHtml(rawData: CustomerOrderCancelledData): string {
+  const data = escapeEmailData(rawData);
+  const formattedTotal = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(rawData.totalAmount);
+
+  const formattedDate = rawData.cancelledAt
+    ? new Date(rawData.cancelledAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" })
+    : new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
+
+  const isCod = (rawData.paymentMethod || "").toLowerCase().includes("cash") || (rawData.paymentMethod || "").toLowerCase().includes("cod");
+
+  const itemsRows = (data.items || [])
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding: 12px 0; border-bottom: 1px solid #E8DFD8; font-family: 'Helvetica Neue', Arial, sans-serif;">
+        <strong style="color: #1A1615; font-size: 13px; display: block;">${item.productName}</strong>
+        <span style="color: #6B6562; font-size: 12px;">Size: ${item.size || "Standard"}${item.color ? ` &bull; Color: ${item.color}` : ""} &bull; Qty: ${item.quantity}</span>
+      </td>
+      <td style="padding: 12px 0; border-bottom: 1px solid #E8DFD8; text-align: right; vertical-align: top; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1A1615; font-size: 13px; font-weight: 600;">
+        ${item.unitPrice ? `₹${(item.unitPrice * item.quantity).toLocaleString("en-IN")}` : `Qty: ${item.quantity}`}
+      </td>
+    </tr>
+  `
+    )
+    .join("");
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Cancelled — OFFVYBE</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F8F6F0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F8F6F0; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #FFFFFF; border-radius: 14px; overflow: hidden; border: 1px solid #E5DFD7; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+          
+          <!-- Header Banner -->
+          <tr>
+            <td style="background-color: #8B1E3F; padding: 26px 20px; text-align: center;">
+              <span style="font-family: Georgia, serif; font-size: 24px; font-weight: 800; letter-spacing: 0.25em; color: #FFFFFF; text-transform: uppercase; display: block;">OFFVYBE</span>
+              <span style="font-size: 10px; letter-spacing: 0.2em; color: #E5DFD7; text-transform: uppercase; margin-top: 6px; display: block; font-weight: 600;">Jodhpur Atelier &bull; Bespoke Menswear</span>
+            </td>
+          </tr>
+
+          <!-- Alert Badge & Headline -->
+          <tr>
+            <td style="padding: 28px 28px 20px 28px; text-align: center; border-bottom: 1px solid #F0EBE5;">
+              <span style="background-color: #FDF2F2; color: #991B1B; border: 1px solid #F87171; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 6px 14px; border-radius: 20px; display: inline-block; margin-bottom: 12px;">
+                Order Cancellation Confirmed
+              </span>
+              <h1 style="font-family: Georgia, serif; font-size: 22px; color: #1A1615; margin: 0 0 8px 0; font-weight: 700;">
+                Order #${data.orderNumber}
+              </h1>
+              <p style="font-size: 13px; color: #6B6562; margin: 0;">
+                Cancelled on ${formattedDate} IST
+              </p>
+            </td>
+          </tr>
+
+          <!-- Greeting & Narrative -->
+          <tr>
+            <td style="padding: 24px 28px 12px 28px;">
+              <p style="font-size: 14px; color: #1A1615; line-height: 1.6; margin: 0 0 14px 0;">
+                Dear ${data.customerName || "Customer"},
+              </p>
+              <p style="font-size: 13px; color: #4A4644; line-height: 1.6; margin: 0;">
+                Your order <strong>#${data.orderNumber}</strong> has been cancelled. The reserved garments from our atelier inventory have been safely released.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Refund / Payment Status Card -->
+          <tr>
+            <td style="padding: 12px 28px;">
+              ${isCod ? `
+              <div style="background-color: #F8F6F0; border-left: 4px solid #8B1E3F; padding: 16px; border-radius: 6px;">
+                <strong style="color: #8B1E3F; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px;">Cash on Delivery Order</strong>
+                <p style="margin: 0; font-size: 13px; color: #4A4644; line-height: 1.5;">
+                  No payment was collected for this Cash on Delivery order. Your account has no pending charges.
+                </p>
+              </div>
+              ` : `
+              <div style="background-color: #F0FDF4; border-left: 4px solid #16A34A; padding: 16px; border-radius: 6px;">
+                <strong style="color: #166534; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px;">Refund Initiated</strong>
+                <p style="margin: 0; font-size: 13px; color: #14532D; line-height: 1.5;">
+                  Your full payment of <strong>${formattedTotal}</strong> has been initiated for refund via our payment partner. Depending on your bank, card issuer, or UPI provider, the funds will reflect in your source account within <strong>5–7 business days</strong>.
+                </p>
+              </div>
+              `}
+            </td>
+          </tr>
+
+          <!-- Cancellation Breakdown Details -->
+          <tr>
+            <td style="padding: 16px 28px;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FAF8F5; border-radius: 8px; padding: 14px 18px; border: 1px solid #ECE7E1;">
+                <tr>
+                  <td style="font-size: 12px; color: #6B6562; padding: 4px 0;">Order Number:</td>
+                  <td style="font-size: 12px; font-weight: 600; color: #1A1615; text-align: right; padding: 4px 0;">#${data.orderNumber}</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 12px; color: #6B6562; padding: 4px 0;">Total Amount:</td>
+                  <td style="font-size: 12px; font-weight: 700; color: #8B1E3F; text-align: right; padding: 4px 0;">${formattedTotal}</td>
+                </tr>
+                <tr>
+                  <td style="font-size: 12px; color: #6B6562; padding: 4px 0;">Payment Method:</td>
+                  <td style="font-size: 12px; font-weight: 600; color: #1A1615; text-align: right; padding: 4px 0;">${data.paymentMethod || (isCod ? "Cash on Delivery" : "Online Payment")}</td>
+                </tr>
+                ${data.reason ? `
+                <tr>
+                  <td style="font-size: 12px; color: #6B6562; padding: 4px 0;">Reason:</td>
+                  <td style="font-size: 12px; font-style: italic; color: #1A1615; text-align: right; padding: 4px 0;">${data.reason}</td>
+                </tr>
+                ` : ""}
+              </table>
+            </td>
+          </tr>
+
+          <!-- Items Cancelled -->
+          ${itemsRows ? `
+          <tr>
+            <td style="padding: 12px 28px;">
+              <strong style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #8B1E3F; display: block; margin-bottom: 8px;">
+                Cancelled Garments
+              </strong>
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                ${itemsRows}
+              </table>
+            </td>
+          </tr>
+          ` : ""}
+
+          <!-- Shop CTA -->
+          <tr>
+            <td style="padding: 24px 28px; text-align: center;">
+              <a href="https://offvybe.com/shop" style="background-color: #8B1E3F; color: #FFFFFF; text-decoration: none; padding: 13px 32px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; display: inline-block;">
+                Explore New Arrivals &rarr;
+              </a>
+            </td>
+          </tr>
+
+          <!-- Concierge Support Note -->
+          <tr>
+            <td style="padding: 0 28px 24px 28px; text-align: center;">
+              <p style="font-size: 12px; color: #6B6562; line-height: 1.5; margin: 0;">
+                If you cancelled by mistake or have any questions, our concierge team is here to assist.<br>
+                WhatsApp: <a href="https://wa.me/919079199951" style="color: #8B1E3F; font-weight: 600; text-decoration: underline;">+91 9079199951</a> &bull; Email: <a href="mailto:care@offvybe.com" style="color: #8B1E3F; font-weight: 600; text-decoration: underline;">care@offvybe.com</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #F8F6F0; padding: 20px 24px; text-align: center; border-top: 1px solid #E5DFD7; font-size: 11px; color: #8F8884; line-height: 1.5;">
+              OFFVYBE Luxury Menswear &bull; Pal Road, Jodhpur, Rajasthan 342008<br>
+              Phone: +91 9079199951 &bull; GSM 240–350 Heavyweight Textiles
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
+export async function sendCustomerOrderCancelledEmail(
+  data: CustomerOrderCancelledData
+): Promise<SendEmailResult> {
+  if (!data.customerEmail || !data.customerEmail.includes("@")) {
+    console.warn(`[Customer Cancel Email] Invalid customer email: ${data.customerEmail} for order ${data.orderNumber}`);
+    return { success: false, error: "Invalid customer email" };
+  }
+
+  const subject = `Order Cancelled — OFFVYBE Order [${data.orderNumber}]`;
+  const html = generateCustomerOrderCancelledHtml(data);
+  const isCod = (data.paymentMethod || "").toLowerCase().includes("cash") || (data.paymentMethod || "").toLowerCase().includes("cod");
+  const refundNote = isCod
+    ? "No payment was collected for this Cash on Delivery order."
+    : `Your refund of ₹${data.totalAmount.toLocaleString("en-IN")} has been initiated and will reflect in 5–7 business days.`;
+
+  const text = `ORDER CANCELLED\nOrder #${data.orderNumber}\nDear ${data.customerName || "Customer"},\nYour order has been cancelled.\nTotal: ₹${data.totalAmount.toLocaleString("en-IN")}\n${refundNote}\nReason: ${data.reason || "Cancelled as requested"}\nNeed help? Contact care@offvybe.com or WhatsApp +91 9079199951.`;
+
+  return dispatchResendEmail({
+    to: data.customerEmail,
+    subject,
+    html,
+    text,
+    logTag: "Customer Order Cancelled Email",
+    referenceId: data.orderNumber,
+  });
+}
+
+export function generateCustomerReturnStatusHtml(rawData: CustomerReturnStatusData): string {
+  const data = escapeEmailData(rawData);
+  const isExchange = rawData.kind === "EXCHANGE";
+  const kindTitle = isExchange ? "Exchange" : "Return";
+
+  // Status configuration mapping
+  let statusBadgeText = "REQUEST RECEIVED";
+  let statusBadgeBg = "#FEF9C3";
+  let statusBadgeBorder = "#FACC15";
+  let statusBadgeColor = "#854D0E";
+  let headline = `${kindTitle} Request Received &bull; Under Review`;
+  let statusMessage = `We have received your ${isExchange ? "exchange" : "return"} request for Order #${data.orderNumber}. Our atelier concierge is reviewing the details.`;
+  let nextSteps = "Our team will verify the request and schedule our courier partner for doorstep collection within 24–48 hours.";
+
+  switch (rawData.status) {
+    case "APPROVED":
+      statusBadgeText = "REQUEST APPROVED";
+      statusBadgeBg = "#EFF6FF";
+      statusBadgeBorder = "#93C5FD";
+      statusBadgeColor = "#1E40AF";
+      headline = `${kindTitle} Request Approved &bull; Pickup Arranged`;
+      statusMessage = `Great news! Your ${isExchange ? "exchange" : "return"} request for Order #${data.orderNumber} has been approved.`;
+      nextSteps = "Our courier executive will arrive at your address to collect the garment. Please ensure all original tags are intact and the piece is safely packed.";
+      break;
+    case "PICKED_UP":
+      statusBadgeText = "ITEM PICKED UP";
+      statusBadgeBg = "#FAF5FF";
+      statusBadgeBorder = "#D8B4FE";
+      statusBadgeColor = "#6B21A8";
+      headline = `Garment Collected &bull; In Transit to Atelier`;
+      statusMessage = `Your package for Order #${data.orderNumber} has been picked up by our courier partner and is traveling back to our Jodhpur atelier.`;
+      nextSteps = isExchange
+        ? "Upon receipt and standard quality inspection, your replacement size will be dispatched immediately."
+        : "Upon receipt and standard quality inspection, your refund will be processed promptly to your source account.";
+      break;
+    case "COMPLETED":
+      statusBadgeText = "COMPLETED";
+      statusBadgeBg = "#ECFDF5";
+      statusBadgeBorder = "#6EE7B7";
+      statusBadgeColor = "#065F46";
+      headline = isExchange ? `Exchange Completed &bull; Replacement Sent` : `Return Completed &bull; Refund Processed`;
+      statusMessage = `Your ${isExchange ? "exchange" : "return"} for Order #${data.orderNumber} has been successfully completed!`;
+      nextSteps = isExchange
+        ? "Your replacement garment has been dispatched. You can track your new shipment using the link below."
+        : "Your refund has been fully processed and credited back to your original payment method or bank account.";
+      break;
+    case "REJECTED":
+      statusBadgeText = "REQUEST UPDATE";
+      statusBadgeBg = "#FEF2F2";
+      statusBadgeBorder = "#FCA5A5";
+      statusBadgeColor = "#991B1B";
+      headline = `${kindTitle} Request Notice`;
+      statusMessage = `We regret to inform you that we are unable to process your ${isExchange ? "exchange" : "return"} request for Order #${data.orderNumber} at this time.`;
+      nextSteps = "Please review the atelier concierge note below or get in touch with our team for clarification.";
+      break;
+  }
+
+  const itemsRows = (data.items || [])
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding: 10px 0; border-bottom: 1px solid #E8DFD8; font-family: 'Helvetica Neue', Arial, sans-serif;">
+        <strong style="color: #1A1615; font-size: 13px; display: block;">${item.productName}</strong>
+        <span style="color: #6B6562; font-size: 12px;">Current Size: ${item.size || "Standard"} &bull; Qty: ${item.quantity}</span>
+        ${item.exchangeSize ? `<span style="color: #1E40AF; font-size: 12px; display: block; font-weight: 600;">Requested Replacement Size: ${item.exchangeSize}</span>` : ""}
+      </td>
+      <td style="padding: 10px 0; border-bottom: 1px solid #E8DFD8; text-align: right; vertical-align: top; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1A1615; font-size: 13px; font-weight: 600;">
+        Qty: ${item.quantity}
+      </td>
+    </tr>
+  `
+    )
+    .join("");
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${kindTitle} Status Update — OFFVYBE</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F8F6F0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F8F6F0; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #FFFFFF; border-radius: 14px; overflow: hidden; border: 1px solid #E5DFD7; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+          
+          <!-- Header Banner -->
+          <tr>
+            <td style="background-color: #8B1E3F; padding: 26px 20px; text-align: center;">
+              <span style="font-family: Georgia, serif; font-size: 24px; font-weight: 800; letter-spacing: 0.25em; color: #FFFFFF; text-transform: uppercase; display: block;">OFFVYBE</span>
+              <span style="font-size: 10px; letter-spacing: 0.2em; color: #E5DFD7; text-transform: uppercase; margin-top: 6px; display: block; font-weight: 600;">Jodhpur Atelier &bull; Bespoke Menswear</span>
+            </td>
+          </tr>
+
+          <!-- Status Badge & Headline -->
+          <tr>
+            <td style="padding: 28px 28px 20px 28px; text-align: center; border-bottom: 1px solid #F0EBE5;">
+              <span style="background-color: ${statusBadgeBg}; color: ${statusBadgeColor}; border: 1px solid ${statusBadgeBorder}; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 6px 14px; border-radius: 20px; display: inline-block; margin-bottom: 12px;">
+                ${statusBadgeText}
+              </span>
+              <h1 style="font-family: Georgia, serif; font-size: 20px; color: #1A1615; margin: 0 0 6px 0; font-weight: 700;">
+                ${headline}
+              </h1>
+              <p style="font-size: 13px; color: #6B6562; margin: 0;">
+                Order #${data.orderNumber}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Message & Next Steps -->
+          <tr>
+            <td style="padding: 24px 28px 12px 28px;">
+              <p style="font-size: 14px; color: #1A1615; line-height: 1.6; margin: 0 0 14px 0;">
+                Dear ${data.customerName || "Customer"},
+              </p>
+              <p style="font-size: 13px; color: #4A4644; line-height: 1.6; margin: 0 0 14px 0;">
+                ${statusMessage}
+              </p>
+              <div style="background-color: #FAF8F5; border-radius: 8px; padding: 14px 18px; border: 1px solid #ECE7E1;">
+                <strong style="color: #8B1E3F; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 4px;">What Happens Next:</strong>
+                <p style="margin: 0; font-size: 13px; color: #333333; line-height: 1.5;">${nextSteps}</p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Atelier Note If Present -->
+          ${data.adminNote ? `
+          <tr>
+            <td style="padding: 8px 28px 14px 28px;">
+              <div style="background-color: #F8F6F0; border-left: 4px solid #8B1E3F; padding: 14px 16px; border-radius: 6px;">
+                <strong style="color: #8B1E3F; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 4px;">Message from Atelier Concierge</strong>
+                <p style="margin: 0; font-size: 13px; color: #1A1615; line-height: 1.5; font-style: italic;">&ldquo;${data.adminNote}&rdquo;</p>
+              </div>
+            </td>
+          </tr>
+          ` : ""}
+
+          <!-- Items Table -->
+          ${itemsRows ? `
+          <tr>
+            <td style="padding: 12px 28px;">
+              <strong style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #8B1E3F; display: block; margin-bottom: 8px;">
+                ${isExchange ? "Exchange Request Items" : "Return Request Items"}
+              </strong>
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                ${itemsRows}
+              </table>
+            </td>
+          </tr>
+          ` : ""}
+
+          <!-- Pickup Checklist for Pending & Approved -->
+          ${(rawData.status === "REQUESTED" || rawData.status === "APPROVED") ? `
+          <tr>
+            <td style="padding: 12px 28px;">
+              <div style="background-color: #F8F6F0; border-radius: 8px; padding: 14px 18px; border: 1px solid #ECE7E1;">
+                <strong style="color: #1A1615; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 8px;">Doorstep Handover Checklist:</strong>
+                <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #555555; line-height: 1.6;">
+                  <li>Garment must be unworn, unwashed, and in its original luxury condition.</li>
+                  <li>All original OFFVYBE tags and labels must remain attached.</li>
+                  <li>Package the garment in its original protective sleeve or box.</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          ` : ""}
+
+          <!-- Track Order CTA Button -->
+          <tr>
+            <td style="padding: 24px 28px; text-align: center;">
+              <a href="https://offvybe.com/track-order?orderNumber=${data.orderNumber}" style="background-color: #8B1E3F; color: #FFFFFF; text-decoration: none; padding: 13px 32px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; display: inline-block;">
+                Track Live Order Status &rarr;
+              </a>
+            </td>
+          </tr>
+
+          <!-- Concierge Contact -->
+          <tr>
+            <td style="padding: 0 28px 24px 28px; text-align: center;">
+              <p style="font-size: 12px; color: #6B6562; line-height: 1.5; margin: 0;">
+                Questions regarding your request? Our Jodhpur concierge is available Mon–Sat, 10 AM – 7 PM IST.<br>
+                WhatsApp: <a href="https://wa.me/919079199951" style="color: #8B1E3F; font-weight: 600; text-decoration: underline;">+91 9079199951</a> &bull; Email: <a href="mailto:care@offvybe.com" style="color: #8B1E3F; font-weight: 600; text-decoration: underline;">care@offvybe.com</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #F8F6F0; padding: 20px 24px; text-align: center; border-top: 1px solid #E5DFD7; font-size: 11px; color: #8F8884; line-height: 1.5;">
+              OFFVYBE Luxury Menswear &bull; Pal Road, Jodhpur, Rajasthan 342008<br>
+              Phone: +91 9079199951 &bull; GSM 240–350 Heavyweight Textiles
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
+export async function sendCustomerReturnStatusEmail(
+  data: CustomerReturnStatusData
+): Promise<SendEmailResult> {
+  if (!data.customerEmail || !data.customerEmail.includes("@")) {
+    console.warn(`[Customer Return Email] Invalid customer email: ${data.customerEmail} for order ${data.orderNumber}`);
+    return { success: false, error: "Invalid customer email" };
+  }
+
+  const isExchange = data.kind === "EXCHANGE";
+  const kindTitle = isExchange ? "Exchange" : "Return";
+
+  let statusSubject = "Request Received";
+  if (data.status === "APPROVED") statusSubject = "Request Approved";
+  else if (data.status === "PICKED_UP") statusSubject = "Item Picked Up";
+  else if (data.status === "COMPLETED") statusSubject = "Completed";
+  else if (data.status === "REJECTED") statusSubject = "Request Notice";
+
+  const subject = `${kindTitle} ${statusSubject} — OFFVYBE Order [${data.orderNumber}]`;
+  const html = generateCustomerReturnStatusHtml(data);
+  const text = `${kindTitle.toUpperCase()} UPDATE\nOrder #${data.orderNumber}\nStatus: ${data.status}\nDear ${data.customerName || "Customer"},\nThere is an update regarding your ${kindTitle.toLowerCase()} request.\n${data.adminNote ? `Atelier Note: "${data.adminNote}"\n` : ""}Track your request: https://offvybe.com/track-order?orderNumber=${data.orderNumber}\nNeed help? Contact care@offvybe.com or WhatsApp +91 9079199951.`;
+
+  return dispatchResendEmail({
+    to: data.customerEmail,
+    subject,
+    html,
+    text,
+    logTag: `Customer ${kindTitle} Status Email`,
+    referenceId: data.orderNumber,
+  });
+}
+
 

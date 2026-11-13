@@ -4,7 +4,7 @@ import { writeAudit } from "@/lib/audit";
 import { adminOrderInclude, checkOrderTransition, STATUS_TO_DB, STATUS_TO_UI, toAdminOrder } from "@/lib/admin-orders";
 import { requireAdminSession } from "@/lib/admin-guard";
 import { releaseOrderResources } from "@/lib/orders";
-import { sendAdminOrderCancelledNotification } from "@/lib/email";
+import { sendAdminOrderCancelledNotification, sendCustomerOrderCancelledEmail } from "@/lib/email";
 import type { OrderStatus } from "@/types/store";
 
 export const dynamic = "force-dynamic";
@@ -100,11 +100,17 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
         })),
       };
       try {
-        after(() => sendAdminOrderCancelledNotification(cancelPayload).then(() => undefined));
-      } catch {
-        void sendAdminOrderCancelledNotification(cancelPayload).catch((err) =>
-          console.warn("[Admin cancel alert error]:", err?.message || err)
+        after(() =>
+          Promise.allSettled([
+            sendAdminOrderCancelledNotification(cancelPayload),
+            sendCustomerOrderCancelledEmail(cancelPayload),
+          ]).then(() => undefined)
         );
+      } catch {
+        void Promise.allSettled([
+          sendAdminOrderCancelledNotification(cancelPayload),
+          sendCustomerOrderCancelledEmail(cancelPayload),
+        ]).catch((err) => console.warn("[Cancel email dispatch error]:", err?.message || err));
       }
     }
 

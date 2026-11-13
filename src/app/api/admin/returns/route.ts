@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/admin-guard";
 import { writeAudit } from "@/lib/audit";
+import { sendCustomerReturnStatusEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,18 @@ export async function PATCH(req: NextRequest) {
       typeof body?.adminNote === "string" ? body.adminNote.replace(/[\u0000-\u001f<>]/g, " ").trim().slice(0, 300) || null : undefined;
     if (!id || (status === undefined && adminNote === undefined)) return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
 
-    const before = await prisma.returnRequest.findUnique({ where: { id }, include: { order: { select: { orderNumber: true } } } });
+    const before = await prisma.returnRequest.findUnique({
+      where: { id },
+      include: {
+        order: {
+          select: {
+            orderNumber: true,
+            user: { select: { email: true, name: true } },
+            shippingAddress: true,
+          },
+        },
+      },
+    });
     if (!before) return NextResponse.json({ error: "Request not found." }, { status: 404 });
     const updated = await prisma.returnRequest.update({
       where: { id },
@@ -75,6 +87,49 @@ export async function PATCH(req: NextRequest) {
         metadata: { orderNumber: before.order.orderNumber, from: before.status, to: status },
       });
     }
+
+    if ((status && status !== before.status) || (adminNote !== undefined && adminNote !== before.adminNote)) {
+      const customerEmail = before.order.user?.email || "";
+      if (customerEmail) {
+        const statusPayload = {
+          orderNumber: before.order.orderNumber,
+          returnId: updated.id,
+          customerName: before.order.shippingAddress?.fullName || before.order.user?.name || "Customer",
+          customerEmail,
+          kind: before.kind as "EXCHANGE" | "RETURN",
+          status: updated.status,
+          reason: before.reason,
+          adminNote: updated.adminNote,
+          updatedAt: updated.updatedAt,
+          items: Array.isArray(before.items)
+            ? (before.items as any[]).map((i) => ({
+                productName: i.productName || "Garment",
+                size: i.size,
+                quantity: i.quantity,
+                exchangeSize: i.exchangeSize,
+              }))
+            : [],
+          shippingAddress: before.order.shippingAddress
+            ? {
+                street: before.order.shippingAddress.street,
+                apartment: before.order.shippingAddress.apartment || undefined,
+                city: before.order.shippingAddress.city,
+                state: before.order.shippingAddress.state,
+                postalCode: before.order.shippingAddress.postalCode,
+              }
+            : undefined,
+        };
+
+        try {
+          after(() => sendCustomerReturnStatusEmail(statusPayload).then(() => undefined));
+        } catch {
+          void sendCustomerReturnStatusEmail(statusPayload).catch((err) =>
+            console.warn("[Customer return status email error]:", err?.message || err)
+          );
+        }
+      }
+    }
+
     return NextResponse.json({ success: true, status: updated.status, adminNote: updated.adminNote });
   } catch (err) {
     console.error("[Admin returns] update:", err);

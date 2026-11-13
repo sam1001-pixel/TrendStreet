@@ -22,11 +22,16 @@ import { safeRedirectPath } from "@/lib/safe-redirect";
 function LoginForm() {
   const searchParams = useSearchParams();
   // Only ever redirect to a page on this site (blocks javascript: links and phishing redirects).
-  const callbackUrl = safeRedirectPath(searchParams.get("callbackUrl"), "/profile");
+  const callbackUrl = safeRedirectPath(
+    searchParams.get("callbackUrl") || searchParams.get("redirect"),
+    "/profile"
+  );
 
   const { login, register, isAuthenticated, isLoading } = useUserAuth();
 
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [activeTab, setActiveTab] = useState<"login" | "register">(
+    searchParams.get("tab") === "register" ? "register" : "login"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);

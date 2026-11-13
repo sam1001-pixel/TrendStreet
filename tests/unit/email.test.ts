@@ -254,3 +254,171 @@ test("generateAdminReturnExchangeHtml - formats exchange and return requests wit
   assert.match(returnHtml, /Carpenter Denim/);
 });
 
+test("generateCustomerOrderCancelledHtml - formats customer cancellation with refund or COD notice", async () => {
+  const { generateCustomerOrderCancelledHtml } = await import("../../src/lib/email");
+
+  // 1. Online / Razorpay payment: informs customer of 5-7 day bank refund
+  const onlineHtml = generateCustomerOrderCancelledHtml({
+    orderNumber: "OV-261114-CUST1",
+    customerName: "Aarav Sharma",
+    customerEmail: "aarav@example.com",
+    paymentMethod: "Razorpay (UPI Instant)",
+    totalAmount: 3999,
+    reason: "Requested different delivery date",
+    items: [
+      {
+        productName: "The Grandeur Silk Overshirt",
+        size: "L",
+        color: "Ivory White",
+        quantity: 1,
+        unitPrice: 3999,
+      },
+    ],
+  });
+
+  assert.match(onlineHtml, /Order Cancellation Confirmed/);
+  assert.match(onlineHtml, /OV-261114-CUST1/);
+  assert.match(onlineHtml, /Aarav Sharma/);
+  assert.match(onlineHtml, /Refund Initiated/);
+  assert.match(onlineHtml, /5–7 business days/);
+  assert.match(onlineHtml, /The Grandeur Silk Overshirt/);
+  assert.match(onlineHtml, /₹3,999/);
+  assert.match(onlineHtml, /9079199951/);
+  assert.match(onlineHtml, /care@offvybe.com/);
+
+  // 2. Cash on Delivery: clarifies no payment was charged
+  const codHtml = generateCustomerOrderCancelledHtml({
+    orderNumber: "OV-261114-COD1",
+    customerName: "Sujal Solanki",
+    customerEmail: "sujal@example.com",
+    paymentMethod: "Cash on Delivery",
+    totalAmount: 2499,
+    reason: "Order placed by mistake",
+    items: [
+      {
+        productName: "Heavyweight Boxy Tee",
+        size: "M",
+        color: "Washed Black",
+        quantity: 1,
+        unitPrice: 2499,
+      },
+    ],
+  });
+
+  assert.match(codHtml, /Cash on Delivery Order/);
+  assert.match(codHtml, /No payment was collected/);
+  assert.match(codHtml, /OV-261114-COD1/);
+  assert.match(codHtml, /Sujal Solanki/);
+});
+
+test("generateCustomerReturnStatusHtml - formats status updates for all lifecycle states", async () => {
+  const { generateCustomerReturnStatusHtml } = await import("../../src/lib/email");
+
+  // 1. REQUESTED status
+  const requestedHtml = generateCustomerReturnStatusHtml({
+    orderNumber: "OV-261114-REQ",
+    customerName: "Vikram Rathore",
+    customerEmail: "vikram@example.com",
+    kind: "EXCHANGE",
+    status: "REQUESTED",
+    reason: "Wrong size delivered",
+    items: [
+      {
+        productName: "The Royal Bandhgala Jacket",
+        size: "M",
+        quantity: 1,
+        exchangeSize: "L",
+      },
+    ],
+  });
+
+  assert.match(requestedHtml, /REQUEST RECEIVED/);
+  assert.match(requestedHtml, /Exchange Request Received/);
+  assert.match(requestedHtml, /OV-261114-REQ/);
+  assert.match(requestedHtml, /The Royal Bandhgala Jacket/);
+  assert.match(requestedHtml, /Requested Replacement Size: L/);
+
+  // 2. APPROVED status with admin note
+  const approvedHtml = generateCustomerReturnStatusHtml({
+    orderNumber: "OV-261114-APP",
+    customerName: "Vikram Rathore",
+    customerEmail: "vikram@example.com",
+    kind: "EXCHANGE",
+    status: "APPROVED",
+    adminNote: "Pickup executive will visit on Friday between 11 AM - 2 PM.",
+    items: [
+      {
+        productName: "The Royal Bandhgala Jacket",
+        size: "M",
+        quantity: 1,
+        exchangeSize: "L",
+      },
+    ],
+  });
+
+  assert.match(approvedHtml, /REQUEST APPROVED/);
+  assert.match(approvedHtml, /Pickup Arranged/);
+  assert.match(approvedHtml, /Message from Atelier Concierge/);
+  assert.match(approvedHtml, /Pickup executive will visit on Friday/);
+  assert.match(approvedHtml, /Doorstep Handover Checklist/);
+
+  // 3. PICKED_UP status
+  const pickedUpHtml = generateCustomerReturnStatusHtml({
+    orderNumber: "OV-261114-PICK",
+    customerName: "Vikram Rathore",
+    customerEmail: "vikram@example.com",
+    kind: "RETURN",
+    status: "PICKED_UP",
+    items: [
+      {
+        productName: "Linen Trousers",
+        size: "34",
+        quantity: 1,
+      },
+    ],
+  });
+
+  assert.match(pickedUpHtml, /ITEM PICKED UP/);
+  assert.match(pickedUpHtml, /In Transit to Atelier/);
+
+  // 4. COMPLETED status
+  const completedHtml = generateCustomerReturnStatusHtml({
+    orderNumber: "OV-261114-DONE",
+    customerName: "Vikram Rathore",
+    customerEmail: "vikram@example.com",
+    kind: "RETURN",
+    status: "COMPLETED",
+    items: [
+      {
+        productName: "Linen Trousers",
+        size: "34",
+        quantity: 1,
+      },
+    ],
+  });
+
+  assert.match(completedHtml, /COMPLETED/);
+  assert.match(completedHtml, /Return Completed &bull; Refund Processed/);
+
+  // 5. REJECTED status
+  const rejectedHtml = generateCustomerReturnStatusHtml({
+    orderNumber: "OV-261114-REJ",
+    customerName: "Vikram Rathore",
+    customerEmail: "vikram@example.com",
+    kind: "RETURN",
+    status: "REJECTED",
+    adminNote: "Garment was returned outside the 30-day exchange window.",
+    items: [
+      {
+        productName: "Linen Trousers",
+        size: "34",
+        quantity: 1,
+      },
+    ],
+  });
+
+  assert.match(rejectedHtml, /REQUEST UPDATE/);
+  assert.match(rejectedHtml, /Garment was returned outside the 30-day exchange window/);
+});
+
+
