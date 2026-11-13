@@ -52,11 +52,7 @@ export async function GET(req: NextRequest) {
     });
 
     const isConfigured = provider.isConfigured;
-    const isLive = Boolean(
-      isConfigured &&
-      (process.env.SHIPROCKET_EMAIL || process.env.SHIPROCKET_TOKEN) &&
-      !process.env.SHIPROCKET_EMAIL?.includes("replace_with")
-    );
+    const isLive = isConfigured;
 
     return NextResponse.json({
       environment: {

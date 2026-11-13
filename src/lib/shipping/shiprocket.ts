@@ -32,17 +32,34 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
   private cachedToken: string | null = null;
   private tokenExpiresAt: number = 0;
 
+  private get directToken(): string | undefined {
+    const t =
+      process.env.SHIPROCKET_TOKEN ||
+      process.env.SHIPROCKET_API_KEY ||
+      process.env.SHIPROCKET_API_TOKEN ||
+      process.env.SHIPROCKET_KEY;
+    return t && !t.includes("replace_with") ? t.trim() : undefined;
+  }
+
+  private get authEmail(): string | undefined {
+    const e =
+      process.env.SHIPROCKET_EMAIL ||
+      process.env.SHIPROCKET_USER ||
+      process.env.SHIPROCKET_USERNAME;
+    return e && !e.includes("replace_with") ? e.trim() : undefined;
+  }
+
+  private get authPassword(): string | undefined {
+    const p =
+      process.env.SHIPROCKET_PASSWORD ||
+      process.env.SHIPROCKET_PASS ||
+      process.env.SHIPROCKET_SECRET;
+    return p && !p.includes("replace_with") ? p.trim() : undefined;
+  }
+
   get isConfigured(): boolean {
-    const directToken = process.env.SHIPROCKET_TOKEN || process.env.SHIPROCKET_API_KEY;
-    if (directToken && !directToken.includes("replace_with")) return true;
-    const email = process.env.SHIPROCKET_EMAIL;
-    const password = process.env.SHIPROCKET_PASSWORD;
-    return Boolean(
-      email &&
-      password &&
-      !email.includes("replace_with") &&
-      !password.includes("replace_with")
-    );
+    if (this.directToken) return true;
+    return Boolean(this.authEmail && this.authPassword);
   }
 
   /**
@@ -51,9 +68,9 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
   private async getAuthToken(): Promise<string | null> {
     if (!this.isConfigured) return null;
 
-    const directToken = process.env.SHIPROCKET_TOKEN || process.env.SHIPROCKET_API_KEY;
-    if (directToken && !directToken.includes("replace_with")) {
-      return directToken.trim();
+    const direct = this.directToken;
+    if (direct) {
+      return direct;
     }
 
     const now = Date.now();
@@ -67,8 +84,8 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: process.env.SHIPROCKET_EMAIL,
-          password: process.env.SHIPROCKET_PASSWORD,
+          email: this.authEmail,
+          password: this.authPassword,
         }),
       });
 
