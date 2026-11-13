@@ -38,7 +38,7 @@ const ADMIN_BODY_LIMIT = 1024 * 1024; // 1 MB: product and settings editors
  */
 function badBody(req: NextRequest, pathname: string): NextResponse | null {
   if (!UNSAFE_METHODS.has(req.method)) return null;
-  if (MULTIPART_ROUTES.has(pathname)) return null;
+  if (MULTIPART_ROUTES.has(pathname) || pathname.startsWith("/api/webhooks/")) return null;
   const length = Number(req.headers.get("content-length") || 0);
   const limit = pathname.startsWith("/api/admin/") ? ADMIN_BODY_LIMIT : PUBLIC_BODY_LIMIT;
   if (length > limit) return NextResponse.json({ error: "Request too large." }, { status: 413 });

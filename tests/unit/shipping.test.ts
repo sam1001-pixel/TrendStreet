@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { ShiprocketShippingAdapter } from "../../src/lib/shipping/shiprocket";
 import { getShippingProvider } from "../../src/lib/shipping";
+import { processShiprocketWebhook, handleWebhookGet } from "../../src/lib/shipping/webhook";
+import { NextRequest } from "next/server";
 
 test("Shipping Adapter - getShippingProvider returns configured provider singleton", () => {
   const provider = getShippingProvider();
@@ -150,4 +152,42 @@ test("Shipping Adapter - normalizes tracking statuses correctly", () => {
   assert.equal(mapStatus("MANIFEST GENERATED"), "SHIPPED");
   assert.equal(mapStatus("UNDELIVERED_ATTEMPT_1"), null);
 });
+
+test("Shiprocket Webhook - GET returns 200 OK health status", async () => {
+  const res = handleWebhookGet();
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.status, "ok");
+  assert.equal(data.ready, true);
+});
+
+test("Shiprocket Webhook - POST handles empty test ping with 200 OK", async () => {
+  const req = new NextRequest("https://offvybe.test/api/webhooks/tracking", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  const res = await processShiprocketWebhook(req);
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.equal(data.test, true);
+});
+
+test("Shiprocket Webhook - POST handles test payload with dummy AWB with 200 OK", async () => {
+  const req = new NextRequest("https://offvybe.test/api/webhooks/tracking", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      awb: "DUMMY_TEST_AWB_12345",
+      current_status: "TEST_PING",
+    }),
+  });
+  const res = await processShiprocketWebhook(req);
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.equal(data.matched, false);
+});
+
 
