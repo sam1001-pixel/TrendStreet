@@ -483,12 +483,14 @@ export async function sendOrderEmailFromDb(orderId: string, paymentMethod: strin
       include: { user: true, shippingAddress: true, items: { include: { variant: { include: { product: true } } } } },
     });
     if (!o?.user?.email) return;
-    const { sendOrderConfirmationEmail } = await import("@/lib/email");
-    await sendOrderConfirmationEmail({
+    const { sendOrderConfirmationEmail, sendAdminOrderPlacedNotification } = await import("@/lib/email");
+    const orderPayload = {
       orderNumber: o.orderNumber,
       orderId: o.id,
       customerName: o.shippingAddress.fullName || o.user.name || "Customer",
       customerEmail: o.user.email,
+      customerPhone: o.shippingAddress.phone || undefined,
+      orderCreatedAt: o.createdAt,
       items: o.items.map((it) => ({
         productName: it.variant.product.name,
         size: it.variant.size,
@@ -513,7 +515,16 @@ export async function sendOrderEmailFromDb(orderId: string, paymentMethod: strin
         country: "India",
       },
       deliveryCourier: o.deliveryCourier || DELIVERY_COURIER,
-    });
+    };
+
+    await Promise.allSettled([
+      sendOrderConfirmationEmail(orderPayload).catch((err) =>
+        console.warn("[Customer confirmation email error]:", err?.message || err)
+      ),
+      sendAdminOrderPlacedNotification(orderPayload).catch((err) =>
+        console.warn("[Admin order placed notification error]:", err?.message || err)
+      ),
+    ]);
   } catch (err) {
     console.warn("[Order email warning]:", (err as Error)?.message || err);
   }

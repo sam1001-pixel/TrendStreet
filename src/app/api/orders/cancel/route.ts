@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { releaseOrderResources } from "@/lib/orders";
 import { canCancel, customerOrderInclude, loadOwnOrder, toCustomerOrder } from "@/lib/order-actions";
 import { writeAudit } from "@/lib/audit";
+import { sendAdminOrderCancelledNotification } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,34 @@ export async function POST(req: NextRequest) {
       entityId: order.id,
       metadata: { orderNumber: order.orderNumber, reason: reason || null },
     }).catch(() => {});
+
+    const cancelPayload = {
+      orderNumber: order.orderNumber,
+      orderId: order.id,
+      customerName: updated.shippingAddress.fullName || updated.user?.name || "Customer",
+      customerEmail: updated.user?.email || order.user?.email || "",
+      customerPhone: updated.shippingAddress.phone || undefined,
+      reason: reason || undefined,
+      totalAmount: updated.totalAmount / 100,
+      paymentMethod: updated.payments[0]?.provider === "CASH_ON_DELIVERY" ? "Cash on Delivery" : "Online / Razorpay",
+      cancelledAt: updated.cancelledAt || new Date(),
+      cancelledBy: "Customer" as const,
+      items: updated.items.map((it) => ({
+        productName: it.variant.product.name,
+        size: it.variant.size,
+        color: it.variant.colorName,
+        quantity: it.quantity,
+        unitPrice: it.unitPrice / 100,
+      })),
+    };
+
+    try {
+      after(() => sendAdminOrderCancelledNotification(cancelPayload).then(() => undefined));
+    } catch {
+      void sendAdminOrderCancelledNotification(cancelPayload).catch((err) =>
+        console.warn("[Admin cancel email error]:", err?.message || err)
+      );
+    }
 
     return NextResponse.json({ success: true, order: toCustomerOrder(updated) });
   } catch (err) {

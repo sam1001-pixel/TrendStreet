@@ -216,8 +216,9 @@ const mediaUrl = (v: unknown, fallback: string) => {
   if (/^https?:\/\/[^\s"'<>]{3,800}$/i.test(u) || /^\/[^\s"'<>]{1,800}$/.test(u)) return u;
   return fallback;
 };
-const phone = (v: unknown) => {
-  if (typeof v !== "string") return "";
+const phone = (v: unknown, fallback = "") => {
+  if (v === undefined || v === null) return fallback;
+  if (typeof v !== "string") return fallback;
   const d = v.replace(/\D/g, "").replace(/^(91|0)(?=[6-9]\d{9}$)/, "");
   return /^[6-9]\d{9}$/.test(d) ? d : "";
 };
@@ -270,7 +271,7 @@ export function sanitizeStoreConfig(raw: unknown): StoreConfig {
       facebook: https(so.facebook),
       x: https(so.x),
       youtube: https(so.youtube),
-      whatsapp: phone(so.whatsapp),
+      whatsapp: phone(so.whatsapp, d.social.whatsapp),
     },
     trust: d.trust.map((def, i) => {
       const t = isObj(trustIn[i]) ? (trustIn[i] as Record<string, unknown>) : {};

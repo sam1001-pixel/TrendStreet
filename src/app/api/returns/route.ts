@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { RETURN_REASONS, canRequestReturn, customerOrderInclude, loadOwnOrder, toCustomerOrder } from "@/lib/order-actions";
 import { writeAudit } from "@/lib/audit";
+import { sendAdminReturnExchangeNotification } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,35 @@ export async function POST(req: NextRequest) {
       entityId: order.id,
       metadata: { orderNumber: order.orderNumber, kind, requestId: created.id },
     }).catch(() => {});
+
+    const returnPayload = {
+      orderNumber: order.orderNumber,
+      orderId: order.id,
+      kind: kind as "EXCHANGE" | "RETURN",
+      reason,
+      note: note || undefined,
+      customerName: order.shippingAddress.fullName || order.user?.name || "Customer",
+      customerEmail: order.user?.email || "",
+      customerPhone: order.shippingAddress.phone || undefined,
+      shippingAddress: {
+        street: order.shippingAddress.street,
+        apartment: order.shippingAddress.apartment || undefined,
+        city: order.shippingAddress.city,
+        state: order.shippingAddress.state || "",
+        postalCode: order.shippingAddress.postalCode,
+        country: "India",
+      },
+      items,
+      createdAt: created.createdAt,
+    };
+
+    try {
+      after(() => sendAdminReturnExchangeNotification(returnPayload).then(() => undefined));
+    } catch {
+      void sendAdminReturnExchangeNotification(returnPayload).catch((err) =>
+        console.warn("[Admin return/exchange alert error]:", err?.message || err)
+      );
+    }
 
     const fresh = await prisma.order.findUniqueOrThrow({ where: { id: order.id }, include: customerOrderInclude });
     return NextResponse.json({ success: true, order: toCustomerOrder(fresh) });

@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit";
 import { adminOrderInclude, checkOrderTransition, STATUS_TO_DB, STATUS_TO_UI, toAdminOrder } from "@/lib/admin-orders";
 import { requireAdminSession } from "@/lib/admin-guard";
 import { releaseOrderResources } from "@/lib/orders";
+import { sendAdminOrderCancelledNotification } from "@/lib/email";
 import type { OrderStatus } from "@/types/store";
 
 export const dynamic = "force-dynamic";
@@ -76,6 +77,35 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
         entityId: before.id,
         metadata: { orderNumber: before.orderNumber, from: before.trackingNumber, to: tracking },
       });
+    }
+
+    if (cancelling) {
+      const cancelPayload = {
+        orderNumber: updated.orderNumber,
+        orderId: updated.id,
+        customerName: updated.shippingAddress.fullName || updated.user?.name || "Customer",
+        customerEmail: updated.user?.email || "",
+        customerPhone: updated.shippingAddress.phone || undefined,
+        reason: "Cancelled by store administrator",
+        totalAmount: updated.totalAmount / 100,
+        paymentMethod: updated.payments[0]?.provider === "CASH_ON_DELIVERY" ? "Cash on Delivery" : "Online / Razorpay",
+        cancelledAt: updated.cancelledAt || new Date(),
+        cancelledBy: "Admin / Store" as const,
+        items: updated.items.map((it) => ({
+          productName: it.variant.product.name,
+          size: it.variant.size,
+          color: it.variant.colorName,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice / 100,
+        })),
+      };
+      try {
+        after(() => sendAdminOrderCancelledNotification(cancelPayload).then(() => undefined));
+      } catch {
+        void sendAdminOrderCancelledNotification(cancelPayload).catch((err) =>
+          console.warn("[Admin cancel alert error]:", err?.message || err)
+        );
+      }
     }
 
     return NextResponse.json({ order: toAdminOrder(updated) });
