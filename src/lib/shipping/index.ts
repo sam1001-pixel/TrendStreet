@@ -7,6 +7,7 @@ import { ShiprocketShippingAdapter } from "./shiprocket";
 
 export * from "./types";
 export * from "./shiprocket";
+export * from "./automation";
 
 let defaultProvider: ShippingProvider | null = null;
 

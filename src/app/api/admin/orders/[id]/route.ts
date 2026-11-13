@@ -5,6 +5,7 @@ import { adminOrderInclude, checkOrderTransition, STATUS_TO_DB, STATUS_TO_UI, to
 import { requireAdminSession } from "@/lib/admin-guard";
 import { releaseOrderResources } from "@/lib/orders";
 import { sendAdminOrderCancelledNotification, sendCustomerOrderCancelledEmail } from "@/lib/email";
+import { cancelOrderShipment } from "@/lib/shipping";
 import type { OrderStatus } from "@/types/store";
 
 export const dynamic = "force-dynamic";
@@ -104,13 +105,15 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
           Promise.allSettled([
             sendAdminOrderCancelledNotification(cancelPayload),
             sendCustomerOrderCancelledEmail(cancelPayload),
+            cancelOrderShipment(updated.id),
           ]).then(() => undefined)
         );
       } catch {
         void Promise.allSettled([
           sendAdminOrderCancelledNotification(cancelPayload),
           sendCustomerOrderCancelledEmail(cancelPayload),
-        ]).catch((err) => console.warn("[Cancel email dispatch error]:", err?.message || err));
+          cancelOrderShipment(updated.id),
+        ]).catch((err) => console.warn("[Cancel side effects error]:", err?.message || err));
       }
     }
 

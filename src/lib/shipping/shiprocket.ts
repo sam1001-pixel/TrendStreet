@@ -19,6 +19,8 @@ import {
   TrackingResult,
   CancelShipmentResult,
   CourierOption,
+  ConnectionTestResult,
+  PickupLocation,
 } from "./types";
 import { isValidIndianPincode } from "../pincode";
 
@@ -31,9 +33,16 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
   private tokenExpiresAt: number = 0;
 
   get isConfigured(): boolean {
+    const directToken = process.env.SHIPROCKET_TOKEN || process.env.SHIPROCKET_API_KEY;
+    if (directToken && !directToken.includes("replace_with")) return true;
     const email = process.env.SHIPROCKET_EMAIL;
     const password = process.env.SHIPROCKET_PASSWORD;
-    return Boolean(email && password && !email.includes("replace_with"));
+    return Boolean(
+      email &&
+      password &&
+      !email.includes("replace_with") &&
+      !password.includes("replace_with")
+    );
   }
 
   /**
@@ -41,6 +50,11 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
    */
   private async getAuthToken(): Promise<string | null> {
     if (!this.isConfigured) return null;
+
+    const directToken = process.env.SHIPROCKET_TOKEN || process.env.SHIPROCKET_API_KEY;
+    if (directToken && !directToken.includes("replace_with")) {
+      return directToken.trim();
+    }
 
     const now = Date.now();
     // Re-use cached token if more than 5 minutes remain
@@ -194,17 +208,72 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
         if (res.ok) {
           const data = await res.json();
           const shipmentId = String(data.shipment_id || data.order_id);
-          const awbCode = String(data.awb_code || `SR-${params.orderNumber}`);
+          let awbCode = data.awb_code && data.awb_code !== "null" ? String(data.awb_code) : "";
+          let courierName = data.courier_name || "Delhivery Air / Blue Dart Apex";
+          let labelUrl = data.label_url || undefined;
+
+          // If Shiprocket order was created without instant AWB, trigger courier AWB allocation
+          if (!awbCode && data.shipment_id) {
+            try {
+              const awbRes = await fetch(`${SHIPROCKET_API_BASE}/courier/assign/awb`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ shipment_id: data.shipment_id }),
+              });
+              if (awbRes.ok) {
+                const awbData = await awbRes.json();
+                const assignedAwb =
+                  awbData?.response?.data?.awb_code ||
+                  awbData?.response?.awb_code ||
+                  awbData?.awb_code;
+                if (assignedAwb) awbCode = String(assignedAwb);
+
+                const assignedCourier =
+                  awbData?.response?.data?.courier_name ||
+                  awbData?.response?.courier_name ||
+                  awbData?.courier_name;
+                if (assignedCourier) courierName = String(assignedCourier);
+              }
+            } catch (awbErr) {
+              console.warn("[Shiprocket AWB Assignment Warning]:", awbErr);
+            }
+          }
+
+          // If label URL wasn't included, request thermal/PDF shipping label
+          if (!labelUrl && data.shipment_id) {
+            try {
+              const labelRes = await fetch(`${SHIPROCKET_API_BASE}/courier/generate/label`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ shipment_id: [data.shipment_id] }),
+              });
+              if (labelRes.ok) {
+                const labelData = await labelRes.json();
+                if (labelData?.label_url) labelUrl = labelData.label_url;
+              }
+            } catch (labelErr) {
+              console.warn("[Shiprocket Label Generation Warning]:", labelErr);
+            }
+          }
 
           return {
             success: true,
             shipmentId,
             orderId: String(data.order_id || params.orderNumber),
-            courierName: data.courier_name || "Blue Dart Apex / Delhivery Air",
-            awbCode,
-            labelUrl: data.label_url,
+            courierName,
+            awbCode: awbCode || `SR-${params.orderNumber}`,
+            labelUrl,
             isMock: false,
           };
+        } else {
+          const errBody = await res.text().catch(() => "");
+          console.warn(`[Shiprocket Order Create Failed] HTTP ${res.status}: ${errBody}`);
         }
       } catch (err) {
         console.warn("[Shiprocket Order Create Warning]: Falling back to sandbox mock.", err);
@@ -324,6 +393,106 @@ export class ShiprocketShippingAdapter implements ShippingProvider {
       message: "Shipment cancelled in Sandbox Mock Mode.",
       isMock: true,
     };
+  }
+
+  /**
+   * Tests API connection and fetches registered pickup warehouse locations from Shiprocket.
+   */
+  async checkConnectionAndPickups(): Promise<ConnectionTestResult> {
+    const token = await this.getAuthToken();
+    if (!token) {
+      return {
+        success: false,
+        isLive: false,
+        locations: [
+          {
+            id: "jodhpur-atelier-01",
+            pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION || "Primary",
+            address: "Pal Road, Jodhpur",
+            city: "Jodhpur",
+            state: "Rajasthan",
+            pin_code: process.env.SHIPROCKET_PICKUP_PINCODE || "342008",
+            phone: "9079199951",
+            status: 1,
+          },
+        ],
+        message: "Operating in Sandbox Simulation mode (API credentials not configured or in test).",
+      };
+    }
+
+    try {
+      const res = await fetch(`${SHIPROCKET_API_BASE}/settings/company/pickup`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        return {
+          success: false,
+          isLive: true,
+          locations: [],
+          error: `Shiprocket API responded with status ${res.status}`,
+        };
+      }
+
+      const data = await res.json();
+      const rawLocs = data?.data?.shipping_address || [];
+      const locations: PickupLocation[] = rawLocs.map((loc: any) => ({
+        id: String(loc.id || loc.pickup_location),
+        pickup_location: loc.pickup_location || "Primary",
+        address: loc.address || "",
+        city: loc.city || "",
+        state: loc.state || "",
+        pin_code: String(loc.pin_code || ""),
+        phone: String(loc.phone || ""),
+        status: Number(loc.status ?? 1),
+      }));
+
+      return {
+        success: true,
+        isLive: true,
+        locations,
+        message: `Successfully connected to Shiprocket API. Found ${locations.length} registered pickup locations.`,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        isLive: true,
+        locations: [],
+        error: (err as Error).message,
+      };
+    }
+  }
+
+  /**
+   * Generates or fetches printable PDF shipping label.
+   */
+  async generateLabel(shipmentId: string): Promise<string | null> {
+    const token = await this.getAuthToken();
+    if (!token || shipmentId.startsWith("MOCK-")) {
+      return `https://offvybe.com/api/mock/labels/${shipmentId}.pdf`;
+    }
+
+    try {
+      const res = await fetch(`${SHIPROCKET_API_BASE}/courier/generate/label`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ shipment_id: [shipmentId] }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data?.label_url || null;
+      }
+    } catch (err) {
+      console.warn("[Shiprocket generateLabel Warning]:", err);
+    }
+    return null;
   }
 
   private generateMockServiceability(params: ServiceabilityParams): ServiceabilityResult {

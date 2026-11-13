@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { verifyRazorpayWebhookSignature } from "@/lib/razorpay";
 import { confirmRazorpayPayment, sendOrderEmailFromDb } from "@/lib/orders";
+import { syncOrderToShiprocket } from "@/lib/shipping";
 import { claimOnce, isClaimed } from "@/lib/security-marker";
 import { writeAudit } from "@/lib/audit";
 
@@ -69,11 +70,19 @@ export async function POST(req: NextRequest) {
         const orderId = result.orderId;
         const paymentId = String(paymentEntity.id);
         try {
-          after(() => sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", paymentId).then(() => undefined));
+          after(() =>
+            Promise.allSettled([
+              sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", paymentId),
+              syncOrderToShiprocket(orderId),
+            ]).then(() => undefined)
+          );
         } catch {
           // Fallback if after() is called outside an active request scope
-          void sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", paymentId).catch((err) =>
-            console.error("[Webhook] Failed to send order email:", err)
+          void Promise.allSettled([
+            sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", paymentId),
+            syncOrderToShiprocket(orderId),
+          ]).catch((err) =>
+            console.error("[Webhook] Failed to execute order side effects:", err)
           );
         }
       }

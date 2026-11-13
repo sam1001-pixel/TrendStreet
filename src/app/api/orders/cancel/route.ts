@@ -5,6 +5,7 @@ import { releaseOrderResources } from "@/lib/orders";
 import { canCancel, customerOrderInclude, loadOwnOrder, toCustomerOrder } from "@/lib/order-actions";
 import { writeAudit } from "@/lib/audit";
 import { sendAdminOrderCancelledNotification, sendCustomerOrderCancelledEmail } from "@/lib/email";
+import { cancelOrderShipment } from "@/lib/shipping";
 
 export const dynamic = "force-dynamic";
 
@@ -74,13 +75,15 @@ export async function POST(req: NextRequest) {
         Promise.allSettled([
           sendAdminOrderCancelledNotification(cancelPayload),
           sendCustomerOrderCancelledEmail(cancelPayload),
+          cancelOrderShipment(updated.id),
         ]).then(() => undefined)
       );
     } catch {
       void Promise.allSettled([
         sendAdminOrderCancelledNotification(cancelPayload),
         sendCustomerOrderCancelledEmail(cancelPayload),
-      ]).catch((err) => console.warn("[Cancel email dispatch error]:", err?.message || err));
+        cancelOrderShipment(updated.id),
+      ]).catch((err) => console.warn("[Cancel side effects error]:", err?.message || err));
     }
 
     return NextResponse.json({ success: true, order: toCustomerOrder(updated) });

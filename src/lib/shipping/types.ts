@@ -104,6 +104,25 @@ export interface CancelShipmentResult {
   isMock: boolean;
 }
 
+export interface PickupLocation {
+  id: string;
+  pickup_location: string;
+  address: string;
+  city: string;
+  state: string;
+  pin_code: string;
+  phone: string;
+  status: number;
+}
+
+export interface ConnectionTestResult {
+  success: boolean;
+  isLive: boolean;
+  locations: PickupLocation[];
+  error?: string;
+  message?: string;
+}
+
 /**
  * Universal Shipping Provider Interface
  */
@@ -122,4 +141,10 @@ export interface ShippingProvider {
 
   /** Cancels a booked shipment before courier pickup */
   cancelShipment(shipmentId: string, awbCode?: string): Promise<CancelShipmentResult>;
+
+  /** Tests live API authentication and fetches registered pickup warehouse locations */
+  checkConnectionAndPickups?(): Promise<ConnectionTestResult>;
+
+  /** Generates or downloads printable AWB thermal/PDF shipping label */
+  generateLabel?(shipmentId: string): Promise<string | null>;
 }

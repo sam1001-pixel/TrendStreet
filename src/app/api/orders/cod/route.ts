@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getStoreConfig } from "@/lib/store-config-server";
 import { checkPincodeServiceability } from "@/lib/pincode";
 import { OrderInputError, placeOrder, sendOrderEmailFromDb, DeliveryMethod } from "@/lib/orders";
+import { syncOrderToShiprocket } from "@/lib/shipping";
 
 export const dynamic = "force-dynamic";
 
@@ -87,7 +88,12 @@ export async function POST(req: NextRequest) {
     });
 
     const placedId = order.id;
-    after(() => sendOrderEmailFromDb(placedId, "Cash on Delivery").then(() => undefined));
+    after(() => {
+      void Promise.allSettled([
+        sendOrderEmailFromDb(placedId, "Cash on Delivery"),
+        syncOrderToShiprocket(placedId),
+      ]);
+    });
 
     return NextResponse.json({ success: true, orderNumber: order.orderNumber, pricing: order.pricing });
   } catch (err) {

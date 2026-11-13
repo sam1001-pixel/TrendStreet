@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { fetchCapturedPayment, getRazorpayClient, verifyRazorpayPaymentSignature } from "@/lib/razorpay";
 import { confirmRazorpayPayment, sendOrderEmailFromDb } from "@/lib/orders";
+import { syncOrderToShiprocket } from "@/lib/shipping";
 import { checkDistributedRateLimit, getClientIp, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
 import { writeAudit } from "@/lib/audit";
 
@@ -85,9 +86,17 @@ export async function POST(req: NextRequest) {
       const orderId = result.orderId;
       // after(): the email is sent once the response is out, and the serverless function waits for it.
       try {
-        after(() => sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id).then(() => undefined));
+        after(() =>
+          Promise.allSettled([
+            sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id),
+            syncOrderToShiprocket(orderId),
+          ]).then(() => undefined)
+        );
       } catch {
-        void sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id);
+        void Promise.allSettled([
+          sendOrderEmailFromDb(orderId, "Razorpay (UPI / Card / Net Banking)", razorpay_payment_id),
+          syncOrderToShiprocket(orderId),
+        ]);
       }
     }
 

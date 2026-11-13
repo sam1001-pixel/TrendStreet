@@ -65,18 +65,37 @@ export default function AdminOrdersPage() {
     };
   }, [activeSlipOrder]);
 
-  // Generate authentic AWB tracking ID and save to order
-  const handleGenerateAwb = async (order: Order, carrier: "Delhivery" | "BlueDart" = "Delhivery") => {
-    const prefix = carrier === "Delhivery" ? "DLV" : "BD";
-    const randomNum = Math.floor(100000 + Math.random() * 900000);
-    const generatedAwb = `${prefix}-${randomNum}`;
+  const [bookingAwbId, setBookingAwbId] = useState<string | null>(null);
 
-    setTrackingDrafts((d) => ({ ...d, [order.id]: generatedAwb }));
-    await updateOrderTracking(order.id, generatedAwb);
+  // Book shipment with Shiprocket, obtain authentic AWB, and advance order
+  const handleGenerateAwb = async (order: Order) => {
+    setBookingAwbId(order.id);
+    try {
+      const res = await fetch("/api/admin/shipping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create_shipment", orderId: order.id }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to book shipment with Shiprocket");
+      }
 
-    // If order was pending or confirmed, auto-advance to "In Transit"
-    if (order.status === "Pending" || order.status === "Confirmed" || order.status === "Processing") {
-      await updateOrderStatus(order.id, "In Transit");
+      setTrackingDrafts((d) => ({ ...d, [order.id]: data.awbCode }));
+      await updateOrderTracking(order.id, data.awbCode);
+
+      // If order was pending, confirmed, or processing, advance to "In Transit"
+      if (order.status === "Pending" || order.status === "Confirmed" || order.status === "Processing") {
+        await updateOrderStatus(order.id, "In Transit");
+      }
+
+      if (data.labelUrl) {
+        window.open(data.labelUrl, "_blank");
+      }
+    } catch (err) {
+      alert("Shiprocket Dispatch Error: " + (err as Error).message);
+    } finally {
+      setBookingAwbId(null);
     }
   };
 
@@ -348,10 +367,12 @@ export default function AdminOrdersPage() {
                     <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-burgundy/10">
                       <button
                         type="button"
-                        onClick={() => handleGenerateAwb(ord, "Delhivery")}
-                        className="text-[10px] font-bold text-burgundy hover:text-crimson flex items-center gap-1 underline"
+                        onClick={() => handleGenerateAwb(ord)}
+                        disabled={bookingAwbId === ord.id}
+                        className="text-[10px] font-bold text-burgundy hover:text-crimson flex items-center gap-1 underline disabled:opacity-50"
                       >
-                        <Sparkles className="w-3 h-3 text-gold" /> Generate Delhivery AWB
+                        <Sparkles className="w-3 h-3 text-gold" />{" "}
+                        {bookingAwbId === ord.id ? "Connecting Shiprocket..." : "Book with Shiprocket"}
                       </button>
                       <span className="text-[10px] text-espresso/60 font-mono uppercase">
                         {ord.paymentMethod.toUpperCase()}
@@ -376,10 +397,12 @@ export default function AdminOrdersPage() {
                     {ord.status === "Processing" ? (
                       <button
                         type="button"
-                        onClick={() => handleGenerateAwb(ord, "Delhivery")}
-                        className="px-2.5 py-1 rounded-lg bg-burgundy hover:bg-crimson text-gold text-[11px] font-bold transition-colors flex items-center gap-1"
+                        onClick={() => handleGenerateAwb(ord)}
+                        disabled={bookingAwbId === ord.id}
+                        className="px-2.5 py-1 rounded-lg bg-burgundy hover:bg-crimson text-gold text-[11px] font-bold transition-colors flex items-center gap-1 disabled:opacity-50"
                       >
-                        <Truck className="w-3 h-3" /> Dispatch & Generate AWB
+                        <Truck className="w-3 h-3" />{" "}
+                        {bookingAwbId === ord.id ? "Booking..." : "Dispatch via Shiprocket"}
                       </button>
                     ) : null}
 

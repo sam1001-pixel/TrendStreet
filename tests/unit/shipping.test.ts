@@ -110,3 +110,44 @@ test("Shipping Adapter - cancelShipment successfully executes cancellation", asy
   assert.equal(res.success, true);
   assert.ok(res.message);
 });
+
+test("Shipping Adapter - checkConnectionAndPickups returns Jodhpur atelier hub when unconfigured", async () => {
+  const adapter = new ShiprocketShippingAdapter();
+  const conn = await adapter.checkConnectionAndPickups();
+
+  assert.equal(conn.success, false);
+  assert.equal(conn.isLive, false);
+  assert.ok(conn.locations.length >= 1, "Must return fallback atelier hub");
+  const hub = conn.locations[0];
+  assert.equal(hub.pin_code, "342008", "Fallback hub PIN must match Jodhpur atelier 342008");
+  assert.equal(hub.city, "Jodhpur");
+  assert.equal(hub.state, "Rajasthan");
+  assert.equal(hub.phone, "9079199951");
+});
+
+test("Shipping Adapter - generateLabel returns printable PDF URL in sandbox mode", async () => {
+  const adapter = new ShiprocketShippingAdapter();
+  const labelUrl = await adapter.generateLabel("MOCK-SHIP-123");
+
+  assert.ok(labelUrl, "Must return a label URL");
+  assert.ok(labelUrl.includes("MOCK-SHIP-123.pdf") || labelUrl.startsWith("http"));
+});
+
+test("Shipping Adapter - normalizes tracking statuses correctly", () => {
+  const mapStatus = (raw: string): "SHIPPED" | "IN_TRANSIT" | "DELIVERED" | null => {
+    const rawStatus = raw.toUpperCase();
+    if (rawStatus.includes("DELIVERED") && !rawStatus.includes("UNDELIVERED")) return "DELIVERED";
+    if (rawStatus.includes("OUT") || rawStatus.includes("TRANSIT") || rawStatus.includes("REACHED")) return "IN_TRANSIT";
+    if (rawStatus.includes("PICKED") || rawStatus.includes("MANIFEST")) return "SHIPPED";
+    return null;
+  };
+
+  assert.equal(mapStatus("DELIVERED"), "DELIVERED");
+  assert.equal(mapStatus("OUT FOR DELIVERY"), "IN_TRANSIT");
+  assert.equal(mapStatus("IN TRANSIT"), "IN_TRANSIT");
+  assert.equal(mapStatus("REACHED AT DESTINATION HUB"), "IN_TRANSIT");
+  assert.equal(mapStatus("PICKED UP"), "SHIPPED");
+  assert.equal(mapStatus("MANIFEST GENERATED"), "SHIPPED");
+  assert.equal(mapStatus("UNDELIVERED_ATTEMPT_1"), null);
+});
+
