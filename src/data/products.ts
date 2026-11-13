@@ -404,8 +404,8 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     fabric: "Italian Lambskin Suede & Merino Trim",
     careInstructions: ["Specialist leather and suede clean only"],
     images: [
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1200&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1200&auto=format&fit=crop",
     ],
     sizes: ["S", "M", "L", "XL"],
     colors: [
@@ -488,7 +488,7 @@ const CATALOG_WITH_SAMPLE_REVIEWS: Product[] = [
     fabric: "Full-Grain Italian Cowhide",
     careInstructions: ["Specialist leather care only", "Condition with natural beeswax balsam"],
     images: [
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=1200&auto=format&fit=crop",
     ],
     sizes: ["S", "M", "L", "XL"],
     colors: [

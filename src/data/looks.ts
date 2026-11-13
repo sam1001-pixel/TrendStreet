@@ -169,6 +169,6 @@ export const OCCASIONS: Occasion[] = [
     title: "Statement Pieces",
     line: "Leather, suede, the big buys",
     tags: ["leather", "suede", "moto", "flight jacket"],
-    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=900&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=900&auto=format&fit=crop",
   },
 ];

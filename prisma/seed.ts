@@ -304,7 +304,7 @@ async function main() {
       isNew: true,
       isBestSeller: false,
       images: [
-        "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=1200&auto=format&fit=crop",
       ],
       sizes: ["S", "M", "L", "XL"],
       colors: [

@@ -146,7 +146,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
       {
         key: "Jackets",
         href: "/jackets",
-        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=2000&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=2000&auto=format&fit=crop",
         line: "Suede bombers and duck canvas chore cuts.",
       },
     ],
@@ -186,7 +186,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
         href: "/jackets",
         no: "04",
         shortTag: "Handcrafted Flight Bombers & Shells",
-        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1400&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=1400&auto=format&fit=crop",
         copy: "Suede flight bombers, Melton overcoats, and Japanese duck canvas chores built for generational longevity.",
       },
     ],

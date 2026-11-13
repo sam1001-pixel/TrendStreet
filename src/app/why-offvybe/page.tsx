@@ -33,7 +33,7 @@ const PILLARS = [
     href: "/jackets",
     spec: "10-year build",
     line: "Suede bombers, duck canvas and full-grain moto jackets made to outlast trends.",
-    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=900&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=900&auto=format&fit=crop",
   },
 ];
 

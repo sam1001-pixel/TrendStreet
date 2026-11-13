@@ -152,7 +152,7 @@ export const LimitedEditionVault: React.FC = () => {
           {/* Right Column: Visual Showcase */}
           <div className="lg:col-span-6 relative aspect-square sm:aspect-[4/3] rounded-2xl overflow-hidden border border-gold/20 shadow-xl group">
             <img
-              src={vaultProduct?.images[0] || "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1200&auto=format&fit=crop"}
+              src={vaultProduct?.images[0] || "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=1200&auto=format&fit=crop"}
               alt="Limited Edition Vault Garment"
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
               loading="lazy"

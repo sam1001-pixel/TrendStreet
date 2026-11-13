@@ -15,7 +15,7 @@ import { useSwipeToClose } from "@/hooks/useSwipeToClose";
 const CATEGORIES = [
   { label: "Oversized", href: "/oversized", image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop" },
   { label: "Boxy Fit", href: "/boxy-fit", image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop" },
-  { label: "Jackets", href: "/jackets", image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop" },
+  { label: "Jackets", href: "/jackets", image: "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=600&auto=format&fit=crop" },
   { label: "Jeans", href: "/shop?category=Jeans", image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=600&auto=format&fit=crop" },
 ];
 

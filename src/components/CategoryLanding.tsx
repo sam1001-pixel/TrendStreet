@@ -24,7 +24,7 @@ export interface CategoryConfig {
 const ALL: { name: ProductCategory; href: string; image: string }[] = [
   { name: "Oversized", href: "/oversized", image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop" },
   { name: "Boxy Fit", href: "/boxy-fit", image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop" },
-  { name: "Jackets", href: "/jackets", image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop" },
+  { name: "Jackets", href: "/jackets", image: "https://images.unsplash.com/photo-1520975954732-35dd22299614?q=80&w=600&auto=format&fit=crop" },
 ];
 
 const SORTS = [
@@ -42,8 +42,8 @@ export function CategoryLanding({ config }: { config: CategoryConfig }) {
   const [size, setSize] = useState<string | null>(null);
   const [inStock, setInStock] = useState(false);
 
-  // Default clothesFirst to true for Oversized and Boxy Fit
-  const showClothesFirst = config.clothesFirst ?? (config.category === "Oversized" || config.category === "Boxy Fit");
+  // Default clothesFirst to true for all silhouettes
+  const showClothesFirst = config.clothesFirst ?? true;
 
   const inCategory = useMemo(() => products.filter((p) => p.category === config.category), [products, config.category]);
   const sizes = useMemo(() => {
