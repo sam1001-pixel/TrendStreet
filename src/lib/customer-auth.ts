@@ -305,9 +305,9 @@ export async function createCustomerUser(data: {
 }): Promise<CustomerUser> {
   const prisma = await db();
   const email = data.email.trim().toLowerCase();
-  const passwordHash = await hashPasswordAsync(data.password);
   const name = data.name.trim();
-  const phone = data.phone?.trim() || null;
+  const cleanPhoneDigits = data.phone ? data.phone.replace(/\D/g, "").replace(/^(91|0)(?=[6-9]\d{9}$)/, "") : null;
+  const phone = cleanPhoneDigits && /^[6-9]\d{9}$/.test(cleanPhoneDigits) ? cleanPhoneDigits : (data.phone?.trim() || null);
 
   try {
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -315,13 +315,40 @@ export async function createCustomerUser(data: {
       if (existing.passwordHash || existing.role !== "CUSTOMER") throw new Error("ACCOUNT_EXISTS");
       throw new Error("GUEST_EXISTS");
     }
+    if (phone) {
+      const phoneDigits = phone.replace(/\D/g, "").slice(-10);
+      if (phoneDigits.length === 10) {
+        const existingPhone = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { phone },
+              { phone: phoneDigits },
+              { phone: `+91${phoneDigits}` },
+              { phone: `91${phoneDigits}` },
+              { phone: { contains: phoneDigits } },
+            ],
+          },
+        });
+        if (existingPhone) {
+          throw new Error("PHONE_EXISTS");
+        }
+      }
+    }
+
+    const passwordHash = await hashPasswordAsync(data.password);
     const created = await prisma.user.create({
       data: { email, name, phone, passwordHash, role: "CUSTOMER" },
     });
     return toCustomer(created);
   } catch (err) {
-    if (err instanceof Error && (err.message === "ACCOUNT_EXISTS" || err.message === "GUEST_EXISTS")) throw err;
-    if ((err as { code?: string })?.code === "P2002") throw new Error("ACCOUNT_EXISTS");
+    if (err instanceof Error && (err.message === "ACCOUNT_EXISTS" || err.message === "GUEST_EXISTS" || err.message === "PHONE_EXISTS")) throw err;
+    if ((err as { code?: string })?.code === "P2002") {
+      const target = (err as { meta?: { target?: string[] } })?.meta?.target;
+      if (Array.isArray(target) && target.includes("phone")) {
+        throw new Error("PHONE_EXISTS");
+      }
+      throw new Error("ACCOUNT_EXISTS");
+    }
     throw new CustomerStoreUnavailableError((err as Error).message);
   }
 }

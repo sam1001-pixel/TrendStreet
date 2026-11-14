@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { issueAuthToken, PASSWORD_RESET_TTL_MS } from "@/lib/auth-tokens";
-import { findCustomerByEmail } from "@/lib/customer-auth";
 import { EMAIL_REGEX, normalizeEmail } from "@/lib/customer-session-cookie";
 import { checkDistributedRateLimit, getClientIp, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
 import { isEmailDeliveryConfigured, sendPasswordResetEmail } from "@/lib/security-email";
@@ -37,11 +36,15 @@ export async function POST(req: NextRequest) {
     try {
       const accountLimit = await checkDistributedRateLimit(`pw-reset-acct:${email}`, RATE_LIMIT_CONFIG.PASSWORD_RESET_ACCOUNT);
       if (!accountLimit.allowed) return;
-      const customer = await findCustomerByEmail(email);
-      if (!customer) return;
-      const token = await issueAuthToken(customer.id, "PASSWORD_RESET", PASSWORD_RESET_TTL_MS);
-      await sendPasswordResetEmail(customer.email, token);
-      await writeAudit(req, { action: "CUSTOMER_PASSWORD_RESET_REQUESTED", entityType: "User", entityId: customer.id, userId: customer.id });
+      const { prisma } = await import("@/lib/prisma");
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true, email: true, role: true },
+      });
+      if (!user || user.role !== "CUSTOMER") return;
+      const token = await issueAuthToken(user.id, "PASSWORD_RESET", PASSWORD_RESET_TTL_MS);
+      await sendPasswordResetEmail(user.email, token);
+      await writeAudit(req, { action: "CUSTOMER_PASSWORD_RESET_REQUESTED", entityType: "User", entityId: user.id, userId: user.id });
     } catch (e) {
       console.error("[Password reset] request failed:", (e as Error).message);
     }

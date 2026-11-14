@@ -1,16 +1,13 @@
-import { NextRequest, NextResponse, after } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   CustomerStoreUnavailableError,
   createCustomerUser,
   emailAccountState,
-  hashPasswordAsync,
   passwordProblem,
   signCustomerToken,
 } from "@/lib/customer-auth";
-import { checkDistributedRateLimit, getClientIp, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
+import { checkDistributedRateLimit, getClientIp } from "@/lib/rate-limit";
 import { EMAIL_REGEX, normalizeEmail, setCustomerSessionCookie } from "@/lib/customer-session-cookie";
-import { isEmailDeliveryConfigured, sendAccountExistsEmail, sendEmailConfirmation } from "@/lib/security-email";
-import { EMAIL_VERIFY_TTL_MS, issueAuthToken } from "@/lib/auth-tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -24,13 +21,8 @@ const cleanPhone = (v: unknown) => {
 /**
  * Customer sign-up.
  *
- * With email delivery configured (RESEND_API_KEY), sign-up always needs the confirmation link:
- * - the answer is the same whether or not the email already has an account (no enumeration),
- * - nothing on an existing record changes until the inbox owner opens the link,
- * - someone who types another person's email can't take over that person's guest orders or phone.
- *
- * Without email delivery, brand-new emails get an account straight away (as before), and emails
- * that already exist are refused — claiming a guest-checkout record needs the confirmation link.
+ * Accounts are created immediately upon registration without confirmation email.
+ * Rejects attempts with duplicate email or duplicate mobile number.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -48,7 +40,8 @@ export async function POST(req: NextRequest) {
     const name = cleanName(body?.name);
     const email = normalizeEmail(body?.email);
     const password = body?.password;
-    const phone = cleanPhone(body?.phone);
+    const rawPhone = typeof body?.phone === "string" ? body.phone.trim() : "";
+    const phone = rawPhone ? cleanPhone(rawPhone) : null;
 
     if (name.length < 2) {
       return NextResponse.json({ success: false, message: "Please provide your full name (minimum 2 characters)." }, { status: 400 });
@@ -59,46 +52,50 @@ export async function POST(req: NextRequest) {
     const problem = passwordProblem(password, email);
     if (problem) return NextResponse.json({ success: false, message: problem }, { status: 400 });
 
-    // ---------------------------------------------------------------
-    // Email confirmation flow
-    // ---------------------------------------------------------------
-    if (isEmailDeliveryConfigured()) {
-      // Hash first in every branch so the response time doesn't reveal whether the email exists.
-      const passwordHash = await hashPasswordAsync(password as string);
-      const state = await emailAccountState(email);
-      const sendLimit = await checkDistributedRateLimit(`email-confirm-send:${email}`, RATE_LIMIT_CONFIG.EMAIL_CONFIRM_SEND);
+    if (!rawPhone || !phone) {
+      return NextResponse.json({ success: false, message: "Please provide a valid 10-digit mobile number." }, { status: 400 });
+    }
 
-      if (sendLimit.allowed && state !== "staff") {
-        after(async () => {
-          try {
-            if (state === "account") {
-              await sendAccountExistsEmail(email);
-              return;
-            }
-            const { prisma } = await import("@/lib/prisma");
-            // A placeholder record (no password) for brand-new emails; guests already have one.
-            const user = await prisma.user.upsert({ where: { email }, update: {}, create: { email, role: "CUSTOMER" }, select: { id: true } });
-            const token = await issueAuthToken(user.id, "EMAIL_VERIFY", EMAIL_VERIFY_TTL_MS, { name, phone, passwordHash });
-            await sendEmailConfirmation(email, token);
-          } catch (e) {
-            console.error("[Customer Auth] Confirmation email failed:", (e as Error).message);
-          }
-        });
-      }
-
+    // Reject if account with same email already exists
+    const emailState = await emailAccountState(email);
+    if (emailState === "account" || emailState === "staff") {
       return NextResponse.json(
-        {
-          success: true,
-          pendingConfirmation: true,
-          message: `We've sent a link to ${email}. Open it within 24 hours to finish creating your account. (Check spam if it isn't there in a minute.)`,
-        },
-        { status: 202 }
+        { success: false, message: "An account with this email address already exists. Please sign in." },
+        { status: 409 }
+      );
+    }
+    if (emailState === "guest") {
+      return NextResponse.json(
+        { success: false, message: "This email was used for guest orders. Please use 'Forgot password' to set your password and access your account." },
+        { status: 409 }
       );
     }
 
-    // ---------------------------------------------------------------
-    // No email delivery: immediate accounts for brand-new emails only
-    // ---------------------------------------------------------------
+    // Reject if account with same phone number already exists
+    if (phone) {
+      const { prisma } = await import("@/lib/prisma");
+      const phoneDigits = phone.slice(-10);
+      const existingPhone = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { phone },
+            { phone: phoneDigits },
+            { phone: `+91${phoneDigits}` },
+            { phone: `91${phoneDigits}` },
+            { phone: { contains: phoneDigits } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (existingPhone) {
+        return NextResponse.json(
+          { success: false, message: "An account with this mobile number already exists. Please sign in or use a different number." },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Immediate account creation without confirmation email
     const newUser = await createCustomerUser({ name, email, phone: phone ?? undefined, password: password as string });
     const token = await signCustomerToken({ id: newUser.id, email: newUser.email, name: newUser.name, sessionVersion: 0 });
     const response = NextResponse.json(
@@ -114,13 +111,15 @@ export async function POST(req: NextRequest) {
         { status: 409 }
       );
     }
+    if (error instanceof Error && error.message === "PHONE_EXISTS") {
+      return NextResponse.json(
+        { success: false, message: "An account with this mobile number already exists. Please sign in or use a different number." },
+        { status: 409 }
+      );
+    }
     if (error instanceof Error && error.message === "GUEST_EXISTS") {
       return NextResponse.json(
-        {
-          success: false,
-          message:
-            "This email already has orders with us. To keep them safe we need to confirm the email is yours, which isn't available online yet — please contact us and we'll set up your account.",
-        },
+        { success: false, message: "This email was used for guest orders. Please use 'Forgot password' to set your password and access your account." },
         { status: 409 }
       );
     }

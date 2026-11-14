@@ -122,6 +122,7 @@ function LoginForm() {
             onClick={() => {
               setActiveTab("login");
               setError(null);
+              setSuccessMsg(null);
             }}
             className={`min-h-[44px] py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${
               activeTab === "login"
@@ -136,6 +137,7 @@ function LoginForm() {
             onClick={() => {
               setActiveTab("register");
               setError(null);
+              setSuccessMsg(null);
             }}
             className={`min-h-[44px] py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${
               activeTab === "register"
@@ -274,6 +276,8 @@ function LoginForm() {
                 <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-espresso/60" />
                 <input
                   type="tel"
+                  required
+                  placeholder="98XXXXXXXX"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   autoComplete="tel"

@@ -309,6 +309,25 @@
       "priority": 21,
       "passes": true,
       "notes": "Configured .env.local with active admin credentials, engineered src/lib/customer-auth.ts, UserAuthContext, luxury /login page, profile integration, and added unit tests."
+    },
+    {
+      "id": "US-022",
+      "title": "Direct Customer Registration & Duplicate Account Prevention",
+      "description": "As a customer, I want to create an account directly without email confirmation, and as a platform, I want to strictly prevent duplicate accounts with the same email or phone number.",
+      "acceptanceCriteria": [
+        "Do not send confirmation email on customer sign-up (POST /api/auth/customer/register)",
+        "Direct account creation with immediate customer session cookie set",
+        "Keep other transactional emails (password reset, security notices) intact",
+        "Reject registration with existing email address with HTTP 409",
+        "Reject registration with existing mobile number with HTTP 409",
+        "Validate 10-digit Indian mobile format on sign up and profile update",
+        "Profile update rejects duplicate mobile number with HTTP 409",
+        "Unit tests pass",
+        "Typecheck passes with 0 errors"
+      ],
+      "priority": 22,
+      "passes": true,
+      "notes": "Eliminated confirmation email dispatch on registration while keeping password reset emails active. Enforced unique email and unique 10-digit mobile number across registration and account profile updates with HTTP 409. Added unit tests passing 9/9 tests."
     }
   ]
 }

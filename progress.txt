@@ -7,6 +7,7 @@
 - Security: Admin routes guarded; credentials validated against `sujal@.com` / `[REDACTED-rotate-this-password]`; SQL DDL generator escapes user inputs.
 - Privileged Access Register: Conforms to `/admin-access-register` with CSV, JSON, and sanitized SQL DDL exports.
 - GEO & AI Crawlers: `llms.txt` and `robots.txt` optimized for GPTBot, ClaudeBot, PerplexityBot with 134-167 word passage-level citability.
+- Customer Registration & Duplicate Prevention: Direct registration with immediate session issuance (no email confirmation token required for account sign up); transactional emails (password reset, security notices) retained; strict uniqueness enforced for both email and 10-digit Indian mobile numbers (`/^[6-9]\d{9}$/`) with HTTP 409 responses; guest checkout users guided through password reset claim workflow.
 
 ## Stories Progress
 - [x] US-001: Foundation & Design System Setup — COMPLETED (Tailwind tokens, fonts, icons, layout)
@@ -72,3 +73,4 @@
 - [x] US-047: Customer Client Context & Luxury UI — COMPLETED (`src/context/UserAuthContext.tsx` syncing with StoreContext, luxury `/login` portal with Sign In, Register, instant demo customer button, and admin portal link).
 - [x] US-048: Storefront & Profile Integration — COMPLETED (`src/components/Header.tsx` reflects customer auth status, `src/app/profile/page.tsx` features sign-out and invitation banner, and mobile bottom nav excludes `/login`).
 - [x] US-049: Automated Testing & Verification — COMPLETED (`tests/unit/customer-auth.test.ts` added, test suite expanded to 51/51 passing tests, `npm run typecheck` 0 errors, `npm run lint` 0 errors, Next.js production build generated 32/32 routes).
+- [x] US-050: Direct Customer Registration & Duplicate Account Prevention — COMPLETED (Removed sign-up email confirmation, enabling direct customer creation and instant session issuance; kept transactional emails intact; enforced uniqueness rejecting duplicate email with HTTP 409 and duplicate phone with HTTP 409 across registration and profile updates; added `tests/unit/registration-uniqueness.test.ts` passing 9/9 tests; full test suite passing 161/161 tests).

@@ -26,14 +26,41 @@ export async function PATCH(req: NextRequest) {
     if (!auth.ok) return auth.response;
     const body = await req.json().catch(() => ({}));
     const name = typeof body?.name === "string" ? body.name.replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80) : undefined;
-    const phoneRaw = typeof body?.phone === "string" ? body.phone.replace(/\D/g, "").replace(/^(91|0)(?=[6-9]\d{9}$)/, "") : undefined;
+    const rawPhone = typeof body?.phone === "string" ? body.phone.trim() : undefined;
+    let cleanDigits: string | null | undefined = undefined;
+    if (rawPhone !== undefined) {
+      if (rawPhone === "") {
+        cleanDigits = null;
+      } else {
+        const digits = rawPhone.replace(/\D/g, "").replace(/^(91|0)(?=[6-9]\d{9}$)/, "");
+        if (!/^[6-9]\d{9}$/.test(digits)) {
+          return NextResponse.json({ error: "Please enter a valid 10-digit mobile number." }, { status: 400 });
+        }
+        cleanDigits = digits;
+      }
+    }
+
     if (name !== undefined && name.length < 2) return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
-    if (phoneRaw !== undefined && phoneRaw !== "" && !/^[6-9]\d{9}$/.test(phoneRaw)) {
-      return NextResponse.json({ error: "Please enter a valid 10-digit mobile number." }, { status: 400 });
+    if (cleanDigits) {
+      const existingOther = await prisma.user.findFirst({
+        where: {
+          id: { not: auth.user.id },
+          OR: [
+            { phone: cleanDigits },
+            { phone: `+91${cleanDigits}` },
+            { phone: `91${cleanDigits}` },
+            { phone: { contains: cleanDigits } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (existingOther) {
+        return NextResponse.json({ error: "This mobile number is already associated with another account." }, { status: 409 });
+      }
     }
     const user = await prisma.user.update({
       where: { id: auth.user.id },
-      data: { ...(name !== undefined ? { name } : {}), ...(phoneRaw !== undefined ? { phone: phoneRaw || null } : {}) },
+      data: { ...(name !== undefined ? { name } : {}), ...(cleanDigits !== undefined ? { phone: cleanDigits } : {}) },
       select: { name: true, email: true, phone: true },
     });
     return NextResponse.json({ profile: { name: user.name || "", email: user.email, phone: user.phone || "" } });
